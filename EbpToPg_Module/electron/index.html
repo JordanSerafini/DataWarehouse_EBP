@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBP Sync Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="18" fill="#4CAF50"/>
+                    <path d="M 15 20 L 18 23 L 25 16" stroke="white" stroke-width="3" fill="none"/>
+                </svg>
+                <h1>EBP Sync Manager</h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Déconnecté</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs">
+            <button class="tab active" data-tab="config">
+                <span class="tab-icon">⚙️</span>
+                Configuration
+            </button>
+            <button class="tab" data-tab="server">
+                <span class="tab-icon">🖥️</span>
+                Serveur
+            </button>
+            <button class="tab" data-tab="sync">
+                <span class="tab-icon">🔄</span>
+                Synchronisation
+            </button>
+            <button class="tab" data-tab="verify">
+                <span class="tab-icon">✔️</span>
+                Vérification
+            </button>
+            <button class="tab" data-tab="backup">
+                <span class="tab-icon">💾</span>
+                Backup
+            </button>
+            <button class="tab" data-tab="logs">
+                <span class="tab-icon">📜</span>
+                Logs
+            </button>
+        </nav>
+
+        <!-- Content Panels -->
+        <main class="content">
+            <!-- Configuration Panel -->
+            <div class="panel active" id="config-panel">
+                <h2>⚙️ Configuration des Connexions</h2>
+
+                <div class="card">
+                    <h3>Connexion EBP (Source)</h3>
+                    <div class="form-group">
+                        <label>Serveur EBP</label>
+                        <input type="text" id="ebpServer" placeholder="SRVEBP-2022\\SRVEBP">
+                        <small>Format: NOM_SERVEUR\\INSTANCE</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Base de données</label>
+                        <input type="text" id="ebpDatabase" placeholder="Solution Logique_xxx">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Utilisateur</label>
+                            <input type="text" id="ebpUser" value="sa">
+                        </div>
+                        <div class="form-group">
+                            <label>Mot de passe</label>
+                            <input type="password" id="ebpPassword">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="testEBPConnection()">
+                        🔌 Tester la connexion EBP
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>Connexion PostgreSQL (Destination)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Hôte</label>
+                            <input type="text" id="pgHost" value="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label>Port</label>
+                            <input type="number" id="pgPort" value="5432">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Base de données</label>
+                        <input type="text" id="pgDatabase" value="ebp_db">
+                        <small>Sera créée automatiquement si inexistante</small>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Utilisateur</label>
+                            <input type="text" id="pgUser" value="postgres">
+                        </div>
+                        <div class="form-group">
+                            <label>Mot de passe</label>
+                            <input type="password" id="pgPassword">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="testPGConnection()">
+                        🔌 Tester la connexion PostgreSQL
+                    </button>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="saveConfig()">
+                        💾 Sauvegarder la configuration
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadConfigFromEnv()">
+                        🔄 Recharger depuis .env
+                    </button>
+                </div>
+            </div>
+
+            <!-- Server Control Panel -->
+            <div class="panel" id="server-panel">
+                <h2>🖥️ Contrôle du Serveur Backend</h2>
+
+                <div class="card">
+                    <h3>État du Serveur</h3>
+                    <div id="serverStatus">
+                        <p><strong>Statut:</strong> <span id="serverStatusText">Vérification...</span></p>
+                        <p><strong>PID:</strong> <span id="serverPID">-</span></p>
+                        <p><strong>Port:</strong> <span id="serverPort">3000</span></p>
+                    </div>
+
+                    <div class="actions" style="margin-top: 1.5rem;">
+                        <button class="btn btn-primary" onclick="startServerManually()">
+                            ▶️ Démarrer
+                        </button>
+                        <button class="btn btn-danger" onclick="stopServerManually()">
+                            ⏹️ Arrêter
+                        </button>
+                        <button class="btn btn-warning" onclick="restartServer()">
+                            🔄 Redémarrer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Logs du Serveur</h3>
+                    <div class="logs-container" id="serverLogsContainer">
+                        <div class="log-entry">En attente de logs du serveur...</div>
+                    </div>
+                    <button class="btn btn-secondary btn-small" onclick="clearServerLogs()" style="margin-top: 1rem;">
+                        🗑️ Effacer les logs
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>Informations de Connexion</h3>
+                    <div id="connectionInfo">
+                        <p><strong>URL API:</strong> <span>http://localhost:3000/api</span></p>
+                        <p><strong>EBP Serveur:</strong> <span id="infoEBPServer">-</span></p>
+                        <p><strong>EBP Database:</strong> <span id="infoEBPDatabase">-</span></p>
+                        <p><strong>PostgreSQL:</strong> <span id="infoPGDatabase">-</span></p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="refreshConnectionInfo()">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Synchronisation Panel -->
+            <div class="panel" id="sync-panel">
+                <h2>🔄 Synchronisation</h2>
+
+                <div class="card">
+                    <h3>Synchronisation Complète</h3>
+                    <p>Synchronise toutes les données d'EBP vers PostgreSQL</p>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="dropAndCreate">
+                            Mode destructif (Supprime et recrée les tables)
+                        </label>
+                        <small>Si décoché, vide simplement les tables existantes</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tables à synchroniser (optionnel)</label>
+                        <input type="text" id="syncTables" placeholder="Laisser vide pour tout synchroniser">
+                        <small>Séparées par des virgules, ex: customers,items</small>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="startFullSync()">
+                        🚀 Lancer la Synchronisation Complète
+                    </button>
+                </div>
+
+                <div class="card" id="syncProgress" style="display: none;">
+                    <h3>Progression</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div id="syncStatus"></div>
+                </div>
+
+                <div class="card" id="syncResults" style="display: none;">
+                    <h3>Résultats</h3>
+                    <div id="syncResultsContent"></div>
+                </div>
+            </div>
+
+            <!-- Vérification Panel -->
+            <div class="panel" id="verify-panel">
+                <h2>✔️ Vérification</h2>
+
+                <div class="card">
+                    <h3>Vérifier la Synchronisation</h3>
+                    <p>Compare les données entre EBP et PostgreSQL pour détecter les différences</p>
+
+                    <div class="form-group">
+                        <label>Tables à vérifier (optionnel)</label>
+                        <input type="text" id="verifyTables" placeholder="Laisser vide pour tout vérifier">
+                        <small>Ex: customers,items</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre d'échantillons par table</label>
+                        <input type="number" id="sampleSize" value="100" min="0">
+                        <small>0 = vérifier toutes les lignes (plus lent)</small>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="startVerification()">
+                        🔍 Lancer la Vérification
+                    </button>
+                </div>
+
+                <div class="card" id="verifyResults" style="display: none;">
+                    <h3>Résultats de Vérification</h3>
+                    <div id="verifyResultsContent"></div>
+                    <button class="btn btn-warning" id="repairBtn" onclick="repairSync()" style="display: none;">
+                        🔧 Réparer les Problèmes Détectés
+                    </button>
+                </div>
+            </div>
+
+            <!-- Backup Panel -->
+            <div class="panel" id="backup-panel">
+                <h2>💾 Backup</h2>
+
+                <div class="card">
+                    <h3>Créer un Backup PostgreSQL</h3>
+                    <p>Sauvegarde la base de données PostgreSQL dans le dossier /backup</p>
+
+                    <div class="form-group">
+                        <label>Format</label>
+                        <select id="backupFormat">
+                            <option value="plain">SQL (texte)</option>
+                            <option value="custom">Custom (compressé)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Système d'exploitation</label>
+                        <select id="backupOS">
+                            <option value="">Auto (détection automatique)</option>
+                            <option value="windows">🪟 Windows</option>
+                            <option value="linux">🐧 Linux / macOS</option>
+                        </select>
+                        <small>Choisir Windows si la détection automatique échoue</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tables à sauvegarder (optionnel)</label>
+                        <input type="text" id="backupTables" placeholder="Laisser vide pour tout sauvegarder">
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="createBackup()">
+                        💾 Créer un Backup
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3>Backups Existants</h3>
+                    <button class="btn btn-secondary" onclick="loadBackupsList()">
+                        🔄 Actualiser
+                    </button>
+                    <div id="backupsList"></div>
+                </div>
+            </div>
+
+            <!-- Logs Panel -->
+            <div class="panel" id="logs-panel">
+                <h2>📜 Logs</h2>
+
+                <div class="card">
+                    <div class="logs-header">
+                        <h3>Logs en temps réel</h3>
+                        <button class="btn btn-secondary btn-small" onclick="clearLogs()">
+                            🗑️ Effacer
+                        </button>
+                    </div>
+                    <div class="logs-container" id="logsContainer">
+                        <div class="log-entry">En attente de logs...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Notifications Toast -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
