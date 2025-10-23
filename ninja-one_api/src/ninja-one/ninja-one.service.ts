@@ -121,7 +121,21 @@ export class NinjaOneService {
         }),
       );
 
-      const tickets = Array.isArray(response.data) ? response.data : [];
+      this.logger.log(
+        `Response data structure: ${JSON.stringify(Object.keys(response.data || {}))}`,
+      );
+
+      // NinjaOne API returns tickets in different formats depending on the endpoint
+      // The board trigger endpoint may return: {results: [], pageInfo: {}}
+      let tickets: any[] = [];
+      if (Array.isArray(response.data)) {
+        tickets = response.data;
+      } else if (response.data?.results && Array.isArray(response.data.results)) {
+        tickets = response.data.results;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        tickets = response.data.data;
+      }
+
       this.logger.log(`Retrieved ${tickets.length} tickets`);
       return tickets;
     } catch (error) {
@@ -314,6 +328,40 @@ export class NinjaOneService {
         error.response?.data || error.message,
       );
       throw new Error('Failed to fetch technicians from NinjaOne API');
+    }
+  }
+
+  /**
+   * Get ticket boards (board groups)
+   */
+  async getTicketBoards(): Promise<any> {
+    const token = await this.authenticate();
+
+    try {
+      this.logger.log('Fetching ticket boards from NinjaOne API...');
+
+      const response = await firstValueFrom(
+        this.httpService.get(
+          `${this.baseUrl}/v2/ticketing/ticket-board-group`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          },
+        ),
+      );
+
+      this.logger.log(
+        `Retrieved ${response.data?.length || 0} ticket boards`,
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch ticket boards:',
+        error.response?.data || error.message,
+      );
+      throw new Error('Failed to fetch ticket boards from NinjaOne API');
     }
   }
 
