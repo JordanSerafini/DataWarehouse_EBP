@@ -1,9 +1,13 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { NinjaOneService } from './ninja-one.service';
+import { DatabaseSyncService } from './services/database-sync.service';
 
 @Controller('ninja-one')
 export class NinjaOneController {
-  constructor(private readonly ninjaOneService: NinjaOneService) {}
+  constructor(
+    private readonly ninjaOneService: NinjaOneService,
+    private readonly databaseSyncService: DatabaseSyncService,
+  ) {}
 
   @Get('tickets')
   async getTickets(
@@ -70,5 +74,31 @@ export class NinjaOneController {
   @Get('ticket-statuses')
   async getTicketStatuses() {
     return this.ninjaOneService.getTicketStatuses();
+  }
+
+  // Database synchronization endpoints
+  @Post('sync/organizations')
+  async syncOrganizations() {
+    return this.databaseSyncService.syncOrganizations();
+  }
+
+  @Post('sync/technicians')
+  async syncTechnicians() {
+    return this.databaseSyncService.syncTechnicians();
+  }
+
+  @Post('sync/devices')
+  async syncDevices() {
+    return this.databaseSyncService.syncDevices();
+  }
+
+  @Post('sync/tickets')
+  async syncTickets() {
+    return this.databaseSyncService.syncTickets();
+  }
+
+  @Post('sync/all')
+  async syncAll() {
+    return this.databaseSyncService.syncAll();
   }
 }

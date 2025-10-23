@@ -124,8 +124,8 @@ export class TicketTransformService {
       severity: ticket.severity,
       status: ticket.status || 'UNKNOWN',
 
-      created_date: this.extractDate(createdTimestamp),
-      created_time: this.extractTime(createdTimestamp),
+      created_date: this.extractDate(createdTimestamp) || '1970-01-01',
+      created_time: this.extractTime(createdTimestamp) || '00:00:00',
       created_timestamp: createdTimestamp,
 
       updated_date: this.extractDate(updatedTimestamp),
