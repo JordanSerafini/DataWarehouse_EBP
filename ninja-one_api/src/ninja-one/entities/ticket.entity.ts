@@ -89,11 +89,11 @@ export class Ticket {
   @Column({ type: 'jsonb', nullable: true })
   status: any;
 
-  @Column({ type: 'jsonb', nullable: true })
-  priority: any;
+  @Column({ length: 50, nullable: true })
+  priority: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  severity: any;
+  @Column({ length: 50, nullable: true })
+  severity: string;
 
   @Column({ name: 'ticket_type', length: 100, nullable: true })
   ticketType: string;
