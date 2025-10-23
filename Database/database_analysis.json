@@ -1,0 +1,6042 @@
+{
+  "generated_at": "2025-10-23T07:23:14.130Z",
+  "summary": {
+    "total_tables": 319,
+    "total_columns": 9919,
+    "total_rows": 670349
+  },
+  "tables": [
+    {
+      "table_name": "SaleDocument",
+      "column_count": 538,
+      "row_count": 23837,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 18
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_count": 515,
+      "row_count": 268,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 4
+    },
+    {
+      "table_name": "PurchaseDocument",
+      "column_count": 508,
+      "row_count": 12477,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 18
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocumentLine",
+      "column_count": 339,
+      "row_count": 872,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 4
+    },
+    {
+      "table_name": "SaleDocumentLine",
+      "column_count": 336,
+      "row_count": 112684,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 18
+    },
+    {
+      "table_name": "SaleDocumentEx",
+      "column_count": 304,
+      "row_count": 23837,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 18
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocumentEx",
+      "column_count": 303,
+      "row_count": 268,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 4
+    },
+    {
+      "table_name": "PurchaseDocumentLine",
+      "column_count": 281,
+      "row_count": 38887,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 18
+    },
+    {
+      "table_name": "ScheduleEvent",
+      "column_count": 280,
+      "row_count": 11935,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 8
+    },
+    {
+      "table_name": "Item",
+      "column_count": 245,
+      "row_count": 3837,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 16
+    },
+    {
+      "table_name": "Customer",
+      "column_count": 204,
+      "row_count": 1338,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 16
+    },
+    {
+      "table_name": "RangeItem",
+      "column_count": 201,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 13
+    },
+    {
+      "table_name": "Supplier",
+      "column_count": 147,
+      "row_count": 268,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 14
+    },
+    {
+      "table_name": "PurchaseDocumentEx",
+      "column_count": 135,
+      "row_count": 12477,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 18
+    },
+    {
+      "table_name": "MaintenanceContract",
+      "column_count": 124,
+      "row_count": 268,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 4
+    },
+    {
+      "table_name": "Colleague",
+      "column_count": 102,
+      "row_count": 31,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 3
+    },
+    {
+      "table_name": "StockDocumentLine",
+      "column_count": 91,
+      "row_count": 3163,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 13
+    },
+    {
+      "table_name": "Bank",
+      "column_count": 85,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Contact",
+      "column_count": 84,
+      "row_count": 2615,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 3
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_count": 84,
+      "row_count": 272,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 1
+    },
+    {
+      "table_name": "MaintenanceContractTemplate",
+      "column_count": 81,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SaleSettlement",
+      "column_count": 79,
+      "row_count": 12962,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "CustomerProduct",
+      "column_count": 78,
+      "row_count": 405,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 11
+    },
+    {
+      "table_name": "Incident",
+      "column_count": 69,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StockDocument",
+      "column_count": 67,
+      "row_count": 245,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 11
+    },
+    {
+      "table_name": "ColleagueFamily",
+      "column_count": 63,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 5
+    },
+    {
+      "table_name": "SaleCommitment",
+      "column_count": 60,
+      "row_count": 15924,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "PurchaseSettlement",
+      "column_count": 59,
+      "row_count": 5183,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "ItemFamily",
+      "column_count": 58,
+      "row_count": 51,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 15
+    },
+    {
+      "table_name": "Deal",
+      "column_count": 54,
+      "row_count": 1493,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 3
+    },
+    {
+      "table_name": "Vat",
+      "column_count": 49,
+      "row_count": 78,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PeriodicInvoicing",
+      "column_count": 47,
+      "row_count": 690,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 1
+    },
+    {
+      "table_name": "OptionsCopiedInDocumentSchemaTable",
+      "column_count": 47,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Activity",
+      "column_count": 46,
+      "row_count": 44145,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 5
+    },
+    {
+      "table_name": "PosTerminal",
+      "column_count": 45,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PurchaseCommitment",
+      "column_count": 42,
+      "row_count": 8603,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "PosTerminalOpenClose",
+      "column_count": 39,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StockMovement",
+      "column_count": 38,
+      "row_count": 12158,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 15
+    },
+    {
+      "table_name": "Shipping",
+      "column_count": 38,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_count": 36,
+      "row_count": 4901,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 3
+    },
+    {
+      "table_name": "ItemComponent",
+      "column_count": 36,
+      "row_count": 54,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "CustomerFamily",
+      "column_count": 36,
+      "row_count": 3,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "Storehouse",
+      "column_count": 34,
+      "row_count": 3,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealSaleDocument",
+      "column_count": 33,
+      "row_count": 9882,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "EbpSysCloudPublication",
+      "column_count": 33,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Disbursement",
+      "column_count": 33,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StockItem",
+      "column_count": 32,
+      "row_count": 6831,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 13
+    },
+    {
+      "table_name": "SupplierItem",
+      "column_count": 32,
+      "row_count": 5007,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "IntrastatNc8Nomenclature",
+      "column_count": 32,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "OlapTemplateTable",
+      "column_count": 32,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SupplierFamily",
+      "column_count": 31,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 15
+    },
+    {
+      "table_name": "Address",
+      "column_count": 30,
+      "row_count": 1627,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 3
+    },
+    {
+      "table_name": "PaymentType",
+      "column_count": 30,
+      "row_count": 19,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "PriceList",
+      "column_count": 29,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealContact",
+      "column_count": 29,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealSaleDocumentLine",
+      "column_count": 28,
+      "row_count": 29551,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "DealPurchaseDocumentLine",
+      "column_count": 28,
+      "row_count": 5572,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "ThirdBankAccountDetail",
+      "column_count": 28,
+      "row_count": 218,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 1
+    },
+    {
+      "table_name": "UnpaidSaleSettlementLine",
+      "column_count": 28,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "Ecotax",
+      "column_count": 27,
+      "row_count": 107,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 1
+    },
+    {
+      "table_name": "DocumentSerial",
+      "column_count": 27,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IncidentCustomerProduct",
+      "column_count": 27,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "StockDocumentLineTrackingDispatch",
+      "column_count": 26,
+      "row_count": 144,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 11
+    },
+    {
+      "table_name": "CashMovement",
+      "column_count": 26,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ScheduleEventCustomerProduct",
+      "column_count": 25,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "DealPurchaseDocument",
+      "column_count": 24,
+      "row_count": 2741,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "EbpSysAlert",
+      "column_count": 24,
+      "row_count": 26,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 5
+    },
+    {
+      "table_name": "Unit",
+      "column_count": 24,
+      "row_count": 11,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealStockDocumentLine",
+      "column_count": 24,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "IntrastatLine",
+      "column_count": 24,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "MaintenanceContractInvoiceContentLine",
+      "column_count": 24,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SaleSettlementCommitmentAssociation",
+      "column_count": 23,
+      "row_count": 15516,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "PurchaseDocumentLineTrackingDispatch",
+      "column_count": 23,
+      "row_count": 1779,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "SaleDocumentLineTrackingDispatch",
+      "column_count": 23,
+      "row_count": 967,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 11
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocumentLineTrackingDispatch",
+      "column_count": 23,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysReport",
+      "column_count": 22,
+      "row_count": 908,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StandardText",
+      "column_count": 21,
+      "row_count": 12,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "RecoveredDocument",
+      "column_count": 21,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IntrastatTransactionNature",
+      "column_count": 20,
+      "row_count": 20,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealStockDocument",
+      "column_count": 20,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "EbpSysSchemaInformation",
+      "column_count": 20,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "GuaranteeType",
+      "column_count": 20,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "Zipcode",
+      "column_count": 19,
+      "row_count": 38893,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "PurchaseSettlementCommitmentAssociation",
+      "column_count": 19,
+      "row_count": 8082,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "ScheduleEventExpectedResource",
+      "column_count": 19,
+      "row_count": 5097,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 3
+    },
+    {
+      "table_name": "PeriodicInvoicingCustomer",
+      "column_count": 19,
+      "row_count": 683,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 11
+    },
+    {
+      "table_name": "EbpSysUser",
+      "column_count": 19,
+      "row_count": 45,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "AnalyticPlanItem",
+      "column_count": 19,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "LoyaltyCardType",
+      "column_count": 19,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "RangeTemplate",
+      "column_count": 19,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealItem",
+      "column_count": 18,
+      "row_count": 6428,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "TrackingStockItem",
+      "column_count": 18,
+      "row_count": 1338,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 13
+    },
+    {
+      "table_name": "Country",
+      "column_count": 18,
+      "row_count": 227,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 1
+    },
+    {
+      "table_name": "SettlementMode",
+      "column_count": 18,
+      "row_count": 34,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 5
+    },
+    {
+      "table_name": "CustomerHeadOfficeCopiedInDocument",
+      "column_count": 18,
+      "row_count": 13,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "CurrencyTable",
+      "column_count": 18,
+      "row_count": 6,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CommissionScale",
+      "column_count": 18,
+      "row_count": 4,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealExtraCost",
+      "column_count": 18,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EcotaxFurniture",
+      "column_count": 18,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "WinRangePivotGridTemplate",
+      "column_count": 18,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ReminderCommitment",
+      "column_count": 17,
+      "row_count": 362,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 1
+    },
+    {
+      "table_name": "States",
+      "column_count": 17,
+      "row_count": 106,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 1
+    },
+    {
+      "table_name": "PriceListCalculationLine",
+      "column_count": 17,
+      "row_count": 12,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ScheduleEventTemplate",
+      "column_count": 17,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerAdvantage",
+      "column_count": 17,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "DiscountCoupon",
+      "column_count": 17,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "GiftVoucher",
+      "column_count": 17,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Tax",
+      "column_count": 17,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealSaleSettlement",
+      "column_count": 16,
+      "row_count": 4991,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "DealPurchaseSettlement",
+      "column_count": 16,
+      "row_count": 1070,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "SaleDocumentComplementaryDiscount",
+      "column_count": 16,
+      "row_count": 22,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "MaintenanceContractCustomerProduct",
+      "column_count": 16,
+      "row_count": 20,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "AttachmentFile",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IncidentExtraCost",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IncidentTemplateExtraCost",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Intrastat",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "MaintenanceContractCost",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "WinRangePivotGridDefaultTemplate",
+      "column_count": 16,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ActivityAssociatedFiles",
+      "column_count": 15,
+      "row_count": 3908,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 3
+    },
+    {
+      "table_name": "PurchaseDocumentAssociatedFiles",
+      "column_count": 15,
+      "row_count": 2762,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 13
+    },
+    {
+      "table_name": "SaleDocumentAssociatedFiles",
+      "column_count": 15,
+      "row_count": 1165,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "Naf",
+      "column_count": 15,
+      "row_count": 736,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 1
+    },
+    {
+      "table_name": "DealResourcesCost",
+      "column_count": 15,
+      "row_count": 220,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 1
+    },
+    {
+      "table_name": "CustomerAssociatedFiles",
+      "column_count": 15,
+      "row_count": 210,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 11
+    },
+    {
+      "table_name": "EbpSysWinGridTemplate",
+      "column_count": 15,
+      "row_count": 187,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "LinkedItem",
+      "column_count": 15,
+      "row_count": 103,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 11
+    },
+    {
+      "table_name": "PurchaseDocumentComplementaryDiscount",
+      "column_count": 15,
+      "row_count": 92,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ReminderLetter",
+      "column_count": 15,
+      "row_count": 50,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Civility",
+      "column_count": 15,
+      "row_count": 27,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 0
+    },
+    {
+      "table_name": "MailMergeTemplate",
+      "column_count": 15,
+      "row_count": 14,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ScheduleEventType",
+      "column_count": 15,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ItemAssociatedFiles",
+      "column_count": 15,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "CustomerProductAssociatedFiles",
+      "column_count": 15,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "DealAssociatedFiles",
+      "column_count": 15,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StockDocumentAssociatedFiles",
+      "column_count": 15,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SupplierAssociatedFiles",
+      "column_count": 15,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "AnalyticPlan",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Analytique",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ColleagueAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ConstructionSiteAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Chantiers",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ContactAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Equipment",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IncidentAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "MaintenanceContractAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "RangeItemAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "RecoveredDocumentAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SaleDocumentChorusAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ScheduleEventAssociatedFiles",
+      "column_count": 15,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SettlementModeLine",
+      "column_count": 14,
+      "row_count": 42,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 5
+    },
+    {
+      "table_name": "EbpSysSchemaSynchronizationLog",
+      "column_count": 14,
+      "row_count": 17,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ColleagueFunction",
+      "column_count": 14,
+      "row_count": 10,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinLayoutTemplate",
+      "column_count": 14,
+      "row_count": 10,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "AccountingYear",
+      "column_count": 14,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerSubFamily",
+      "column_count": 14,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "EbpSysLinkedExtension",
+      "column_count": 14,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysUserFunction",
+      "column_count": 14,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ScheduleEventTemplateResource",
+      "column_count": 14,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealPurchaseDocumentLineCostDispatch",
+      "column_count": 14,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "DiscountCouponItem",
+      "column_count": 14,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ExecutionQuoteLineExtraFeeDistribution",
+      "column_count": 14,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PriceListCategory",
+      "column_count": 14,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "SupplierSubFamily",
+      "column_count": 14,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 15
+    },
+    {
+      "table_name": "DocumentLineAssociation",
+      "column_count": 13,
+      "row_count": 33249,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ThirdReference",
+      "column_count": 13,
+      "row_count": 3622,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 3
+    },
+    {
+      "table_name": "DealCustomer",
+      "column_count": 13,
+      "row_count": 1535,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 13
+    },
+    {
+      "table_name": "EbpSysWinListTemplate",
+      "column_count": 13,
+      "row_count": 466,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ItemFamilyAccount",
+      "column_count": 13,
+      "row_count": 168,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 16
+    },
+    {
+      "table_name": "EconomicReason",
+      "column_count": 13,
+      "row_count": 102,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 1
+    },
+    {
+      "table_name": "EbpSysMachineInfo",
+      "column_count": 13,
+      "row_count": 76,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDashboardTemplate",
+      "column_count": 13,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ColleagueCompetence",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerSubscription",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "Dependency",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DiscountCouponBarCode",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysCloudAccount",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "FreeDiscountVoucherCampaign",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "RangeType",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 5
+    },
+    {
+      "table_name": "RangeTypeElement",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ScheduleEventTemplateExpectedResource",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 0
+    },
+    {
+      "table_name": "WinRangePivotGrid",
+      "column_count": 13,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 0
+    },
+    {
+      "table_name": "DealColleague",
+      "column_count": 12,
+      "row_count": 1490,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 3
+    },
+    {
+      "table_name": "PriceListInclusionLine",
+      "column_count": 12,
+      "row_count": 28,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysUserConnection",
+      "column_count": 12,
+      "row_count": 13,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IntrastatTransportMode",
+      "column_count": 12,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ClassificationGroup",
+      "column_count": 12,
+      "row_count": 6,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysLock",
+      "column_count": 12,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "AnalyticGrid",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Analytique",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysGlobalSearch",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EcotaxCalculationBase",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "GeographicSector",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IntrastatIncoterm",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Location",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "LoyaltyHistory",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "LoyaltyInclusionLine",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Organization",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PosTerminalOpenCloseItemFamilyDetail",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 15
+    },
+    {
+      "table_name": "PosTerminalOpenClosePaymentTypeDetail",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "PosTerminalOpenCloseSaleInAccountPaymentTypeDetail",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "ScheduledItemPriceUpdate",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ServiceIntrastat",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ServiceIntrastatLine",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StockRangeItem",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SubTaxTerritoriality",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "TaxItem",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "TaxTerritoriality",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "TravelExpense",
+      "column_count": 12,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ItemAccount",
+      "column_count": 11,
+      "row_count": 72428,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 15
+    },
+    {
+      "table_name": "EventLog",
+      "column_count": 11,
+      "row_count": 12500,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 5
+    },
+    {
+      "table_name": "EbpSysAsynchronousLog",
+      "column_count": 11,
+      "row_count": 3344,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "AccountingExchangeGroup",
+      "column_count": 11,
+      "row_count": 1468,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 3
+    },
+    {
+      "table_name": "DealSupplier",
+      "column_count": 11,
+      "row_count": 658,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 11
+    },
+    {
+      "table_name": "ItemSubFamily",
+      "column_count": 11,
+      "row_count": 135,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 16
+    },
+    {
+      "table_name": "EbpSysWinLayoutDefaultTemplate",
+      "column_count": 11,
+      "row_count": 92,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinGridDefaultTemplate",
+      "column_count": 11,
+      "row_count": 81,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CommissionScaleSelectionLine",
+      "column_count": 11,
+      "row_count": 12,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "MaintenanceContractCommitment",
+      "column_count": 11,
+      "row_count": 9,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysNavBarTemplate",
+      "column_count": 11,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CalcultatedDataModel",
+      "column_count": 11,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 5
+    },
+    {
+      "table_name": "EbpSysCloudDocument",
+      "column_count": 11,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ComplementaryDiscount",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysAutoTreeCategory",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWorkflowTemplate",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EquipmentFamily",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "IncidentTemplate",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 0
+    },
+    {
+      "table_name": "LoyaltyCalculationLine",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PosTerminalOpenCloseColleagueDetail",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PosTerminalOpenCloseVatDetail",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "RangeTemplateElement",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Round",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SubTax",
+      "column_count": 11,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysRight",
+      "column_count": 10,
+      "row_count": 884,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDefaultReport",
+      "column_count": 10,
+      "row_count": 377,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinListView",
+      "column_count": 10,
+      "row_count": 314,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysUserGroup",
+      "column_count": 10,
+      "row_count": 6,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CommissionScaleStageLine",
+      "column_count": 10,
+      "row_count": 3,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "Competence",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerCustomReport",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "CustomerFamilyCustomReport",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "EbpSysCustomTreeCategory",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PosSafe",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SaleDocumentLineHumanServiceDetail",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ShippingAccount",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SupplierCustomReport",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SupplierFamilyCustomReport",
+      "column_count": 10,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 15
+    },
+    {
+      "table_name": "AccountingExchangeGroupProcessDetail",
+      "column_count": 9,
+      "row_count": 1468,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 3
+    },
+    {
+      "table_name": "EbpSysSaveLog",
+      "column_count": 9,
+      "row_count": 418,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysRightColumn",
+      "column_count": 9,
+      "row_count": 358,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDashboardPart",
+      "column_count": 9,
+      "row_count": 43,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "BuyerReference",
+      "column_count": 9,
+      "row_count": 30,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysGenericImportSettings",
+      "column_count": 9,
+      "row_count": 29,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "VatExemptionReason",
+      "column_count": 9,
+      "row_count": 27,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysNavBarDefaultTemplate",
+      "column_count": 9,
+      "row_count": 8,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysReportSavedSettings",
+      "column_count": 9,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IntrastatRegime",
+      "column_count": 9,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDashboardDefaultTemplate",
+      "column_count": 9,
+      "row_count": 5,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CommissionScaleColleagueLine",
+      "column_count": 9,
+      "row_count": 4,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWorkflowDefaultTemplate",
+      "column_count": 9,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "AnalyticGridLine",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Analytique",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysExchangeLog",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysUserMandatoryField",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EquipmentType",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ItemFamilyVatTerritoriality",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 15
+    },
+    {
+      "table_name": "ItemVatTerritoriality",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "PayrollExchangeGroup",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PayrollExchangeGroupProcessDetail",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "PurchaseDocumentLineAnalyticAffectation",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "RangeItemVatTerritoriality",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SaleDocumentLineAnalyticAffectation",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ScheduleEventOutlookSynchronization",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ShippingLevel",
+      "column_count": 9,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDeletedRecord",
+      "column_count": 8,
+      "row_count": 7818,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ServiceType",
+      "column_count": 8,
+      "row_count": 27,
+      "estimated_size": "0 KB",
+      "business_domain": "Référentiels",
+      "importance_score": 5
+    },
+    {
+      "table_name": "ModificationLog",
+      "column_count": 8,
+      "row_count": 9,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysStatisticCustomFilter",
+      "column_count": 8,
+      "row_count": 3,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerProductFamily",
+      "column_count": 8,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 15
+    },
+    {
+      "table_name": "ColleagueWebSynchronizationInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ressources Humaines",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ContactEcommerceInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CorrectionReason",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerWebSynchronizationInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "EbpSysRightValue",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "ExecutionQuoteTimeUnit",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "FreeDiscountVoucher",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "IncidentPurchaseDocument",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "IncidentStockDocument",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ItemEcommerceInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "MaintenanceContractFamily",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Maintenance",
+      "importance_score": 5
+    },
+    {
+      "table_name": "MaintenanceContractPurchaseDocument",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "MaintenanceContractStockDocument",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Stock",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SaleInvoiceWebSynchronizationInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SaleOrderEcommerceInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "SaleQuoteWebSynchronizationInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "ScheduleEventTypeResource",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Planification",
+      "importance_score": 5
+    },
+    {
+      "table_name": "UnitWebSynchronizationInfo",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "UnpaidSettlementReason",
+      "column_count": 8,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Comptabilité",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinForm",
+      "column_count": 7,
+      "row_count": 1221,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysOptions",
+      "column_count": 7,
+      "row_count": 499,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinList",
+      "column_count": 7,
+      "row_count": 128,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinGrid",
+      "column_count": 7,
+      "row_count": 49,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysUserGroupAssociation",
+      "column_count": 7,
+      "row_count": 23,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysQueryTool",
+      "column_count": 7,
+      "row_count": 7,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "CustomerOptionsCustomReport",
+      "column_count": 7,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "EbpSysSynchronizedVersion",
+      "column_count": 7,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SupplierOptionsCustomReport",
+      "column_count": 7,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Achats",
+      "importance_score": 10
+    },
+    {
+      "table_name": "xyx_FACTUP_PeriodicInvoicesToComplete",
+      "column_count": 6,
+      "row_count": 97,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWinLayout",
+      "column_count": 6,
+      "row_count": 11,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysWorkflow",
+      "column_count": 6,
+      "row_count": 2,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDashboard",
+      "column_count": 6,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysNavBar",
+      "column_count": 6,
+      "row_count": 1,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysCloudAccountPublicationAssociation",
+      "column_count": 6,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysExchangeApplication",
+      "column_count": 6,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysReportTagAssociation",
+      "column_count": 6,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysTag",
+      "column_count": 6,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "OlapCustomDatabase",
+      "column_count": 6,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysDataHash",
+      "column_count": 5,
+      "row_count": 10553,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "SaleCreditMemoOrigin",
+      "column_count": 5,
+      "row_count": 77,
+      "estimated_size": "0 KB",
+      "business_domain": "Ventes",
+      "importance_score": 10
+    },
+    {
+      "table_name": "EbpSysWebSynchronizationVersion",
+      "column_count": 5,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "OlapFavoriteTemplate",
+      "column_count": 5,
+      "row_count": 0,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "StatisticView",
+      "column_count": 4,
+      "row_count": 10,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    },
+    {
+      "table_name": "EbpSysAutoIncrement",
+      "column_count": 2,
+      "row_count": 77,
+      "estimated_size": "0 KB",
+      "business_domain": "Système",
+      "importance_score": 0
+    },
+    {
+      "table_name": "OperationOptions",
+      "column_count": 2,
+      "row_count": 19,
+      "estimated_size": "0 KB",
+      "business_domain": "Autre",
+      "importance_score": 0
+    }
+  ],
+  "domains": {
+    "Comptabilité": [
+      {
+        "table_name": "BankRemittance",
+        "column_count": 36,
+        "row_count": 4901,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 3
+      },
+      {
+        "table_name": "AccountingExchangeGroup",
+        "column_count": 11,
+        "row_count": 1468,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 3
+      },
+      {
+        "table_name": "AccountingExchangeGroupProcessDetail",
+        "column_count": 9,
+        "row_count": 1468,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 3
+      },
+      {
+        "table_name": "ReminderCommitment",
+        "column_count": 17,
+        "row_count": 362,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 1
+      },
+      {
+        "table_name": "ThirdBankAccountDetail",
+        "column_count": 28,
+        "row_count": 218,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 1
+      },
+      {
+        "table_name": "SettlementModeLine",
+        "column_count": 14,
+        "row_count": 42,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 5
+      },
+      {
+        "table_name": "SettlementMode",
+        "column_count": 18,
+        "row_count": 34,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 5
+      },
+      {
+        "table_name": "MaintenanceContractCommitment",
+        "column_count": 11,
+        "row_count": 9,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Bank",
+        "column_count": 85,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 0
+      },
+      {
+        "table_name": "AccountingYear",
+        "column_count": 14,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 0
+      },
+      {
+        "table_name": "UnpaidSettlementReason",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Comptabilité",
+        "importance_score": 0
+      }
+    ],
+    "Planification": [
+      {
+        "table_name": "Activity",
+        "column_count": 46,
+        "row_count": 44145,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 5
+      },
+      {
+        "table_name": "ScheduleEvent",
+        "column_count": 280,
+        "row_count": 11935,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 8
+      },
+      {
+        "table_name": "ScheduleEventExpectedResource",
+        "column_count": 19,
+        "row_count": 5097,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 3
+      },
+      {
+        "table_name": "ActivityAssociatedFiles",
+        "column_count": 15,
+        "row_count": 3908,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 3
+      },
+      {
+        "table_name": "ScheduleEventType",
+        "column_count": 15,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 5
+      },
+      {
+        "table_name": "ScheduleEventTemplate",
+        "column_count": 17,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ScheduleEventTemplateResource",
+        "column_count": 14,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ScheduleEventAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ScheduleEventOutlookSynchronization",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ScheduleEventTemplateExpectedResource",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ScheduleEventTypeResource",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Planification",
+        "importance_score": 5
+      }
+    ],
+    "Autre": [
+      {
+        "table_name": "DocumentLineAssociation",
+        "column_count": 13,
+        "row_count": 33249,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 5
+      },
+      {
+        "table_name": "EventLog",
+        "column_count": 11,
+        "row_count": 12500,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 5
+      },
+      {
+        "table_name": "ThirdReference",
+        "column_count": 13,
+        "row_count": 3622,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 3
+      },
+      {
+        "table_name": "Contact",
+        "column_count": 84,
+        "row_count": 2615,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 3
+      },
+      {
+        "table_name": "Address",
+        "column_count": 30,
+        "row_count": 1627,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 3
+      },
+      {
+        "table_name": "Naf",
+        "column_count": 15,
+        "row_count": 736,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 1
+      },
+      {
+        "table_name": "PeriodicInvoicing",
+        "column_count": 47,
+        "row_count": 690,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 1
+      },
+      {
+        "table_name": "Ecotax",
+        "column_count": 27,
+        "row_count": 107,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 1
+      },
+      {
+        "table_name": "States",
+        "column_count": 17,
+        "row_count": 106,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 1
+      },
+      {
+        "table_name": "EconomicReason",
+        "column_count": 13,
+        "row_count": 102,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 1
+      },
+      {
+        "table_name": "xyx_FACTUP_PeriodicInvoicesToComplete",
+        "column_count": 6,
+        "row_count": 97,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Vat",
+        "column_count": 49,
+        "row_count": 78,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ReminderLetter",
+        "column_count": 15,
+        "row_count": 50,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "BuyerReference",
+        "column_count": 9,
+        "row_count": 30,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PriceListInclusionLine",
+        "column_count": 12,
+        "row_count": 28,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "VatExemptionReason",
+        "column_count": 9,
+        "row_count": 27,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IntrastatTransactionNature",
+        "column_count": 20,
+        "row_count": 20,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "OperationOptions",
+        "column_count": 2,
+        "row_count": 19,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "MailMergeTemplate",
+        "column_count": 15,
+        "row_count": 14,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CommissionScaleSelectionLine",
+        "column_count": 11,
+        "row_count": 12,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PriceListCalculationLine",
+        "column_count": 17,
+        "row_count": 12,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "StandardText",
+        "column_count": 21,
+        "row_count": 12,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Unit",
+        "column_count": 24,
+        "row_count": 11,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "StatisticView",
+        "column_count": 4,
+        "row_count": 10,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ModificationLog",
+        "column_count": 8,
+        "row_count": 9,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IntrastatTransportMode",
+        "column_count": 12,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 5
+      },
+      {
+        "table_name": "PriceList",
+        "column_count": 29,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IntrastatRegime",
+        "column_count": 9,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ClassificationGroup",
+        "column_count": 12,
+        "row_count": 6,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CurrencyTable",
+        "column_count": 18,
+        "row_count": 6,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CommissionScale",
+        "column_count": 18,
+        "row_count": 4,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CommissionScaleStageLine",
+        "column_count": 10,
+        "row_count": 3,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Storehouse",
+        "column_count": 34,
+        "row_count": 3,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "OptionsCopiedInDocumentSchemaTable",
+        "column_count": 47,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CalcultatedDataModel",
+        "column_count": 11,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 5
+      },
+      {
+        "table_name": "IntrastatNc8Nomenclature",
+        "column_count": 32,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "AttachmentFile",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CashMovement",
+        "column_count": 26,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Competence",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ComplementaryDiscount",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ContactAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ContactEcommerceInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CorrectionReason",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Dependency",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Disbursement",
+        "column_count": 33,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "DiscountCoupon",
+        "column_count": 17,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "DiscountCouponBarCode",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "DocumentSerial",
+        "column_count": 27,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EcotaxCalculationBase",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EcotaxFurniture",
+        "column_count": 18,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Equipment",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ExecutionQuoteLineExtraFeeDistribution",
+        "column_count": 14,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ExecutionQuoteTimeUnit",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "FreeDiscountVoucher",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "FreeDiscountVoucherCampaign",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "GeographicSector",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "GiftVoucher",
+        "column_count": 17,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Intrastat",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IntrastatIncoterm",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IntrastatLine",
+        "column_count": 24,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Location",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "LoyaltyCalculationLine",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "LoyaltyHistory",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "LoyaltyInclusionLine",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "OlapCustomDatabase",
+        "column_count": 6,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "OlapFavoriteTemplate",
+        "column_count": 5,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "OlapTemplateTable",
+        "column_count": 32,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Organization",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PosSafe",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PosTerminal",
+        "column_count": 45,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PosTerminalOpenClose",
+        "column_count": 39,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PosTerminalOpenCloseVatDetail",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "RecoveredDocument",
+        "column_count": 21,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "RecoveredDocumentAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Round",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ServiceIntrastat",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ServiceIntrastatLine",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Shipping",
+        "column_count": 38,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ShippingAccount",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ShippingLevel",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "SubTax",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "SubTaxTerritoriality",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Tax",
+        "column_count": 17,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "TaxTerritoriality",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "TravelExpense",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      },
+      {
+        "table_name": "UnitWebSynchronizationInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Autre",
+        "importance_score": 0
+      }
+    ],
+    "Analytique": [
+      {
+        "table_name": "AnalyticGrid",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Analytique",
+        "importance_score": 0
+      },
+      {
+        "table_name": "AnalyticGridLine",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Analytique",
+        "importance_score": 0
+      },
+      {
+        "table_name": "AnalyticPlan",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Analytique",
+        "importance_score": 0
+      }
+    ],
+    "Stock": [
+      {
+        "table_name": "ItemAccount",
+        "column_count": 11,
+        "row_count": 72428,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 15
+      },
+      {
+        "table_name": "StockMovement",
+        "column_count": 38,
+        "row_count": 12158,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 15
+      },
+      {
+        "table_name": "StockItem",
+        "column_count": 32,
+        "row_count": 6831,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 13
+      },
+      {
+        "table_name": "Item",
+        "column_count": 245,
+        "row_count": 3837,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 16
+      },
+      {
+        "table_name": "StockDocumentLine",
+        "column_count": 91,
+        "row_count": 3163,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 13
+      },
+      {
+        "table_name": "TrackingStockItem",
+        "column_count": 18,
+        "row_count": 1338,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 13
+      },
+      {
+        "table_name": "StockDocument",
+        "column_count": 67,
+        "row_count": 245,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 11
+      },
+      {
+        "table_name": "ItemFamilyAccount",
+        "column_count": 13,
+        "row_count": 168,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 16
+      },
+      {
+        "table_name": "StockDocumentLineTrackingDispatch",
+        "column_count": 26,
+        "row_count": 144,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 11
+      },
+      {
+        "table_name": "ItemSubFamily",
+        "column_count": 11,
+        "row_count": 135,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 16
+      },
+      {
+        "table_name": "LinkedItem",
+        "column_count": 15,
+        "row_count": 103,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 11
+      },
+      {
+        "table_name": "ItemComponent",
+        "column_count": 36,
+        "row_count": 54,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "ItemFamily",
+        "column_count": 58,
+        "row_count": 51,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 15
+      },
+      {
+        "table_name": "ItemAssociatedFiles",
+        "column_count": 15,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "StockDocumentAssociatedFiles",
+        "column_count": 15,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "AnalyticPlanItem",
+        "column_count": 19,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "DiscountCouponItem",
+        "column_count": 14,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "IncidentStockDocument",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "ItemEcommerceInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "ItemFamilyVatTerritoriality",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 15
+      },
+      {
+        "table_name": "ItemVatTerritoriality",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "MaintenanceContractStockDocument",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "PosTerminalOpenCloseItemFamilyDetail",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 15
+      },
+      {
+        "table_name": "RangeItem",
+        "column_count": 201,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 13
+      },
+      {
+        "table_name": "RangeItemAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "RangeItemVatTerritoriality",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "RangeTemplate",
+        "column_count": 19,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 0
+      },
+      {
+        "table_name": "RangeTemplateElement",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 0
+      },
+      {
+        "table_name": "RangeType",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 5
+      },
+      {
+        "table_name": "RangeTypeElement",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 5
+      },
+      {
+        "table_name": "ScheduledItemPriceUpdate",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "StockRangeItem",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "TaxItem",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 10
+      },
+      {
+        "table_name": "WinRangePivotGrid",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 0
+      },
+      {
+        "table_name": "WinRangePivotGridDefaultTemplate",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 0
+      },
+      {
+        "table_name": "WinRangePivotGridTemplate",
+        "column_count": 18,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Stock",
+        "importance_score": 0
+      }
+    ],
+    "Référentiels": [
+      {
+        "table_name": "Zipcode",
+        "column_count": 19,
+        "row_count": 38893,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "Country",
+        "column_count": 18,
+        "row_count": 227,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 1
+      },
+      {
+        "table_name": "Civility",
+        "column_count": 15,
+        "row_count": 27,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ServiceType",
+        "column_count": 8,
+        "row_count": 27,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "PaymentType",
+        "column_count": 30,
+        "row_count": 19,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "EquipmentFamily",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "EquipmentType",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "GuaranteeType",
+        "column_count": 20,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "LoyaltyCardType",
+        "column_count": 19,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "PosTerminalOpenClosePaymentTypeDetail",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      },
+      {
+        "table_name": "PriceListCategory",
+        "column_count": 14,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Référentiels",
+        "importance_score": 5
+      }
+    ],
+    "Ressources Humaines": [
+      {
+        "table_name": "Colleague",
+        "column_count": 102,
+        "row_count": 31,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 3
+      },
+      {
+        "table_name": "ColleagueFunction",
+        "column_count": 14,
+        "row_count": 10,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CommissionScaleColleagueLine",
+        "column_count": 9,
+        "row_count": 4,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ColleagueFamily",
+        "column_count": 63,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 5
+      },
+      {
+        "table_name": "ColleagueAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ColleagueCompetence",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ColleagueWebSynchronizationInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PayrollExchangeGroup",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PayrollExchangeGroupProcessDetail",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      },
+      {
+        "table_name": "PosTerminalOpenCloseColleagueDetail",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ressources Humaines",
+        "importance_score": 0
+      }
+    ],
+    "Chantiers": [
+      {
+        "table_name": "ConstructionSiteReferenceDocumentLine",
+        "column_count": 339,
+        "row_count": 872,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 4
+      },
+      {
+        "table_name": "ConstructionSite",
+        "column_count": 84,
+        "row_count": 272,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 1
+      },
+      {
+        "table_name": "ConstructionSiteReferenceDocument",
+        "column_count": 515,
+        "row_count": 268,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 4
+      },
+      {
+        "table_name": "ConstructionSiteReferenceDocumentEx",
+        "column_count": 303,
+        "row_count": 268,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 4
+      },
+      {
+        "table_name": "ConstructionSiteAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 0
+      },
+      {
+        "table_name": "ConstructionSiteReferenceDocumentLineTrackingDispatch",
+        "column_count": 23,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Chantiers",
+        "importance_score": 0
+      }
+    ],
+    "Ventes": [
+      {
+        "table_name": "SaleDocumentLine",
+        "column_count": 336,
+        "row_count": 112684,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 18
+      },
+      {
+        "table_name": "DealSaleDocumentLine",
+        "column_count": 28,
+        "row_count": 29551,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SaleDocument",
+        "column_count": 538,
+        "row_count": 23837,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 18
+      },
+      {
+        "table_name": "SaleDocumentEx",
+        "column_count": 304,
+        "row_count": 23837,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 18
+      },
+      {
+        "table_name": "SaleCommitment",
+        "column_count": 60,
+        "row_count": 15924,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SaleSettlementCommitmentAssociation",
+        "column_count": 23,
+        "row_count": 15516,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SaleSettlement",
+        "column_count": 79,
+        "row_count": 12962,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "DealSaleDocument",
+        "column_count": 33,
+        "row_count": 9882,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealItem",
+        "column_count": 18,
+        "row_count": 6428,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealPurchaseDocumentLine",
+        "column_count": 28,
+        "row_count": 5572,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealSaleSettlement",
+        "column_count": 16,
+        "row_count": 4991,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealPurchaseDocument",
+        "column_count": 24,
+        "row_count": 2741,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealCustomer",
+        "column_count": 13,
+        "row_count": 1535,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "Deal",
+        "column_count": 54,
+        "row_count": 1493,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 3
+      },
+      {
+        "table_name": "DealColleague",
+        "column_count": 12,
+        "row_count": 1490,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 3
+      },
+      {
+        "table_name": "Customer",
+        "column_count": 204,
+        "row_count": 1338,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 16
+      },
+      {
+        "table_name": "SaleDocumentAssociatedFiles",
+        "column_count": 15,
+        "row_count": 1165,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "DealPurchaseSettlement",
+        "column_count": 16,
+        "row_count": 1070,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 13
+      },
+      {
+        "table_name": "SaleDocumentLineTrackingDispatch",
+        "column_count": 23,
+        "row_count": 967,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 11
+      },
+      {
+        "table_name": "PeriodicInvoicingCustomer",
+        "column_count": 19,
+        "row_count": 683,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 11
+      },
+      {
+        "table_name": "DealSupplier",
+        "column_count": 11,
+        "row_count": 658,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 11
+      },
+      {
+        "table_name": "CustomerProduct",
+        "column_count": 78,
+        "row_count": 405,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 11
+      },
+      {
+        "table_name": "DealResourcesCost",
+        "column_count": 15,
+        "row_count": 220,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 1
+      },
+      {
+        "table_name": "CustomerAssociatedFiles",
+        "column_count": 15,
+        "row_count": 210,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 11
+      },
+      {
+        "table_name": "SaleCreditMemoOrigin",
+        "column_count": 5,
+        "row_count": 77,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "EbpSysAlert",
+        "column_count": 24,
+        "row_count": 26,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 5
+      },
+      {
+        "table_name": "SaleDocumentComplementaryDiscount",
+        "column_count": 16,
+        "row_count": 22,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "MaintenanceContractCustomerProduct",
+        "column_count": 16,
+        "row_count": 20,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerHeadOfficeCopiedInDocument",
+        "column_count": 18,
+        "row_count": 13,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "DealStockDocument",
+        "column_count": 20,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "DealStockDocumentLine",
+        "column_count": 24,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerFamily",
+        "column_count": 36,
+        "row_count": 3,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "CustomerProductAssociatedFiles",
+        "column_count": 15,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "DealAssociatedFiles",
+        "column_count": 15,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 0
+      },
+      {
+        "table_name": "CustomerProductFamily",
+        "column_count": 8,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "CustomerSubFamily",
+        "column_count": 14,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "CustomerAdvantage",
+        "column_count": 17,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerCustomReport",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerFamilyCustomReport",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "CustomerOptionsCustomReport",
+        "column_count": 7,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerSubscription",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "CustomerWebSynchronizationInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "DealContact",
+        "column_count": 29,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 0
+      },
+      {
+        "table_name": "DealExtraCost",
+        "column_count": 18,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 0
+      },
+      {
+        "table_name": "DealPurchaseDocumentLineCostDispatch",
+        "column_count": 14,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "IncidentCustomerProduct",
+        "column_count": 27,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "PosTerminalOpenCloseSaleInAccountPaymentTypeDetail",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SaleDocumentChorusAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SaleDocumentLineAnalyticAffectation",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SaleDocumentLineHumanServiceDetail",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SaleInvoiceWebSynchronizationInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SaleOrderEcommerceInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SaleQuoteWebSynchronizationInfo",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "ScheduleEventCustomerProduct",
+        "column_count": 25,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      },
+      {
+        "table_name": "UnpaidSaleSettlementLine",
+        "column_count": 28,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Ventes",
+        "importance_score": 10
+      }
+    ],
+    "Système": [
+      {
+        "table_name": "EbpSysDataHash",
+        "column_count": 5,
+        "row_count": 10553,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDeletedRecord",
+        "column_count": 8,
+        "row_count": 7818,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysAsynchronousLog",
+        "column_count": 11,
+        "row_count": 3344,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinForm",
+        "column_count": 7,
+        "row_count": 1221,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysReport",
+        "column_count": 22,
+        "row_count": 908,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysRight",
+        "column_count": 10,
+        "row_count": 884,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysOptions",
+        "column_count": 7,
+        "row_count": 499,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinListTemplate",
+        "column_count": 13,
+        "row_count": 466,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysSaveLog",
+        "column_count": 9,
+        "row_count": 418,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDefaultReport",
+        "column_count": 10,
+        "row_count": 377,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysRightColumn",
+        "column_count": 9,
+        "row_count": 358,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinListView",
+        "column_count": 10,
+        "row_count": 314,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinGridTemplate",
+        "column_count": 15,
+        "row_count": 187,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinList",
+        "column_count": 7,
+        "row_count": 128,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinLayoutDefaultTemplate",
+        "column_count": 11,
+        "row_count": 92,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinGridDefaultTemplate",
+        "column_count": 11,
+        "row_count": 81,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysAutoIncrement",
+        "column_count": 2,
+        "row_count": 77,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysMachineInfo",
+        "column_count": 13,
+        "row_count": 76,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinGrid",
+        "column_count": 7,
+        "row_count": 49,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUser",
+        "column_count": 19,
+        "row_count": 45,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDashboardPart",
+        "column_count": 9,
+        "row_count": 43,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysGenericImportSettings",
+        "column_count": 9,
+        "row_count": 29,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUserGroupAssociation",
+        "column_count": 7,
+        "row_count": 23,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysSchemaSynchronizationLog",
+        "column_count": 14,
+        "row_count": 17,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUserConnection",
+        "column_count": 12,
+        "row_count": 13,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinLayout",
+        "column_count": 6,
+        "row_count": 11,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWinLayoutTemplate",
+        "column_count": 14,
+        "row_count": 10,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDashboardTemplate",
+        "column_count": 13,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysNavBarDefaultTemplate",
+        "column_count": 9,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysNavBarTemplate",
+        "column_count": 11,
+        "row_count": 8,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysQueryTool",
+        "column_count": 7,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysReportSavedSettings",
+        "column_count": 9,
+        "row_count": 7,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUserGroup",
+        "column_count": 10,
+        "row_count": 6,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDashboardDefaultTemplate",
+        "column_count": 9,
+        "row_count": 5,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysStatisticCustomFilter",
+        "column_count": 8,
+        "row_count": 3,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWorkflow",
+        "column_count": 6,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWorkflowDefaultTemplate",
+        "column_count": 9,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysCloudDocument",
+        "column_count": 11,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysCloudPublication",
+        "column_count": 33,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysDashboard",
+        "column_count": 6,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysLinkedExtension",
+        "column_count": 14,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysLock",
+        "column_count": 12,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysNavBar",
+        "column_count": 6,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysSchemaInformation",
+        "column_count": 20,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUserFunction",
+        "column_count": 14,
+        "row_count": 1,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysAutoTreeCategory",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysCloudAccount",
+        "column_count": 13,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysCloudAccountPublicationAssociation",
+        "column_count": 6,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysCustomTreeCategory",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysExchangeApplication",
+        "column_count": 6,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysExchangeLog",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysGlobalSearch",
+        "column_count": 12,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysReportTagAssociation",
+        "column_count": 6,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysRightValue",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysSynchronizedVersion",
+        "column_count": 7,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysTag",
+        "column_count": 6,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysUserMandatoryField",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWebSynchronizationVersion",
+        "column_count": 5,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      },
+      {
+        "table_name": "EbpSysWorkflowTemplate",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Système",
+        "importance_score": 0
+      }
+    ],
+    "Maintenance": [
+      {
+        "table_name": "MaintenanceContract",
+        "column_count": 124,
+        "row_count": 268,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 4
+      },
+      {
+        "table_name": "MaintenanceContractTemplate",
+        "column_count": 81,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "Incident",
+        "column_count": 69,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IncidentAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IncidentExtraCost",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IncidentTemplate",
+        "column_count": 11,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "IncidentTemplateExtraCost",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "MaintenanceContractAssociatedFiles",
+        "column_count": 15,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "MaintenanceContractCost",
+        "column_count": 16,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      },
+      {
+        "table_name": "MaintenanceContractFamily",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 5
+      },
+      {
+        "table_name": "MaintenanceContractInvoiceContentLine",
+        "column_count": 24,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Maintenance",
+        "importance_score": 0
+      }
+    ],
+    "Achats": [
+      {
+        "table_name": "PurchaseDocumentLine",
+        "column_count": 281,
+        "row_count": 38887,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 18
+      },
+      {
+        "table_name": "PurchaseDocument",
+        "column_count": 508,
+        "row_count": 12477,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 18
+      },
+      {
+        "table_name": "PurchaseDocumentEx",
+        "column_count": 135,
+        "row_count": 12477,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 18
+      },
+      {
+        "table_name": "PurchaseCommitment",
+        "column_count": 42,
+        "row_count": 8603,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "PurchaseSettlementCommitmentAssociation",
+        "column_count": 19,
+        "row_count": 8082,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "PurchaseSettlement",
+        "column_count": 59,
+        "row_count": 5183,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "SupplierItem",
+        "column_count": 32,
+        "row_count": 5007,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "PurchaseDocumentAssociatedFiles",
+        "column_count": 15,
+        "row_count": 2762,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "PurchaseDocumentLineTrackingDispatch",
+        "column_count": 23,
+        "row_count": 1779,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 13
+      },
+      {
+        "table_name": "Supplier",
+        "column_count": 147,
+        "row_count": 268,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 14
+      },
+      {
+        "table_name": "PurchaseDocumentComplementaryDiscount",
+        "column_count": 15,
+        "row_count": 92,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SupplierAssociatedFiles",
+        "column_count": 15,
+        "row_count": 2,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "IncidentPurchaseDocument",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "MaintenanceContractPurchaseDocument",
+        "column_count": 8,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "PurchaseDocumentLineAnalyticAffectation",
+        "column_count": 9,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SupplierCustomReport",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SupplierFamily",
+        "column_count": 31,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SupplierFamilyCustomReport",
+        "column_count": 10,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 15
+      },
+      {
+        "table_name": "SupplierOptionsCustomReport",
+        "column_count": 7,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 10
+      },
+      {
+        "table_name": "SupplierSubFamily",
+        "column_count": 14,
+        "row_count": 0,
+        "estimated_size": "0 KB",
+        "business_domain": "Achats",
+        "importance_score": 15
+      }
+    ]
+  },
+  "relations": [
+    {
+      "table_name": "AccountingExchangeGroupProcessDetail",
+      "column_name": "AccountingExchangeGroupId",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Accountingexchangegroup"
+    },
+    {
+      "table_name": "AccountingYear",
+      "column_name": "SynchronizationUniqueId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Synchronizationunique"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "Contact_ExternalId_GoogleId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Contactexternalidgoogle"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "Contact_ExternalId_OutlookId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Contactexternalidoutlook"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "CustomerId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Customer"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "SupplierId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Supplier"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "ContactId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Contact"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "IncidentId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Incident"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "MaintenanceContractId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Maintenancecontract"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "ReminderLetterId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Reminderletter"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "SaleDocumentId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Saledocument"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "PurchaseDocumentId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Purchasedocument"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "ScheduleEventId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Scheduleevent"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "ColleagueId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Colleague"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "DealId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Deal"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "CreatorColleagueId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Creatorcolleague"
+    },
+    {
+      "table_name": "Activity",
+      "column_name": "ConstructionSiteId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Constructionsite"
+    },
+    {
+      "table_name": "ActivityAssociatedFiles",
+      "column_name": "ParentId",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "ActivityAssociatedFiles",
+      "column_name": "OneDriveItemId",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Onedriveitem"
+    },
+    {
+      "table_name": "Address",
+      "column_name": "AssociatedCustomerId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Associatedcustomer"
+    },
+    {
+      "table_name": "Address",
+      "column_name": "AssociatedSupplierId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Associatedsupplier"
+    },
+    {
+      "table_name": "AnalyticGridLine",
+      "column_name": "AnalyticGridId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Analyticgrid"
+    },
+    {
+      "table_name": "AnalyticPlan",
+      "column_name": "WaitingPlanItemId",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Waitingplanitem"
+    },
+    {
+      "table_name": "AnalyticPlanItem",
+      "column_name": "PlanId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Plan"
+    },
+    {
+      "table_name": "AnalyticPlanItem",
+      "column_name": "ParentId",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "AttachmentFile",
+      "column_name": "ParentId",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "AttachmentFile",
+      "column_name": "OneDriveItemId",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Onedriveitem"
+    },
+    {
+      "table_name": "Bank",
+      "column_name": "CurrencyId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Currency"
+    },
+    {
+      "table_name": "Bank",
+      "column_name": "DocumentSerialId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Documentserial"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "BankId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Bank"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "PaymentTypeId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Paymenttype"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "LastSepaMessageId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Lastsepamessage"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "CurrencyId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Currency"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "AccountingExchangeGroupId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Accountingexchangegroup"
+    },
+    {
+      "table_name": "BankRemittance",
+      "column_name": "ChargesAccountingEntryId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Chargesaccountingentry"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "SourceSafeId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Sourcesafe"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "TargetSafeId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Targetsafe"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "SourceTerminalId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Sourceterminal"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "TargetTerminalId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Targetterminal"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "SourceTerminalOpenCloseId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Sourceterminalopenclose"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "TargetTerminalOpenCloseId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Targetterminalopenclose"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "AccountingExchangeGroupId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Accountingexchangegroup"
+    },
+    {
+      "table_name": "CashMovement",
+      "column_name": "BankRemittanceId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Bankremittance"
+    },
+    {
+      "table_name": "ClassificationGroup",
+      "column_name": "AnalyticAccounting_GridId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Analyticaccountinggrid"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "ReferenceItemId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Referenceitem"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "EmployeePayrollId",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Employeepayroll"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "DocumentSerialId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Documentserial"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "AnalyticAccounting_GridId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Analyticaccountinggrid"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "UserId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "User"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "ColleagueFamilyId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Colleaguefamily"
+    },
+    {
+      "table_name": "Colleague",
+      "column_name": "StorehouseId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Storehouse"
+    },
+    {
+      "table_name": "ColleagueAssociatedFiles",
+      "column_name": "ParentId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "ColleagueAssociatedFiles",
+      "column_name": "OneDriveItemId",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Onedriveitem"
+    },
+    {
+      "table_name": "ColleagueCompetence",
+      "column_name": "ColleagueId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Colleague"
+    },
+    {
+      "table_name": "ColleagueCompetence",
+      "column_name": "CompetenceId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Competence"
+    },
+    {
+      "table_name": "ColleagueFamily",
+      "column_name": "AnalyticAccounting_GridId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Analyticaccountinggrid"
+    },
+    {
+      "table_name": "ColleagueFamily",
+      "column_name": "DocumentSerialId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Documentserial"
+    },
+    {
+      "table_name": "ColleagueWebSynchronizationInfo",
+      "column_name": "ParentId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "CommissionScaleColleagueLine",
+      "column_name": "CommissionScaleId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Commissionscale"
+    },
+    {
+      "table_name": "CommissionScaleColleagueLine",
+      "column_name": "ColleagueId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Colleague"
+    },
+    {
+      "table_name": "CommissionScaleColleagueLine",
+      "column_name": "ColleagueFamilyId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Colleaguefamily"
+    },
+    {
+      "table_name": "CommissionScaleSelectionLine",
+      "column_name": "CommissionScaleId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Commissionscale"
+    },
+    {
+      "table_name": "CommissionScaleStageLine",
+      "column_name": "CommissionScaleId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Commissionscale"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "AnalyticAccounting_GridId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Analyticaccountinggrid"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "ReferenceDocumentId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Referencedocument"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "ConstructionSiteReferenceDocumentId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Constructionsitereferencedocument"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "DealId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Deal"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "StorehouseId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Storehouse"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "CustomerId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Customer"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "ConstructionSiteAddressId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Constructionsiteaddress"
+    },
+    {
+      "table_name": "ConstructionSite",
+      "column_name": "InvoicingAddressId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Invoicingaddress"
+    },
+    {
+      "table_name": "ConstructionSiteAssociatedFiles",
+      "column_name": "ParentId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Parent"
+    },
+    {
+      "table_name": "ConstructionSiteAssociatedFiles",
+      "column_name": "OneDriveItemId",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Onedriveitem"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "StorehouseId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Storehouse"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "TransferedDocumentId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Transfereddocument"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DealId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Deal"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "SerialId",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Serial"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "MaintenanceContractId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Maintenancecontract"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "IncidentId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Incident"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "ConstructionSiteId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Constructionsite"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "Hash_ChainedId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Hashchained"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "AssociatedInvoiceId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Associatedinvoice"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "AssociatedDeliveryOrderId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Associateddeliveryorder"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "AssociatedOrderId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Associatedorder"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "TerritorialityId",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Territoriality"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "VatId",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Vat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "InvoicingAddressId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Invoicingaddress"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "InvoicingContactId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Invoicingcontact"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DeliveryAddressId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Deliveryaddress"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DeliveryContactId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Deliverycontact"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "SettlementModeId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Settlementmode"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "ShippingId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Shipping"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "ShippingVatId",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Shippingvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount0_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount0detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount1_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount1detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount2_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount2detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount3_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount3detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount4_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount4detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "DetailVatAmount5_DetailVatId",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Detailvatamount5detailvat"
+    },
+    {
+      "table_name": "ConstructionSiteReferenceDocument",
+      "column_name": "PaymentTypeId",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "has_default": false,
+      "is_foreign_key": false,
+      "referenced_table": "Paymenttype"
+    }
+  ]
+}

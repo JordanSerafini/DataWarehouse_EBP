@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Générateur d'interfaces TypeScript pour la base de données EBP",
   "scripts": {
-    "generate": "ts-node generate-interfaces.ts"
+    "generate": "ts-node generate-interfaces.ts",
+    "analyze": "ts-node analyze-database.ts"
   },
   "dependencies": {
     "dotenv": "^16.6.1",
