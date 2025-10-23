@@ -29,7 +29,7 @@ async function bootstrap() {
     )
     .setVersion('1.0.0')
     .addBearerAuth()
-    .addTag('Authentication', 'Endpoints d\'authentification')
+    .addTag('Authentication', "Endpoints d'authentification")
     .addTag('Sync', 'Synchronisation données')
     .addTag('Interventions', 'Interventions terrain (Techniciens)')
     .addTag('Sales', 'Ventes et devis (Commerciaux)')
