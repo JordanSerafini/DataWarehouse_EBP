@@ -10,7 +10,6 @@ out/
 
 # Backups
 backup/
-*.sql
 *.dump
 *.tar
 
