@@ -11,14 +11,23 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Déterminer le répertoire du script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  EBP Database Migrations${NC}"
 echo -e "${BLUE}========================================${NC}"
+echo ""
+echo "📁 Répertoire migrations: $SCRIPT_DIR"
 echo ""
 
 # Charger les variables d'environnement
 if [ -f ../.env ]; then
     export $(cat ../.env | grep -v '^#' | xargs)
+    echo -e "${GREEN}✓${NC} Variables d'environnement chargées depuis .env"
+elif [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
     echo -e "${GREEN}✓${NC} Variables d'environnement chargées depuis .env"
 else
     echo -e "${YELLOW}⚠${NC}  Fichier .env non trouvé, utilisation des valeurs par défaut"
