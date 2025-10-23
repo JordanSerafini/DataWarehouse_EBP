@@ -257,10 +257,11 @@ export class DatabaseSyncService {
               : null;
 
           // Determine flags
-          const isResolved = ['RESOLVED', 'CLOSED'].includes(
-            tkt.status?.toUpperCase() || '',
+          const statusName = tkt.status?.displayName?.toUpperCase() || '';
+          const isResolved = ['RESOLVED', 'CLOSED', 'RÉSOLU', 'FERMÉ'].includes(
+            statusName,
           );
-          const isClosed = tkt.status?.toUpperCase() === 'CLOSED';
+          const isClosed = statusName === 'CLOSED' || statusName === 'FERMÉ';
           const isOverdue =
             tkt.dueDate &&
             !isResolved &&

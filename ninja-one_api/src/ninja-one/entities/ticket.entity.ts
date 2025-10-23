@@ -86,14 +86,14 @@ export class Ticket {
   subcategory: string;
 
   // Status and priority
-  @Column({ length: 50, nullable: true })
-  status: string;
+  @Column({ type: 'jsonb', nullable: true })
+  status: any;
 
-  @Column({ length: 50, nullable: true })
-  priority: string;
+  @Column({ type: 'jsonb', nullable: true })
+  priority: any;
 
-  @Column({ length: 50, nullable: true })
-  severity: string;
+  @Column({ type: 'jsonb', nullable: true })
+  severity: any;
 
   @Column({ name: 'ticket_type', length: 100, nullable: true })
   ticketType: string;
