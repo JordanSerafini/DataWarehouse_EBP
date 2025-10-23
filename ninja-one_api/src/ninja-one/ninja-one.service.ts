@@ -78,16 +78,41 @@ export class NinjaOneService {
   }
 
   /**
-   * Get tickets from NinjaOne API
+   * Get tickets from NinjaOne API with optional filters
    */
-  async getTickets(): Promise<any> {
+  async getTickets(filters?: {
+    df?: string; // Date from (format: yyyy-MM-dd or timestamp)
+    dt?: string; // Date to (format: yyyy-MM-dd or timestamp)
+    clientId?: number; // Client/Organization ID
+    assignedTo?: string; // Assigned technician
+    status?: string; // Ticket status (OPEN, IN_PROGRESS, CLOSED, etc.)
+    type?: string; // Ticket type
+    severity?: string; // Ticket severity
+    pageSize?: number; // Number of results per page
+    after?: number; // Cursor for pagination
+  }): Promise<any> {
     const token = await this.authenticate();
 
     try {
-      this.logger.log('Fetching tickets from NinjaOne API...');
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (filters?.df) params.append('df', filters.df);
+      if (filters?.dt) params.append('dt', filters.dt);
+      if (filters?.clientId) params.append('clientId', filters.clientId.toString());
+      if (filters?.assignedTo) params.append('assignedTo', filters.assignedTo);
+      if (filters?.status) params.append('status', filters.status);
+      if (filters?.type) params.append('type', filters.type);
+      if (filters?.severity) params.append('severity', filters.severity);
+      if (filters?.pageSize) params.append('pageSize', filters.pageSize.toString());
+      if (filters?.after) params.append('after', filters.after.toString());
+
+      const queryString = params.toString();
+      const url = `${this.baseUrl}/v2/ticketing/contact/tickets${queryString ? `?${queryString}` : ''}`;
+
+      this.logger.log(`Fetching tickets from NinjaOne API: ${url}`);
 
       const response = await firstValueFrom(
-        this.httpService.get(`${this.baseUrl}/v2/ticketing/ticket/board`, {
+        this.httpService.get(url, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
@@ -95,7 +120,11 @@ export class NinjaOneService {
         }),
       );
 
-      this.logger.log(`Retrieved ${response.data?.length || 0} tickets`);
+      const ticketsCount = Array.isArray(response.data)
+        ? response.data.length
+        : response.data?.results?.length || 0;
+
+      this.logger.log(`Retrieved ${ticketsCount} tickets`);
       return response.data;
     } catch (error) {
       this.logger.error(
@@ -192,6 +221,164 @@ export class NinjaOneService {
         error.response?.data || error.message,
       );
       throw new Error('Failed to fetch devices from NinjaOne API');
+    }
+  }
+
+  /**
+   * Test authentication with all possible regions/URLs
+   */
+  async testAllRegions(): Promise<any> {
+    const clientId = this.configService.get<string>('CLIENT_ID');
+    const clientSecret = this.configService.get<string>('CLIENT_SECRET');
+
+    const urlsToTest = [
+      'https://app.ninjaone.com',
+      'https://app.ninjarmm.com',
+      'https://eu.ninjaone.com',
+      'https://eu.ninjarmm.com',
+      'https://oc.ninjaone.com',
+      'https://oc.ninjarmm.com',
+      'https://ca.ninjaone.com',
+      'https://ca.ninjarmm.com',
+    ];
+
+    const results: any[] = [];
+
+    for (const url of urlsToTest) {
+      try {
+        this.logger.log(`Testing authentication with ${url}...`);
+
+        const params = new URLSearchParams();
+        params.append('grant_type', 'client_credentials');
+        params.append('client_id', clientId || '');
+        params.append('client_secret', clientSecret || '');
+        params.append('scope', 'monitoring management');
+
+        const response = await firstValueFrom(
+          this.httpService.post(
+            `${url}/ws/oauth/token`,
+            params.toString(),
+            {
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              timeout: 5000,
+            },
+          ),
+        );
+
+        results.push({
+          url,
+          success: true,
+          message: 'Authentication successful!',
+          tokenReceived: !!response.data?.access_token,
+          expiresIn: response.data?.expires_in,
+        });
+
+        this.logger.log(`SUCCESS with ${url}!`);
+      } catch (error) {
+        results.push({
+          url,
+          success: false,
+          error: error.response?.data?.resultCode || error.message,
+          details: error.response?.data,
+        });
+
+        this.logger.warn(`Failed with ${url}: ${error.response?.data?.resultCode || error.message}`);
+      }
+    }
+
+    return {
+      results,
+      successfulUrls: results.filter((r) => r.success).map((r) => r.url),
+      summary: `Tested ${urlsToTest.length} URLs, ${results.filter((r) => r.success).length} successful`,
+    };
+  }
+
+  /**
+   * Get list of technicians/users
+   */
+  async getTechnicians(): Promise<any> {
+    const token = await this.authenticate();
+
+    try {
+      this.logger.log('Fetching technicians from NinjaOne API...');
+
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/v2/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }),
+      );
+
+      this.logger.log(`Retrieved ${response.data?.length || 0} technicians`);
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch technicians:',
+        error.response?.data || error.message,
+      );
+      throw new Error('Failed to fetch technicians from NinjaOne API');
+    }
+  }
+
+  /**
+   * Get ticket boards
+   */
+  async getTicketBoards(): Promise<any> {
+    const token = await this.authenticate();
+
+    try {
+      this.logger.log('Fetching ticket boards from NinjaOne API...');
+
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/v2/ticketing/ticket-board`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }),
+      );
+
+      this.logger.log(`Retrieved ${response.data?.length || 0} ticket boards`);
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch ticket boards:',
+        error.response?.data || error.message,
+      );
+      throw new Error('Failed to fetch ticket boards from NinjaOne API');
+    }
+  }
+
+  /**
+   * Get ticket statuses
+   */
+  async getTicketStatuses(): Promise<any> {
+    const token = await this.authenticate();
+
+    try {
+      this.logger.log('Fetching ticket statuses from NinjaOne API...');
+
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.baseUrl}/v2/ticketing/ticket-status`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }),
+      );
+
+      this.logger.log(`Retrieved ${response.data?.length || 0} ticket statuses`);
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        'Failed to fetch ticket statuses:',
+        error.response?.data || error.message,
+      );
+      throw new Error('Failed to fetch ticket statuses from NinjaOne API');
     }
   }
 }
