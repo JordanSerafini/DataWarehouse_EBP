@@ -1,0 +1,38 @@
+/**
+ * Interface pour la table: MaintenanceContractCost
+ * Générée automatiquement le 23/10/2025 09:15:22
+ */
+export interface MaintenanceContractCost {
+  /** Type PG: numeric */
+  Quantity: number;
+  /** Type PG: numeric */
+  UnitPrice: number;
+  /** Type PG: numeric */
+  NetAmountVatExcluded: number;
+  /** Type PG: numeric */
+  NetAmountVatIncluded: number;
+  /** Type PG: integer */
+  LineOrder: number;
+  /** Type PG: character varying | Max length: 8 */
+  MaintenanceContractId: string;
+  /** Type PG: smallint */
+  CostType: number;
+  /** Type PG: uuid */
+  Id: string;
+  /** Type PG: character varying | Max length: 80 */
+  Caption: string;
+  /** Type PG: timestamp without time zone */
+  ExtraCostDate: Date;
+  /** Type PG: character varying | Max length: 4 */
+  UnitId?: string;
+  /** Type PG: timestamp without time zone */
+  sysCreatedDate?: Date;
+  /** Type PG: character varying | Max length: 255 */
+  sysCreatedUser?: string;
+  /** Type PG: timestamp without time zone */
+  sysModifiedDate?: Date;
+  /** Type PG: character varying | Max length: 255 */
+  sysModifiedUser?: string;
+  /** Type PG: uuid */
+  VatId?: string;
+}
