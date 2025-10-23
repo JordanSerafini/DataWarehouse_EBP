@@ -47,7 +47,7 @@ export class NinjaOneService {
             grant_type: 'client_credentials',
             client_id: clientId,
             client_secret: clientSecret,
-            scope: 'monitoring management',
+            scope: 'monitoring management control',
           }).toString(),
           {
             headers: {
@@ -78,19 +78,40 @@ export class NinjaOneService {
   }
 
   /**
-   * Get tickets from NinjaOne API with optional filters
+   * Get all ticket boards
    */
-  async getTickets(filters?: {
-    df?: string; // Date from (format: yyyy-MM-dd or timestamp)
-    dt?: string; // Date to (format: yyyy-MM-dd or timestamp)
-    clientId?: number; // Client/Organization ID
-    assignedTo?: string; // Assigned technician
-    status?: string; // Ticket status (OPEN, IN_PROGRESS, CLOSED, etc.)
-    type?: string; // Ticket type
-    severity?: string; // Ticket severity
-    pageSize?: number; // Number of results per page
-    after?: number; // Cursor for pagination
-  }): Promise<any> {
+  private async getTicketBoards(): Promise<any[]> {
+    const token = await this.authenticate();
+
+    try {
+      const url = `${this.baseUrl}/v2/ticketing/trigger/board`;
+      this.logger.log(`Fetching ticket boards from: ${url}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }),
+      );
+
+      const boards = Array.isArray(response.data) ? response.data : [];
+      this.logger.log(`Retrieved ${boards.length} ticket boards`);
+      return boards;
+    } catch (error) {
+      this.logger.error('Failed to fetch ticket boards:');
+      this.logger.error('Status:', error.response?.status);
+      this.logger.error('Data:', JSON.stringify(error.response?.data));
+      this.logger.error('Message:', error.message);
+      throw new Error('Failed to fetch ticket boards from NinjaOne API');
+    }
+  }
+
+  /**
+   * Get tickets from a specific board
+   */
+  private async getTicketsFromBoard(boardId: number, filters?: any): Promise<any[]> {
     const token = await this.authenticate();
 
     try {
@@ -107,9 +128,7 @@ export class NinjaOneService {
       if (filters?.after) params.append('after', filters.after.toString());
 
       const queryString = params.toString();
-      const url = `${this.baseUrl}/api/v2/ticketing/tickets${queryString ? `?${queryString}` : ''}`;
-
-      this.logger.log(`Fetching tickets from NinjaOne API: ${url}`);
+      const url = `${this.baseUrl}/v2/ticketing/trigger/board/${boardId}/tickets${queryString ? `?${queryString}` : ''}`;
 
       const response = await firstValueFrom(
         this.httpService.get(url, {
@@ -120,17 +139,50 @@ export class NinjaOneService {
         }),
       );
 
-      const ticketsCount = Array.isArray(response.data)
-        ? response.data.length
-        : response.data?.results?.length || 0;
-
-      this.logger.log(`Retrieved ${ticketsCount} tickets`);
-      return response.data;
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      this.logger.error('Failed to fetch tickets:');
-      this.logger.error('Status:', error.response?.status);
-      this.logger.error('Data:', JSON.stringify(error.response?.data));
-      this.logger.error('Message:', error.message);
+      this.logger.warn(`Failed to fetch tickets from board ${boardId}:`, error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Get tickets from NinjaOne API with optional filters
+   */
+  async getTickets(filters?: {
+    df?: string; // Date from (format: yyyy-MM-dd or timestamp)
+    dt?: string; // Date to (format: yyyy-MM-dd or timestamp)
+    clientId?: number; // Client/Organization ID
+    assignedTo?: string; // Assigned technician
+    status?: string; // Ticket status (OPEN, IN_PROGRESS, CLOSED, etc.)
+    type?: string; // Ticket type
+    severity?: string; // Ticket severity
+    pageSize?: number; // Number of results per page
+    after?: number; // Cursor for pagination
+  }): Promise<any> {
+    try {
+      this.logger.log('Fetching all ticket boards...');
+      const boards = await this.getTicketBoards();
+
+      if (boards.length === 0) {
+        this.logger.warn('No ticket boards found');
+        return [];
+      }
+
+      this.logger.log(`Fetching tickets from ${boards.length} boards...`);
+      const allTickets = [];
+
+      for (const board of boards) {
+        const boardId = board.id;
+        this.logger.log(`Fetching tickets from board ${boardId} (${board.name})...`);
+        const tickets = await this.getTicketsFromBoard(boardId, filters);
+        allTickets.push(...tickets);
+      }
+
+      this.logger.log(`Retrieved total of ${allTickets.length} tickets from all boards`);
+      return allTickets;
+    } catch (error) {
+      this.logger.error('Failed to fetch tickets:', error.message);
       throw new Error('Failed to fetch tickets from NinjaOne API');
     }
   }
