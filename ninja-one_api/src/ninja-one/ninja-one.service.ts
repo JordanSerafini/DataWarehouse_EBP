@@ -107,7 +107,7 @@ export class NinjaOneService {
       if (filters?.after) params.append('after', filters.after.toString());
 
       const queryString = params.toString();
-      const url = `${this.baseUrl}/v2/ticketing/contact/tickets${queryString ? `?${queryString}` : ''}`;
+      const url = `${this.baseUrl}/api/v2/ticketing/tickets${queryString ? `?${queryString}` : ''}`;
 
       this.logger.log(`Fetching tickets from NinjaOne API: ${url}`);
 
@@ -127,10 +127,10 @@ export class NinjaOneService {
       this.logger.log(`Retrieved ${ticketsCount} tickets`);
       return response.data;
     } catch (error) {
-      this.logger.error(
-        'Failed to fetch tickets:',
-        error.response?.data || error.message,
-      );
+      this.logger.error('Failed to fetch tickets:');
+      this.logger.error('Status:', error.response?.status);
+      this.logger.error('Data:', JSON.stringify(error.response?.data));
+      this.logger.error('Message:', error.message);
       throw new Error('Failed to fetch tickets from NinjaOne API');
     }
   }
