@@ -10,6 +10,7 @@
     "sync": "ts-node src/sync.ts",
     "discover": "ts-node src/discover-schema.ts",
     "server": "ts-node src/server.ts",
+    "generate:interfaces": "ts-node scripts/generate-interfaces.ts",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run server\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "npm run build && electron-builder",
