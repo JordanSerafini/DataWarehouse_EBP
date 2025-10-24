@@ -209,5 +209,47 @@ export const schema = appSchema({
         { name: 'updated_at', type: 'number' },
       ],
     }),
+
+    // Table des événements calendrier
+    tableSchema({
+      name: 'calendar_events',
+      columns: [
+        { name: 'server_id', type: 'string', isIndexed: true },
+        { name: 'title', type: 'string' },
+        { name: 'description', type: 'string', isOptional: true },
+
+        // Dates
+        { name: 'start_datetime', type: 'number' }, // timestamp
+        { name: 'end_datetime', type: 'number', isOptional: true },
+
+        // Type et statut
+        { name: 'event_type', type: 'string', isIndexed: true }, // intervention, appointment, maintenance, etc.
+        { name: 'status', type: 'string' }, // planned, in_progress, completed, etc.
+
+        // Relations
+        { name: 'colleague_id', type: 'string', isOptional: true, isIndexed: true },
+        { name: 'colleague_name', type: 'string', isOptional: true },
+        { name: 'customer_id', type: 'string', isOptional: true, isIndexed: true },
+        { name: 'customer_name', type: 'string', isOptional: true },
+
+        // Localisation
+        { name: 'address', type: 'string', isOptional: true },
+        { name: 'city', type: 'string', isOptional: true },
+        { name: 'zipcode', type: 'string', isOptional: true },
+        { name: 'latitude', type: 'number', isOptional: true },
+        { name: 'longitude', type: 'number', isOptional: true },
+
+        // Métadonnées
+        { name: 'creator_id', type: 'string', isOptional: true },
+
+        // Sync
+        { name: 'is_synced', type: 'boolean' },
+        { name: 'last_synced_at', type: 'number', isOptional: true },
+
+        // Timestamps
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }),
   ],
 });

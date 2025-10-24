@@ -76,6 +76,17 @@ export const API_CONFIG = {
       SYNC_PROJECTS: '/api/v1/sync/projects',
       FULL_SYNC: '/api/v1/sync/full',
     },
+
+    // Calendrier
+    CALENDAR: {
+      MY_EVENTS: '/api/v1/calendar/my-events',
+      TODAY: '/api/v1/calendar/today',
+      WEEK: '/api/v1/calendar/week',
+      MONTH: (year: number, month: number) => `/api/v1/calendar/month/${year}/${month}`,
+      EVENT_BY_ID: (id: string) => `/api/v1/calendar/events/${id}`,
+      STATS: '/api/v1/calendar/stats',
+      RESCHEDULE: (id: string) => `/api/v1/calendar/events/${id}/reschedule`,
+    },
   },
 };
 

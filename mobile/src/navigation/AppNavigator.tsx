@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Screens
 import PlanningScreen from '../screens/Planning/PlanningScreen';
+import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
 import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen';
@@ -30,6 +31,7 @@ export type RootStackParamList = {
 
 export type BottomTabParamList = {
   Planning: undefined;
+  Calendar: undefined;
   Tasks: undefined;
   Interventions: undefined;
   Customers: undefined;
@@ -53,6 +55,9 @@ const BottomTabsNavigator = () => {
           switch (route.name) {
             case 'Planning':
               iconName = focused ? 'calendar' : 'calendar-outline';
+              break;
+            case 'Calendar':
+              iconName = focused ? 'calendar-sharp' : 'calendar-outline';
               break;
             case 'Tasks':
               iconName = focused ? 'list' : 'list-outline';
@@ -89,6 +94,11 @@ const BottomTabsNavigator = () => {
         name="Planning"
         component={PlanningScreen}
         options={{ title: 'Planning' }}
+      />
+      <Tab.Screen
+        name="Calendar"
+        component={CalendarScreen}
+        options={{ title: 'Calendrier' }}
       />
       <Tab.Screen
         name="Tasks"

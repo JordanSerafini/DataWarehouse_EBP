@@ -36,6 +36,13 @@ const PlanningScreen = () => {
    */
   const loadInterventions = async () => {
     try {
+      // MODE EXPO GO - Database désactivée
+      if (!database) {
+        console.log('📱 Mode Expo Go - Pas de données disponibles');
+        setInterventions([]);
+        return;
+      }
+
       const interventionsCollection = database.get<Intervention>('interventions');
 
       // Filtrer par technicien si c'est un technicien
