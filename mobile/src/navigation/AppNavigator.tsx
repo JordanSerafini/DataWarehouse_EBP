@@ -59,6 +59,7 @@ const BottomTabsNavigator = () => {
 
   return (
     <Tab.Navigator
+      tabBar={(props) => <ScrollableTabBar {...props} />}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -93,11 +94,6 @@ const BottomTabsNavigator = () => {
         },
         tabBarActiveTintColor: '#6200ee',
         tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 5, // Respecte la safe area
-          paddingTop: 5,
-          height: 60 + (insets.bottom > 0 ? insets.bottom : 0), // Ajuste la hauteur
-        },
         headerShown: true,
       })}
     >
