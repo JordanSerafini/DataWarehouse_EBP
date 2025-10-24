@@ -59,10 +59,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user: User = {
         id: response.user.id,
         email: response.user.email,
+        fullName: response.user.fullName,
         role: response.user.role,
         colleagueId: response.user.colleagueId,
-        name: response.user.name,
-        isActive: response.user.isActive,
+        permissions: response.user.permissions,
+        isActive: true,
       };
 
       const tokens: AuthTokens = {

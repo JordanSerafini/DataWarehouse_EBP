@@ -13,14 +13,13 @@ export enum UserRole {
 
 export interface User {
   id: string;
-  username: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   role: UserRole;
   colleagueId?: string;
-  isActive: boolean;
-  createdAt: string;
+  permissions: string[];
+  isActive?: boolean;
+  createdAt?: string;
   lastLoginAt?: string;
 }
 
