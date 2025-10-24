@@ -1,5 +1,5 @@
-import { IsOptional, IsInt, IsString, IsDateString, IsIn, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsInt, IsString, IsDateString, IsIn, Min, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class TicketQueryDto {
   // Pagination
@@ -15,7 +15,7 @@ export class TicketQueryDto {
   @Type(() => Number)
   limit?: number = 50;
 
-  // Filtres par ID
+  // Filtres par ID (relations)
   @IsOptional()
   @IsInt()
   @Type(() => Number)
@@ -39,11 +39,21 @@ export class TicketQueryDto {
   @IsOptional()
   @IsInt()
   @Type(() => Number)
+  locationId?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
   statusId?: number;
+
+  // Filtres par nom de statut (via JSONB)
+  @IsOptional()
+  @IsString()
+  statusName?: string; // Ex: "Nouveau", "Fermé", "Ouvert"
 
   // Filtres par texte
   @IsOptional()
-  @IsString()
+  @IsIn(['NONE', 'LOW', 'MEDIUM', 'HIGH', 'URGENT', 'CRITICAL'])
   priority?: string;
 
   @IsOptional()
@@ -60,7 +70,19 @@ export class TicketQueryDto {
 
   @IsOptional()
   @IsString()
-  search?: string; // Recherche dans title et description
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  ticketType?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string; // Recherche full-text dans title et description
+
+  @IsOptional()
+  @IsString()
+  requesterName?: string; // Filtrer par nom du demandeur
 
   // Filtres par date
   @IsOptional()
@@ -79,32 +101,100 @@ export class TicketQueryDto {
   @IsDateString()
   updatedBefore?: string;
 
+  @IsOptional()
+  @IsDateString()
+  resolvedAfter?: string;
+
+  @IsOptional()
+  @IsDateString()
+  resolvedBefore?: string;
+
+  @IsOptional()
+  @IsDateString()
+  closedAfter?: string;
+
+  @IsOptional()
+  @IsDateString()
+  closedBefore?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueAfter?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueBefore?: string;
+
   // Filtres booléens
   @IsOptional()
-  @IsIn(['true', 'false'])
-  isOverdue?: string;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isOverdue?: boolean;
 
   @IsOptional()
-  @IsIn(['true', 'false'])
-  isResolved?: string;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isResolved?: boolean;
 
   @IsOptional()
-  @IsIn(['true', 'false'])
-  isClosed?: string;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isClosed?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  hasComments?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  hasAttachments?: boolean;
+
+  // Filtre spécial : tickets non assignés (cas d'usage important !)
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  unassigned?: boolean;
+
+  // Filtre par tags (JSONB array)
+  @IsOptional()
+  @IsString()
+  tag?: string; // Un tag spécifique à rechercher
 
   // Tri
   @IsOptional()
   @IsIn([
     'createdAt',
     'updatedAt',
+    'resolvedAt',
+    'closedAt',
+    'dueDate',
     'priority',
-    'status',
     'title',
     'ticketId',
+    'timeSpentSeconds',
+    'timeToResolutionSeconds',
   ])
   sortBy?: string = 'createdAt';
 
   @IsOptional()
   @IsIn(['ASC', 'DESC'])
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
+
+  // Options d'inclusion des relations
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeOrganization?: boolean = true;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeTechnicians?: boolean = true;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeDevice?: boolean = false;
 }
