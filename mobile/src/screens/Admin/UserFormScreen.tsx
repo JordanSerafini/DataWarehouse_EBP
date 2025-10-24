@@ -216,7 +216,7 @@ const UserFormScreen = ({ route, navigation }: any) => {
                 {
                   value: 'super_admin',
                   label: 'Super Admin',
-                  icon: 'shield-checkmark',
+                  icon: 'shield-check',
                 },
                 {
                   value: 'admin',
@@ -238,12 +238,12 @@ const UserFormScreen = ({ route, navigation }: any) => {
                 {
                   value: 'chef_chantier',
                   label: 'Chef chantier',
-                  icon: 'construct',
+                  icon: 'hammer-wrench',
                 },
                 {
                   value: 'commercial',
                   label: 'Commercial',
-                  icon: 'person-circle',
+                  icon: 'account-circle',
                 },
                 {
                   value: 'technicien',

@@ -59,13 +59,12 @@ BEGIN
     END IF;
 
     -- Construire l'email de base : prenom.nom@solution-logique.fr
-    v_base_email := LOWER(
-      REGEXP_REPLACE(
-        COALESCE(v_colleague."Contact_FirstName", '') || '.' || v_colleague."Contact_Name",
-        '[^a-zA-Z0-9.]',
-        '',
-        'g'
-      )
+    -- Utilise unaccent() pour gérer les caractères accentués correctement
+    v_base_email := REGEXP_REPLACE(
+      LOWER(unaccent(COALESCE(v_colleague."Contact_FirstName", '') || '.' || v_colleague."Contact_Name")),
+      '[^a-z0-9.]',
+      '',
+      'g'
     );
 
     -- Supprimer les points doubles ou au début/fin
@@ -74,12 +73,11 @@ BEGIN
 
     v_email := v_base_email || '@solution-logique.fr';
 
-    -- Gérer les doublons d'email en ajoutant l'ID si nécessaire
+    -- Gérer les doublons d'email en ajoutant un suffixe numérique
     v_email_suffix := 0;
     WHILE EXISTS (SELECT 1 FROM mobile.users WHERE email = v_email) LOOP
       v_email_suffix := v_email_suffix + 1;
-      v_email := v_base_email || '.' || LOWER(v_colleague."Id") || '@solution-logique.fr';
-      EXIT; -- Un seul essai avec l'ID
+      v_email := v_base_email || v_email_suffix || '@solution-logique.fr';
     END LOOP;
 
     -- Déterminer le rôle selon IsSalesperson
@@ -160,6 +158,8 @@ DECLARE
   v_colleague RECORD;
   v_full_name VARCHAR(255);
   v_new_email VARCHAR(255);
+  v_base_new_email VARCHAR(255);
+  v_suffix INTEGER;
   v_role VARCHAR(50);
 BEGIN
   -- Parcourir tous les utilisateurs liés à un collègue
@@ -182,34 +182,39 @@ BEGIN
       v_full_name := v_colleague."Contact_Name";
     END IF;
 
-    -- Construire le nouvel email
-    v_new_email := LOWER(
-      REGEXP_REPLACE(
-        COALESCE(v_colleague."Contact_FirstName", '') || '.' || v_colleague."Contact_Name",
-        '[^a-zA-Z0-9.]',
-        '',
-        'g'
-      )
+    -- Construire le nouvel email avec unaccent()
+    v_new_email := REGEXP_REPLACE(
+      LOWER(unaccent(COALESCE(v_colleague."Contact_FirstName", '') || '.' || v_colleague."Contact_Name")),
+      '[^a-z0-9.]',
+      '',
+      'g'
     );
     v_new_email := REGEXP_REPLACE(v_new_email, '\.+', '.', 'g');
     v_new_email := TRIM(BOTH '.' FROM v_new_email);
 
-    -- Gérer les doublons potentiels
-    IF EXISTS (
+    -- Gérer les doublons potentiels avec suffixe numérique
+    v_suffix := 0;
+    v_base_new_email := v_new_email;
+    WHILE EXISTS (
       SELECT 1 FROM mobile.users
       WHERE email = v_new_email || '@solution-logique.fr'
         AND id != v_user.id
-    ) THEN
-      v_new_email := v_new_email || '.' || LOWER(v_colleague."Id");
-    END IF;
+    ) LOOP
+      v_suffix := v_suffix + 1;
+      v_new_email := v_base_new_email || v_suffix;
+    END LOOP;
 
     v_new_email := v_new_email || '@solution-logique.fr';
 
-    -- Déterminer le rôle
-    IF v_colleague."IsSalesperson" = true AND v_user.role = 'technicien' THEN
+    -- Déterminer le rôle basé sur IsSalesperson
+    IF v_colleague."IsSalesperson" = true THEN
       v_role := 'commercial';
+    ELSIF v_user.role IN ('technicien', 'commercial') THEN
+      -- Si c'était commercial ou technicien, mettre à jour vers technicien
+      v_role := 'technicien';
     ELSE
-      v_role := v_user.role; -- Garder le rôle existant
+      -- Pour les autres rôles (admin, super_admin, etc.), garder le rôle existant
+      v_role := v_user.role;
     END IF;
 
     -- Mettre à jour si différent

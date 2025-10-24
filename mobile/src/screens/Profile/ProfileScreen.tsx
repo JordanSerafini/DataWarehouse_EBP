@@ -41,15 +41,15 @@ const ProfileScreen = () => {
    */
   const getRoleConfig = (role: string): { icon: string; color: string } => {
     const configs: Record<string, { icon: string; color: string }> = {
-      super_admin: { icon: 'shield-checkmark', color: '#e74c3c' },
-      admin: { icon: 'shield', color: '#e67e22' },
-      patron: { icon: 'briefcase', color: '#f39c12' },
-      chef_chantier: { icon: 'construct', color: '#3498db' },
-      commercial: { icon: 'person-circle', color: '#9b59b6' },
-      technicien: { icon: 'hammer', color: '#2ecc71' },
+      super_admin: { icon: 'shield-checkmark-outline', color: '#e74c3c' },
+      admin: { icon: 'shield-outline', color: '#e67e22' },
+      patron: { icon: 'briefcase-outline', color: '#f39c12' },
+      chef_chantier: { icon: 'construct-outline', color: '#3498db' },
+      commercial: { icon: 'person-circle-outline', color: '#9b59b6' },
+      technicien: { icon: 'hammer-outline', color: '#2ecc71' },
     };
 
-    return configs[role] || { icon: 'person', color: '#95a5a6' };
+    return configs[role] || { icon: 'person-outline', color: '#95a5a6' };
   };
 
   const handleLogout = async () => {
