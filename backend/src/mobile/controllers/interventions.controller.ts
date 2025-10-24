@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -10,7 +11,13 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,6 +27,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { InterventionsService } from '../services/interventions.service';
+import { FileService } from '../services/file.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
@@ -39,13 +47,22 @@ import {
   QueryInterventionsDto,
   QueryNearbyInterventionsDto,
 } from '../dto/interventions/query-interventions.dto';
+import {
+  UploadPhotoDto,
+  UploadSignatureDto,
+  FileUploadResponseDto,
+  InterventionFilesDto,
+} from '../dto/files/upload-file.dto';
 
 @ApiTags('Interventions')
 @Controller('api/v1/interventions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class InterventionsController {
-  constructor(private readonly interventionsService: InterventionsService) {}
+  constructor(
+    private readonly interventionsService: InterventionsService,
+    private readonly fileService: FileService,
+  ) {}
 
   /**
    * Récupère les interventions du technicien connecté

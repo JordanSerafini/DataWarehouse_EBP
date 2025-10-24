@@ -23,14 +23,14 @@ CREATE TABLE IF NOT EXISTS mobile.intervention_photos (
   description TEXT,
 
   -- Métadonnées
-  uploaded_by VARCHAR(50) NOT NULL, -- ID utilisateur
+  uploaded_by UUID NOT NULL, -- ID utilisateur
   uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   -- Contraintes
   CONSTRAINT fk_intervention_photo_user
     FOREIGN KEY (uploaded_by)
     REFERENCES mobile.users(id)
-    ON DELETE SET NULL,
+    ON DELETE CASCADE,
 
   CONSTRAINT chk_photo_size CHECK (size_bytes > 0 AND size_bytes <= 10485760), -- Max 10MB
   CONSTRAINT chk_photo_mimetype CHECK (mime_type IN ('image/jpeg', 'image/jpg', 'image/png', 'image/webp'))
@@ -62,14 +62,14 @@ CREATE TABLE IF NOT EXISTS mobile.intervention_signatures (
   signer_role VARCHAR(100), -- Fonction du signataire
 
   -- Métadonnées
-  signed_by VARCHAR(50) NOT NULL, -- ID utilisateur (technicien)
+  signed_by UUID NOT NULL, -- ID utilisateur (technicien)
   signed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   -- Contraintes
   CONSTRAINT fk_intervention_signature_user
     FOREIGN KEY (signed_by)
     REFERENCES mobile.users(id)
-    ON DELETE SET NULL,
+    ON DELETE CASCADE,
 
   CONSTRAINT chk_signature_size CHECK (size_bytes > 0 AND size_bytes <= 5242880), -- Max 5MB
   CONSTRAINT chk_signature_mimetype CHECK (mime_type IN ('image/png', 'image/svg+xml'))
