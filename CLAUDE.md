@@ -507,12 +507,46 @@ npm run test:e2e
 npm run test:debug
 ```
 
+## Mobile Backend API Endpoints
+
+The backend exposes comprehensive REST APIs for the mobile field service application:
+
+### Core APIs (`backend/src/mobile/`)
+
+**Authentication** (`/auth`):
+- `POST /auth/login` - User login (returns JWT token)
+- `POST /auth/register` - User registration
+- `GET /auth/profile` - Get current user profile
+
+**Synchronization** (`/api/v1/sync`) - See "Mobile Synchronization Architecture" section above
+
+**Customers** (`/api/v1/customers`):
+- `GET /customers` - List all customers with pagination
+- `GET /customers/:id` - Get customer details
+- `GET /customers/search?query=...` - Search customers by name
+- All endpoints support role-based access control
+
+**Interventions** (`/api/v1/interventions`):
+- `GET /interventions` - List interventions with filters (role-based)
+- `GET /interventions/:id` - Get intervention details
+- `POST /interventions/:id/files` - Upload files/photos
+- `GET /interventions/:id/files` - List intervention files
+- `GET /interventions/:id/files/:fileId` - Download specific file
+- `DELETE /interventions/:id/files/:fileId` - Delete file
+
+**File Management**:
+- Handled by `FileService` with storage in `mobile.intervention_files` table
+- Supports multipart uploads with file metadata
+- File types tracked: photos, documents, signatures, etc.
+- Role-based access: technicians can only see their own interventions
+
 ## Swagger Documentation
 
 The backend exposes comprehensive API documentation:
 - **URL**: `http://localhost:3000/api/docs`
-- **Authentication**: Bearer token
-- **Tags**: Authentication, Sync, Interventions, Sales, Projects, Dashboard, Admin
+- **Authentication**: Bearer token (click "Authorize" button)
+- **Tags**: Authentication, Synchronisation, Clients, Interventions
+- **Try it out**: Interactive testing available for all endpoints
 
 ## PostgreSQL Direct Access
 
@@ -527,22 +561,54 @@ psql -h localhost -U postgres -d ebp_db
 \dt public.*                 # List EBP tables
 ```
 
+## Database Migrations Status
+
+### Completed Migrations (Database/migrations/)
+
+The following migrations have been created and are ready for deployment:
+
+1. **001_create_mobile_schema.sql** - Creates `mobile` schema (non-invasive)
+2. **002_populate_gps_coordinates.sql** - Populates GPS data from existing EBP columns
+3. **003_mobile_sync_functions.sql** - Core sync functions (`initial_sync_all()`, `full_sync_all()`, etc.)
+4. **004_mobile_business_tables.sql** - Mobile-optimized business tables
+5. **005_mobile_sync_populate.sql** - Initial data population
+6. **006_sync_deals_projects.sql** - Deal and project sync
+7. **007_sync_document_lines.sql** - Document line items sync
+8. **008_complete_documents_mapping.sql** - Complete document relationships
+9. **009_create_users_table.sql** - User authentication table with bcrypt password hashing
+10. **010_create_files_tables.sql** - File storage for interventions (photos, signatures, etc.)
+
+**Note**: Each migration has a corresponding rollback script (`*_rollback.sql`)
+
+### Migration Management
+
+Use `./migrate.sh` in the root directory:
+- Tracks execution in `mobile.migration_history` table
+- Validates checksums to prevent re-execution
+- Provides rollback support
+- Non-invasive: NEVER modifies EBP `public` schema
+
 ## Project Status & Roadmap
 
-### Current Status (Phase 0)
-- ✅ Database audit complete
-- ✅ TypeScript interfaces generated
-- ✅ Mobile schema migrations created
-- ✅ EBP sync application functional
-- ✅ NinjaOne integration functional
+### Current Status (Phase 0.5 - Backend Development Complete)
+- ✅ Database audit complete (319 tables analyzed)
+- ✅ TypeScript interfaces generated for all EBP tables
+- ✅ Mobile schema migrations created (10 migrations ready)
+- ✅ EBP sync application functional (Electron GUI)
+- ✅ NinjaOne integration functional (965 tickets, 114 orgs)
 - ✅ Backend API with authentication functional
+- ✅ **NEW**: Mobile sync API implemented (670K → 50K rows)
+- ✅ **NEW**: Customers API with search
+- ✅ **NEW**: Interventions API with file uploads
+- ✅ **NEW**: File management service
 
 ### Next Steps
-1. Execute mobile schema migrations
-2. Develop mobile app (React Native planned)
-3. Implement offline sync (WatermelonDB planned)
-4. Build data warehouse Bronze/Silver/Gold layers
-5. Deploy ML models
+1. **Deploy migrations** to production PostgreSQL
+2. **Test mobile sync** with real devices
+3. **Develop mobile app** (React Native planned)
+4. **Implement offline sync** (WatermelonDB planned)
+5. Build data warehouse Bronze/Silver/Gold layers
+6. Deploy ML models
 
 **Total Project Timeline**: 12 months
 **Budget**: 231k€
