@@ -1,5 +1,9 @@
--- Migration 011 : Créer des utilisateurs de test
--- Tous avec le mot de passe : pass123
+-- ============================================================
+-- Migration 011 : Créer utilisateurs administrateurs
+-- ============================================================
+-- Description: Crée Super Admin et Admin pour l'application mobile
+-- Les autres utilisateurs (collègues EBP) seront importés automatiquement
+-- ============================================================
 
 -- Hash bcrypt pour "pass123" (10 rounds)
 -- $2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym
@@ -15,124 +19,86 @@ BEGIN
 END $$;
 
 -- Supprimer les utilisateurs de test existants (si présents)
-DELETE FROM mobile.users WHERE email LIKE '%@test.local';
+DELETE FROM mobile.users WHERE email IN ('admin@test.local', 'manager@test.local');
 
--- Insérer les utilisateurs de test
--- Mot de passe : pass123 pour tous
+-- ============================================================
+-- UTILISATEURS ADMINISTRATEURS
+-- ============================================================
 
 -- 1. Super Admin
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
+INSERT INTO mobile.users (
+  id,
+  email,
+  password_hash,
+  full_name,
+  role,
+  colleague_id,
+  is_active,
+  is_verified,
+  created_at,
+  updated_at
+)
 VALUES (
   gen_random_uuid(),
   'admin@test.local',
   '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'SUPER_ADMIN',
+  'Super Administrateur',
+  'super_admin',
   NULL,
+  true,
   true,
   NOW(),
   NOW()
 );
 
 -- 2. Admin
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
+INSERT INTO mobile.users (
+  id,
+  email,
+  password_hash,
+  full_name,
+  role,
+  colleague_id,
+  is_active,
+  is_verified,
+  created_at,
+  updated_at
+)
 VALUES (
   gen_random_uuid(),
   'manager@test.local',
   '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'ADMIN',
+  'Administrateur',
+  'admin',
   NULL,
   true,
-  NOW(),
-  NOW()
-);
-
--- 3. Patron
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  'patron@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'PATRON',
-  NULL,
   true,
   NOW(),
   NOW()
 );
 
--- 4. Chef de chantier
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  'chef@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'CHEF_CHANTIER',
-  (SELECT "Id" FROM public."Colleague" LIMIT 1), -- Premier technicien trouvé
-  true,
-  NOW(),
-  NOW()
-);
+-- ============================================================
+-- Vérification
+-- ============================================================
 
--- 5. Commercial
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  'commercial@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'COMMERCIAL',
-  NULL,
-  true,
-  NOW(),
-  NOW()
-);
+DO $$
+DECLARE
+  v_count INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO v_count
+  FROM mobile.users
+  WHERE email IN ('admin@test.local', 'manager@test.local');
 
--- 6. Technicien 1
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  'technicien@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'TECHNICIEN',
-  (SELECT "Id" FROM public."Colleague" LIMIT 1 OFFSET 0), -- Premier technicien
-  true,
-  NOW(),
-  NOW()
-);
-
--- 7. Technicien 2
-INSERT INTO mobile.users (id, email, password_hash, role, colleague_id, is_active, created_at, updated_at)
-VALUES (
-  gen_random_uuid(),
-  'technicien2@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
-  'TECHNICIEN',
-  (SELECT "Id" FROM public."Colleague" LIMIT 1 OFFSET 1), -- Deuxième technicien
-  true,
-  NOW(),
-  NOW()
-);
-
--- Afficher un récapitulatif
-SELECT
-  email,
-  role,
-  colleague_id::text as colleague_id,
-  is_active
-FROM mobile.users
-WHERE email LIKE '%@test.local'
-ORDER BY
-  CASE role
-    WHEN 'SUPER_ADMIN' THEN 1
-    WHEN 'ADMIN' THEN 2
-    WHEN 'PATRON' THEN 3
-    WHEN 'CHEF_CHANTIER' THEN 4
-    WHEN 'COMMERCIAL' THEN 5
-    WHEN 'TECHNICIEN' THEN 6
-  END;
+  RAISE NOTICE '';
+  RAISE NOTICE '✅ Migration 011 appliquée avec succès';
+  RAISE NOTICE '👥 % utilisateurs administrateurs créés:', v_count;
+  RAISE NOTICE '';
+  RAISE NOTICE '   📧 admin@test.local (Super Admin) - Mot de passe: pass123';
+  RAISE NOTICE '   📧 manager@test.local (Admin) - Mot de passe: pass123';
+  RAISE NOTICE '';
+  RAISE NOTICE '💡 Les autres utilisateurs (collègues EBP) seront importés automatiquement';
+  RAISE NOTICE '   depuis la table public."Colleague" avec mot de passe par défaut: pass123';
+  RAISE NOTICE '';
+END $$;
 
 COMMIT;
-
--- Note: Tous les utilisateurs ont le mot de passe "pass123"
--- Pour se connecter depuis l'app mobile :
---   Email: technicien@test.local  | Mot de passe: pass123
---   Email: admin@test.local       | Mot de passe: pass123
---   etc.

@@ -35,16 +35,12 @@ const LoginScreen = () => {
   const { login } = useAuthStore();
 
   /**
-   * Liste complète des utilisateurs de test
+   * Liste des utilisateurs administrateurs
+   * Les autres utilisateurs (collègues EBP) seront importés automatiquement
    */
   const testUsers = [
-    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-crown', color: '#e74c3c' },
-    { email: 'manager@test.local', role: 'Admin', icon: 'shield-account', color: '#e67e22' },
-    { email: 'patron@test.local', role: 'Patron', icon: 'briefcase', color: '#f39c12' },
-    { email: 'chef@test.local', role: 'Chef de chantier', icon: 'hard-hat', color: '#3498db' },
-    { email: 'commercial@test.local', role: 'Commercial', icon: 'account-tie', color: '#9b59b6' },
-    { email: 'technicien@test.local', role: 'Technicien 1', icon: 'tools', color: '#2ecc71' },
-    { email: 'technicien2@test.local', role: 'Technicien 2', icon: 'tools', color: '#27ae60' },
+    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-checkmark', color: '#e74c3c' },
+    { email: 'manager@test.local', role: 'Admin', icon: 'shield', color: '#e67e22' },
   ];
 
   /**

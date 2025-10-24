@@ -9,11 +9,71 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const ProfileScreen = () => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, login } = useAuthStore();
   const { lastSyncDate } = useSyncStore();
+  const [switching, setSwitching] = useState(false);
+
+  /**
+   * Liste des utilisateurs de test (identique à LoginScreen)
+   */
+  const testUsers = [
+    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-checkmark', color: '#e74c3c' },
+    { email: 'manager@test.local', role: 'Admin', icon: 'shield', color: '#e67e22' },
+    { email: 'patron@test.local', role: 'Patron', icon: 'briefcase', color: '#f39c12' },
+    { email: 'chef@test.local', role: 'Chef de chantier', icon: 'construct', color: '#3498db' },
+    { email: 'commercial@test.local', role: 'Commercial', icon: 'person-circle', color: '#9b59b6' },
+    { email: 'technicien@test.local', role: 'Technicien 1', icon: 'hammer', color: '#2ecc71' },
+    { email: 'technicien2@test.local', role: 'Technicien 2', icon: 'build', color: '#27ae60' },
+  ];
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await logout();
+      showToast('Déconnexion réussie', 'success');
+    } catch (error) {
+      console.error('Logout error:', error);
+      showToast('Erreur lors de la déconnexion', 'error');
+    }
+  };
+
+  /**
+   * Changement rapide d'utilisateur
+   */
+  const quickSwitch = async (userEmail: string) => {
+    // Ne pas recharger si c'est déjà l'utilisateur actuel
+    if (user?.email === userEmail) {
+      showToast('Vous êtes déjà connecté avec ce compte', 'info');
+      return;
+    }
+
+    setSwitching(true);
+
+    try {
+      // Déconnexion puis reconnexion
+      await logout();
+      await login(userEmail, 'pass123');
+      showToast('Changement de compte réussi', 'success');
+    } catch (error: any) {
+      console.error('Quick switch error:', error);
+
+      if (error.response?.status === 401) {
+        showToast('Erreur d\'authentification', 'error');
+      } else {
+        showToast('Erreur lors du changement de compte', 'error');
+      }
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  // Obtenir les initiales pour l'avatar
+  const getInitials = () => {
+    if (!user?.fullName) return '??';
+    const names = user.fullName.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
+    return user.fullName.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -23,11 +83,11 @@ const ProfileScreen = () => {
         <Card.Content style={styles.profileContent}>
           <Avatar.Text
             size={80}
-            label={user ? `${user.firstName[0]}${user.lastName[0]}` : '??'}
+            label={getInitials()}
             style={styles.avatar}
           />
           <Text variant="headlineMedium" style={styles.userName}>
-            {user?.firstName} {user?.lastName}
+            {user?.fullName}
           </Text>
           <Text variant="bodyMedium" style={styles.userEmail}>
             {user?.email}
@@ -43,13 +103,23 @@ const ProfileScreen = () => {
         <Card.Title title="Informations" />
         <Card.Content>
           <View style={styles.infoRow}>
-            <Text variant="labelMedium">Nom d'utilisateur:</Text>
-            <Text variant="bodyMedium">{user?.username}</Text>
+            <Text variant="labelMedium">Email:</Text>
+            <Text variant="bodyMedium">{user?.email}</Text>
           </View>
+          <View style={styles.infoRow}>
+            <Text variant="labelMedium">Rôle:</Text>
+            <Text variant="bodyMedium">{user?.role}</Text>
+          </View>
+          {user?.colleagueId && (
+            <View style={styles.infoRow}>
+              <Text variant="labelMedium">ID Collègue:</Text>
+              <Text variant="bodyMedium">{user.colleagueId}</Text>
+            </View>
+          )}
           <View style={styles.infoRow}>
             <Text variant="labelMedium">Statut:</Text>
             <Text variant="bodyMedium">
-              {user?.isActive ? '✅ Actif' : '❌ Inactif'}
+              {user?.isActive !== false ? '✅ Actif' : '❌ Inactif'}
             </Text>
           </View>
           {user?.lastLoginAt && (
@@ -80,6 +150,60 @@ const ProfileScreen = () => {
         </Card.Content>
       </Card>
 
+      {/* Changement rapide d'utilisateur */}
+      <View style={styles.switchSection}>
+        <Text variant="titleSmall" style={styles.switchTitle}>
+          🔄 Changement rapide
+        </Text>
+        <Text variant="labelSmall" style={styles.switchSubtitle}>
+          Cliquez pour changer de compte
+        </Text>
+
+        <View style={styles.usersList}>
+          {testUsers.map((testUser) => (
+            <TouchableOpacity
+              key={testUser.email}
+              onPress={() => quickSwitch(testUser.email)}
+              style={[
+                styles.userCard,
+                user?.email === testUser.email && styles.userCardActive,
+              ]}
+              disabled={switching}
+            >
+              <View style={[styles.userIcon, { backgroundColor: testUser.color }]}>
+                <Ionicons name={testUser.icon as any} size={24} color="#fff" />
+              </View>
+              <View style={styles.userInfo}>
+                <Text variant="labelMedium" style={styles.userCardName}>
+                  {testUser.role}
+                </Text>
+                <Text variant="bodySmall" style={styles.userCardEmail}>
+                  {testUser.email}
+                </Text>
+              </View>
+              {user?.email === testUser.email ? (
+                <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
+              ) : (
+                <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {switching && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#6200ee" />
+            <Text variant="bodyMedium" style={styles.loadingText}>
+              Changement en cours...
+            </Text>
+          </View>
+        )}
+
+        <Text variant="labelSmall" style={styles.switchHint}>
+          💡 Mot de passe : pass123 (tous les comptes)
+        </Text>
+      </View>
+
       {/* Actions */}
       <Card style={styles.actionsCard}>
         <Card.Content>
@@ -88,6 +212,7 @@ const ProfileScreen = () => {
             onPress={handleLogout}
             icon="logout"
             style={styles.logoutButton}
+            disabled={switching}
           >
             Se déconnecter
           </Button>
@@ -147,6 +272,85 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  switchSection: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff3e0',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ff9800',
+  },
+  switchTitle: {
+    textAlign: 'center',
+    marginBottom: 4,
+    fontWeight: 'bold',
+    color: '#e65100',
+  },
+  switchSubtitle: {
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#ef6c00',
+  },
+  usersList: {
+    gap: 8,
+  },
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  userCardActive: {
+    borderColor: '#4caf50',
+    borderWidth: 2,
+    backgroundColor: '#f1f8e9',
+  },
+  userIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userCardName: {
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  userCardEmail: {
+    color: '#757575',
+  },
+  loadingOverlay: {
+    marginTop: 16,
+    padding: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 8,
+  },
+  loadingText: {
+    marginTop: 8,
+    color: '#6200ee',
+  },
+  switchHint: {
+    textAlign: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#ffe0b2',
+    color: '#e65100',
   },
   actionsCard: {
     marginHorizontal: 16,
