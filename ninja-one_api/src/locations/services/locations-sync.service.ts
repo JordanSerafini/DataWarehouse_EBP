@@ -55,7 +55,6 @@ export class LocationsSyncService {
                 country: loc.country || undefined,
                 postalCode: loc.postalCode || undefined,
                 phone: loc.phone || undefined,
-                email: loc.email || undefined,
                 tags: loc.tags || undefined,
                 customFields: loc.fields || undefined,
                 etlSource: 'ninjaone_api',

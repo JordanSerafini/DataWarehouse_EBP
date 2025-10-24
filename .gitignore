@@ -42,5 +42,9 @@ debug-*.json
 debug-*.js
 test-*.js
 
+# Uploads (backend)
+uploads/
+backend/uploads/
+
 # Scripts folder (keep structure but ignore generated files)
 scripts/debug-*.json

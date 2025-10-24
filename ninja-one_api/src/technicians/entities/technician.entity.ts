@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Organization } from './organization.entity';
+import { Organization } from '../../organizations/entities/organization.entity';
 
 @Entity({ schema: 'ninjaone', name: 'dim_technicians' })
 export class Technician {

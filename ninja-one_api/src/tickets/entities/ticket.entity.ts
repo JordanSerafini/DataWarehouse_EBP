@@ -6,9 +6,9 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { Organization } from './organization.entity';
-import { Technician } from './technician.entity';
-import { Device } from './device.entity';
+import { Organization } from '../../organizations/entities/organization.entity';
+import { Technician } from '../../technicians/entities/technician.entity';
+import { Device } from '../../devices/entities/device.entity';
 
 @Entity({ schema: 'ninjaone', name: 'fact_tickets' })
 export class Ticket {

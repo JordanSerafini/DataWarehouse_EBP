@@ -6,7 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { Organization } from './organization.entity';
+import { Organization } from '../../organizations/entities/organization.entity';
 
 @Entity({ schema: 'ninjaone', name: 'dim_devices' })
 export class Device {

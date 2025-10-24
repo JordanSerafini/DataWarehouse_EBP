@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, Brackets } from 'typeorm';
 import { Ticket } from '../entities/ticket.entity';
-import { Organization } from '../entities/organization.entity';
-import { Technician } from '../entities/technician.entity';
-import { Device } from '../entities/device.entity';
+import { Organization } from '../../organizations/entities/organization.entity';
+import { Technician } from '../../technicians/entities/technician.entity';
+import { Device } from '../../devices/entities/device.entity';
 import { TicketQueryDto } from '../dto/ticket-query.dto';
 
 export interface TicketWithRelations {
