@@ -3,7 +3,7 @@
  * Authentification par email/mot de passe
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -23,6 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../stores/authStore';
 import { showToast } from '../../utils/toast';
+import { apiService } from '../../services/api.service';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -31,17 +32,47 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [usersList, setUsersList] = useState<Array<{ email: string; full_name: string; role: string }>>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const { login } = useAuthStore();
 
   /**
-   * Liste des utilisateurs administrateurs
-   * Les autres utilisateurs (collègues EBP) seront importés automatiquement
+   * Récupérer la liste des utilisateurs depuis l'API
    */
-  const testUsers = [
-    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-checkmark', color: '#e74c3c' },
-    { email: 'manager@test.local', role: 'Admin', icon: 'shield', color: '#e67e22' },
-  ];
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const users = await apiService.getUsersList();
+      setUsersList(users);
+    } catch (error) {
+      console.error('Erreur chargement utilisateurs:', error);
+      // Fallback sur liste vide en cas d'erreur réseau
+      setUsersList([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  /**
+   * Récupérer icône et couleur selon le rôle
+   */
+  const getRoleConfig = (role: string): { icon: string; color: string } => {
+    const configs: Record<string, { icon: string; color: string }> = {
+      super_admin: { icon: 'shield-checkmark', color: '#e74c3c' },
+      admin: { icon: 'shield', color: '#e67e22' },
+      patron: { icon: 'briefcase', color: '#f39c12' },
+      chef_chantier: { icon: 'construct', color: '#3498db' },
+      commercial: { icon: 'person-circle', color: '#9b59b6' },
+      technicien: { icon: 'hammer', color: '#2ecc71' },
+    };
+
+    return configs[role] || { icon: 'person', color: '#95a5a6' };
+  };
 
   /**
    * Valider l'email
@@ -238,7 +269,7 @@ const LoginScreen = () => {
             </Card.Content>
           </Card>
 
-          {/* Liste complète des utilisateurs de test (DEV) */}
+          {/* Liste complète des utilisateurs */}
           <View style={styles.devSection}>
             <Text variant="titleSmall" style={styles.devTitle}>
               🚀 Connexion rapide
@@ -247,29 +278,41 @@ const LoginScreen = () => {
               Cliquez sur un utilisateur pour vous connecter
             </Text>
 
-            <View style={styles.usersList}>
-              {testUsers.map((user) => (
-                <TouchableOpacity
-                  key={user.email}
-                  onPress={() => quickLogin(user.email)}
-                  style={styles.userCard}
-                  disabled={loading}
-                >
-                  <View style={[styles.userIcon, { backgroundColor: user.color }]}>
-                    <Ionicons name={user.icon as any} size={24} color="#fff" />
-                  </View>
-                  <View style={styles.userInfo}>
-                    <Text variant="labelMedium" style={styles.userName}>
-                      {user.role}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.userEmail}>
-                      {user.email}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
-                </TouchableOpacity>
-              ))}
-            </View>
+            {loadingUsers ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#6200ee" />
+                <Text variant="bodySmall" style={{ marginTop: 8 }}>
+                  Chargement des utilisateurs...
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.usersList}>
+                {usersList.map((user) => {
+                  const roleConfig = getRoleConfig(user.role);
+                  return (
+                    <TouchableOpacity
+                      key={user.email}
+                      onPress={() => quickLogin(user.email)}
+                      style={styles.userCard}
+                      disabled={loading}
+                    >
+                      <View style={[styles.userIcon, { backgroundColor: roleConfig.color }]}>
+                        <Ionicons name={roleConfig.icon as any} size={24} color="#fff" />
+                      </View>
+                      <View style={styles.userInfo}>
+                        <Text variant="labelMedium" style={styles.userName}>
+                          {user.full_name}
+                        </Text>
+                        <Text variant="bodySmall" style={styles.userEmail}>
+                          {user.email}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
 
             <Text variant="labelSmall" style={styles.devHint}>
               💡 Mot de passe : pass123 (tous les comptes)
@@ -344,6 +387,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     color: '#558b2f',
+  },
+  loadingContainer: {
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   usersList: {
     gap: 8,
