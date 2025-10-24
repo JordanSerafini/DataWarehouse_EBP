@@ -87,8 +87,10 @@ export class InterventionsController {
   ): Promise<InterventionDto[]> {
     const technicianId = req.user.colleagueId;
 
+    // Si pas de colleagueId (admin/super_admin), retourner tableau vide
+    // Les admins ne sont pas des techniciens de terrain
     if (!technicianId) {
-      throw new Error('Utilisateur sans colleagueId - impossible de récupérer les interventions');
+      return Promise.resolve([]);
     }
 
     return this.interventionsService.getInterventionsForTechnician(technicianId, query);
