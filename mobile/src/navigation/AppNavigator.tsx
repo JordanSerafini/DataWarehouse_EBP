@@ -25,6 +25,8 @@ import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
 import ProjectDetailsScreen from '../screens/Projects/ProjectDetailsScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
+import AdminUsersScreen from '../screens/Admin/AdminUsersScreen';
+import UserFormScreen from '../screens/Admin/UserFormScreen';
 
 // Stores
 import { useAuthStore } from '../stores/authStore';
@@ -36,6 +38,7 @@ export type RootStackParamList = {
   InterventionDetails: { interventionId: string };
   CustomerDetails: { customerId: string };
   ProjectDetails: { projectId: number };
+  UserForm: { userId?: string };
 };
 
 export type BottomTabParamList = {
@@ -45,6 +48,7 @@ export type BottomTabParamList = {
   Interventions: undefined;
   Customers: undefined;
   Projects: undefined;
+  Admin: undefined;
   Profile: undefined;
 };
 
@@ -56,6 +60,8 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
  */
 const BottomTabsNavigator = () => {
   const insets = useSafeAreaInsets();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
 
   return (
     <Tab.Navigator
@@ -82,6 +88,9 @@ const BottomTabsNavigator = () => {
               break;
             case 'Projects':
               iconName = focused ? 'briefcase' : 'briefcase-outline';
+              break;
+            case 'Admin':
+              iconName = focused ? 'settings' : 'settings-outline';
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
@@ -127,6 +136,13 @@ const BottomTabsNavigator = () => {
         component={ProjectsScreen}
         options={{ title: 'Projets' }}
       />
+      {isAdmin && (
+        <Tab.Screen
+          name="Admin"
+          component={AdminUsersScreen}
+          options={{ title: 'Administration' }}
+        />
+      )}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -185,6 +201,11 @@ const AppNavigator = () => {
               name="ProjectDetails"
               component={ProjectDetailsScreen}
               options={{ title: 'Détail projet', headerShown: true }}
+            />
+            <Stack.Screen
+              name="UserForm"
+              component={UserFormScreen}
+              options={{ title: 'Utilisateur', headerShown: true }}
             />
           </>
         )}
