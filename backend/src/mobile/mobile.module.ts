@@ -10,6 +10,7 @@ import databaseConfig from '../config/database.config';
 import { DatabaseService } from './services/database.service';
 import { AuthService } from './services/auth.service';
 import { InterventionsService } from './services/interventions.service';
+import { FileService } from './services/file.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
@@ -45,6 +46,7 @@ import { RolesGuard } from './guards/roles.guard';
     DatabaseService,
     AuthService,
     InterventionsService,
+    FileService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,

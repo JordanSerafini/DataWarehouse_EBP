@@ -15,6 +15,7 @@ import {
   UploadedFile,
   Res,
   StreamableFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
@@ -313,5 +314,229 @@ export class InterventionsController {
     @Param('technicianId') technicianId: string,
   ): Promise<TechnicianStatsDto> {
     return this.interventionsService.getTechnicianStats(technicianId);
+  }
+
+  /**
+   * Upload une photo d'intervention
+   */
+  @Post(':id/photos')
+  @Roles(UserRole.TECHNICIEN, UserRole.CHEF_CHANTIER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Upload photo intervention',
+    description: 'Ajoute une photo à une intervention',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
+  @ApiResponse({
+    status: 201,
+    description: 'Photo uploadée avec succès',
+    type: FileUploadResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Fichier invalide' })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async uploadPhoto(
+    @Param('id') interventionId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: UploadPhotoDto,
+    @Request() req,
+  ): Promise<FileUploadResponseDto> {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    const userId = req.user.id;
+
+    const uploadedFile = {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      encoding: file.encoding,
+      mimetype: file.mimetype,
+      size: file.size,
+      buffer: file.buffer,
+    };
+
+    const result = await this.fileService.uploadInterventionPhoto(
+      uploadedFile,
+      interventionId,
+      userId,
+      body.latitude,
+      body.longitude,
+    );
+
+    return {
+      id: result.id,
+      filename: result.filename,
+      url: result.url,
+      mimeType: result.mimeType,
+      size: result.size,
+      uploadedAt: result.uploadedAt,
+    };
+  }
+
+  /**
+   * Upload une signature client
+   */
+  @Post(':id/signature')
+  @Roles(UserRole.TECHNICIEN, UserRole.CHEF_CHANTIER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Upload signature client',
+    description: 'Ajoute la signature du client à une intervention',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
+  @ApiResponse({
+    status: 201,
+    description: 'Signature uploadée avec succès',
+    type: FileUploadResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Fichier invalide' })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async uploadSignature(
+    @Param('id') interventionId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: UploadSignatureDto,
+    @Request() req,
+  ): Promise<FileUploadResponseDto> {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    const userId = req.user.id;
+
+    const uploadedFile = {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      encoding: file.encoding,
+      mimetype: file.mimetype,
+      size: file.size,
+      buffer: file.buffer,
+    };
+
+    const result = await this.fileService.uploadSignature(
+      uploadedFile,
+      interventionId,
+      userId,
+      body.signerName,
+    );
+
+    return {
+      id: result.id,
+      filename: result.filename,
+      url: result.url,
+      mimeType: result.mimeType,
+      size: result.size,
+      uploadedAt: result.uploadedAt,
+    };
+  }
+
+  /**
+   * Récupère tous les fichiers d'une intervention
+   */
+  @Get(':id/files')
+  @Roles(
+    UserRole.TECHNICIEN,
+    UserRole.CHEF_CHANTIER,
+    UserRole.COMMERCIAL,
+    UserRole.PATRON,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
+  @ApiOperation({
+    summary: 'Fichiers intervention',
+    description: 'Récupère toutes les photos et la signature d\'une intervention',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des fichiers',
+    type: InterventionFilesDto,
+  })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async getInterventionFiles(@Param('id') interventionId: string): Promise<InterventionFilesDto> {
+    const photos = await this.fileService.getInterventionPhotos(interventionId);
+
+    // TODO: Récupérer la signature si elle existe
+    // const signature = await this.fileService.getInterventionSignature(interventionId);
+
+    return {
+      photos: photos.map((p) => ({
+        id: p.id,
+        filename: p.filename,
+        url: p.url,
+        mimeType: p.mimeType,
+        size: p.size,
+        uploadedAt: p.uploadedAt,
+      })),
+      signature: undefined, // TODO
+      totalFiles: photos.length,
+      totalSize: photos.reduce((sum, p) => sum + p.size, 0),
+    };
+  }
+
+  /**
+   * Supprime un fichier
+   */
+  @Delete('files/:fileId')
+  @Roles(UserRole.TECHNICIEN, UserRole.CHEF_CHANTIER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Supprimer fichier',
+    description: 'Supprime une photo ou une signature',
+  })
+  @ApiParam({ name: 'fileId', description: 'ID du fichier' })
+  @ApiResponse({
+    status: 200,
+    description: 'Fichier supprimé',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Fichier supprimé avec succès' },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Fichier non trouvé' })
+  async deleteFile(
+    @Param('fileId') fileId: string,
+    @Request() req,
+  ): Promise<{ success: boolean; message: string }> {
+    const userId = req.user.id;
+    return this.fileService.deleteFile(fileId, userId);
+  }
+
+  /**
+   * Télécharge un fichier
+   */
+  @Get('files/:fileId/download')
+  @Roles(
+    UserRole.TECHNICIEN,
+    UserRole.CHEF_CHANTIER,
+    UserRole.COMMERCIAL,
+    UserRole.PATRON,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
+  @ApiOperation({
+    summary: 'Télécharger fichier',
+    description: 'Télécharge une photo ou une signature',
+  })
+  @ApiParam({ name: 'fileId', description: 'ID du fichier' })
+  @ApiResponse({
+    status: 200,
+    description: 'Fichier téléchargé',
+  })
+  @ApiResponse({ status: 404, description: 'Fichier non trouvé' })
+  async downloadFile(
+    @Param('fileId') fileId: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const { buffer, metadata } = await this.fileService.getFile(fileId);
+
+    res.set({
+      'Content-Type': metadata.mimeType,
+      'Content-Disposition': `attachment; filename="${metadata.originalName}"`,
+      'Content-Length': metadata.size,
+    });
+
+    return new StreamableFile(buffer);
   }
 }
