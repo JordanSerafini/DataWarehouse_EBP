@@ -13,7 +13,7 @@ BEGIN;
 
 CREATE OR REPLACE FUNCTION mobile.import_colleagues_from_ebp(
   p_default_role VARCHAR(50) DEFAULT 'technicien',
-  p_password_hash VARCHAR(255) DEFAULT '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym'
+  p_password_hash VARCHAR(255) DEFAULT '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.'
 )
 RETURNS TABLE(
   imported_count INTEGER,
@@ -150,7 +150,7 @@ COMMENT ON FUNCTION mobile.reset_user_password IS
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION mobile.reset_all_passwords(
-  p_password_hash VARCHAR(255) DEFAULT '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym'
+  p_password_hash VARCHAR(255) DEFAULT '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.'
 )
 RETURNS INTEGER AS $$
 DECLARE

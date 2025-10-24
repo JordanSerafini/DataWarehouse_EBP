@@ -63,7 +63,7 @@ COMMENT ON VIEW mobile.view_colleagues IS
 CREATE OR REPLACE FUNCTION mobile.sync_colleague(
   p_colleague_id VARCHAR(50),
   p_default_role VARCHAR(50) DEFAULT 'technicien',
-  p_password_hash VARCHAR(255) DEFAULT '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym'
+  p_password_hash VARCHAR(255) DEFAULT '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.'
 )
 RETURNS UUID AS $$
 DECLARE
@@ -128,7 +128,7 @@ COMMENT ON FUNCTION mobile.sync_colleague IS
 
 CREATE OR REPLACE FUNCTION mobile.sync_all_pending_colleagues(
   p_default_role VARCHAR(50) DEFAULT 'technicien',
-  p_password_hash VARCHAR(255) DEFAULT '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym'
+  p_password_hash VARCHAR(255) DEFAULT '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.'
 )
 RETURNS TABLE(
   synced_count INTEGER,

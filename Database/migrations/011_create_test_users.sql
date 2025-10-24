@@ -6,7 +6,7 @@
 -- ============================================================
 
 -- Hash bcrypt pour "pass123" (10 rounds)
--- $2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym
+-- $2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.
 
 BEGIN;
 
@@ -41,7 +41,7 @@ INSERT INTO mobile.users (
 VALUES (
   gen_random_uuid(),
   'admin@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
+  '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.',
   'Super Administrateur',
   'super_admin',
   NULL,
@@ -67,7 +67,7 @@ INSERT INTO mobile.users (
 VALUES (
   gen_random_uuid(),
   'manager@test.local',
-  '$2b$10$YQ98PmKt.yL7RJJqN4W9MeqZ8Zx5Q8MvN3zZ7kX9J0nN5qK8rL9Ym',
+  '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.',
   'Administrateur',
   'admin',
   NULL,
