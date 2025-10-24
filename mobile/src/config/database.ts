@@ -12,7 +12,7 @@ const adapter = new SQLiteAdapter({
   schema,
   // Optionnel: migrations pour les futures versions
   // migrations,
-  jsi: true, // JSI pour de meilleures performances sur les nouveaux devices
+  jsi: false, // Désactivé JSI pour éviter les erreurs de runtime
   onSetUpError: (error) => {
     // Gérer les erreurs d'initialisation de la DB
     console.error('Erreur d\'initialisation de WatermelonDB:', error);
