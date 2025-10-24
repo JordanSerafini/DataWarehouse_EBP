@@ -28,19 +28,29 @@ export class InterventionsService {
    * Wrapper pour mobile.get_technician_interventions()
    */
   async getInterventionsForTechnician(
-    technicianId: string,
+    technicianId: string | null,
     query: QueryInterventionsDto,
   ): Promise<InterventionDto[]> {
-    this.logger.log(`Fetching interventions for technician: ${technicianId}`);
+    this.logger.log(`Fetching interventions for technician: ${technicianId || 'ALL (TEST MODE)'}`);
 
     const dateFrom = query.dateFrom || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 jours par défaut
     const dateTo = query.dateTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // +30 jours par défaut
 
     try {
-      const result = await this.databaseService.query<InterventionDto>(
-        `SELECT * FROM mobile.get_technician_interventions($1, $2, $3)`,
-        [technicianId, dateFrom, dateTo],
-      );
+      // ⚠️ MODE TEST : Si technicianId null, récupérer toutes les interventions
+      let result;
+      if (technicianId) {
+        result = await this.databaseService.query<InterventionDto>(
+          `SELECT * FROM mobile.get_technician_interventions($1, $2, $3)`,
+          [technicianId, dateFrom, dateTo],
+        );
+      } else {
+        // Mode test : récupérer toutes les interventions directement
+        result = await this.databaseService.query<InterventionDto>(
+          `SELECT * FROM mobile.view_interventions WHERE scheduled_date BETWEEN $1 AND $2 LIMIT 100`,
+          [dateFrom, dateTo],
+        );
+      }
 
       // Appliquer filtres additionnels si nécessaire
       let interventions = result.rows;

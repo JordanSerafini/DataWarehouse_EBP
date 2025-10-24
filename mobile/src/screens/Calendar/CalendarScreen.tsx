@@ -8,37 +8,20 @@ import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 're
 import { Text, Card, Chip, FAB, Portal, Modal, Button, ActivityIndicator } from 'react-native-paper';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useNavigation } from '@react-navigation/native';
-import { database } from '../../config/database';
-import CalendarEvent from '../../models/CalendarEvent';
-import { Q } from '@nozbe/watermelondb';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isAfter, isBefore, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import logger from '../../utils/logger';
-import toast from '../../utils/toast';
+import { showToast } from '../../utils/toast';
+import { apiService } from '../../services/api.service';
+import { Intervention } from '../../types/intervention.types';
 
-// Types d'événements avec couleurs
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  intervention: '#e74c3c',
-  appointment: '#3498db',
-  maintenance: '#f39c12',
-  meeting: '#9b59b6',
-  other: '#95a5a6',
-};
-
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  intervention: 'Intervention',
-  appointment: 'Rendez-vous',
-  maintenance: 'Maintenance',
-  meeting: 'Réunion',
-  other: 'Autre',
-};
-
-const EVENT_STATUS_LABELS: Record<string, string> = {
-  planned: 'Planifié',
-  in_progress: 'En cours',
-  completed: 'Terminé',
-  cancelled: 'Annulé',
-  rescheduled: 'Reprogrammé',
+// Couleurs pour les statuts d'interventions
+const STATUS_COLORS: Record<number, string> = {
+  0: '#95a5a6', // Pending
+  1: '#3498db', // Scheduled
+  2: '#f39c12', // In Progress
+  3: '#27ae60', // Completed
+  4: '#e74c3c', // Cancelled
 };
 
 export default function CalendarScreen() {
@@ -47,16 +30,16 @@ export default function CalendarScreen() {
   // État
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [markedDates, setMarkedDates] = useState<any>({});
-  const [dayEvents, setDayEvents] = useState<CalendarEvent[]>([]);
+  const [dayInterventions, setDayInterventions] = useState<Intervention[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   /**
-   * Charge les événements du mois
+   * Charge les interventions du mois depuis l'API
    */
   const loadMonthEvents = useCallback(async (date: Date) => {
     try {
@@ -64,27 +47,27 @@ export default function CalendarScreen() {
       const monthStart = startOfMonth(date);
       const monthEnd = endOfMonth(date);
 
-      const calendarEvents = await database
-        .get<CalendarEvent>('calendar_events')
-        .query(
-          Q.where('start_datetime', Q.gte(monthStart.getTime())),
-          Q.where('start_datetime', Q.lte(monthEnd.getTime())),
-          Q.sortBy('start_datetime', Q.asc)
-        )
-        .fetch();
+      // Récupérer toutes les interventions
+      const allInterventions = await apiService.getMyInterventions();
 
-      setEvents(calendarEvents);
+      // Filtrer pour le mois
+      const monthInterventions = allInterventions.filter((intervention) => {
+        const interventionDate = new Date(intervention.scheduledDate);
+        return !isBefore(interventionDate, monthStart) && !isAfter(interventionDate, monthEnd);
+      });
+
+      setInterventions(monthInterventions);
 
       // Créer les marques pour le calendrier
       const marks: any = {};
-      calendarEvents.forEach((event) => {
-        const dateKey = format(event.startDateTime, 'yyyy-MM-dd');
+      monthInterventions.forEach((intervention) => {
+        const dateKey = format(new Date(intervention.scheduledDate), 'yyyy-MM-dd');
         if (!marks[dateKey]) {
           marks[dateKey] = { marked: true, dots: [] };
         }
         marks[dateKey].dots.push({
-          key: event.id,
-          color: EVENT_TYPE_COLORS[event.eventType] || EVENT_TYPE_COLORS.other,
+          key: intervention.id,
+          color: STATUS_COLORS[intervention.status] || '#95a5a6',
         });
       });
 
@@ -96,39 +79,39 @@ export default function CalendarScreen() {
       };
 
       setMarkedDates(marks);
-      logger.info('CALENDAR', `Chargé ${calendarEvents.length} événements pour ${format(date, 'MMMM yyyy', { locale: fr })}`);
+      logger.info('CALENDAR', `Chargé ${monthInterventions.length} interventions pour ${format(date, 'MMMM yyyy', { locale: fr })}`);
     } catch (error) {
-      logger.error('CALENDAR', 'Erreur chargement événements mois', error);
-      toast.error('Erreur lors du chargement des événements');
+      logger.error('CALENDAR', 'Erreur chargement interventions mois', error);
+      showToast('Erreur lors du chargement du calendrier', 'error');
     } finally {
       setLoading(false);
     }
   }, [selectedDate]);
 
   /**
-   * Charge les événements d'un jour spécifique
+   * Charge les interventions d'un jour spécifique
    */
   const loadDayEvents = useCallback(async (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      const dayStart = new Date(date.setHours(0, 0, 0, 0));
-      const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+      const selectedDay = new Date(dateString);
 
-      const calendarEvents = await database
-        .get<CalendarEvent>('calendar_events')
-        .query(
-          Q.where('start_datetime', Q.gte(dayStart.getTime())),
-          Q.where('start_datetime', Q.lte(dayEnd.getTime())),
-          Q.sortBy('start_datetime', Q.asc)
-        )
-        .fetch();
+      // Filtrer les interventions du jour sélectionné
+      const dayInterventionsList = interventions.filter((intervention) => {
+        const interventionDate = new Date(intervention.scheduledDate);
+        return isSameDay(interventionDate, selectedDay);
+      });
 
-      setDayEvents(calendarEvents);
-      logger.info('CALENDAR', `Chargé ${calendarEvents.length} événements pour ${dateString}`);
+      // Trier par heure
+      dayInterventionsList.sort((a, b) =>
+        new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+      );
+
+      setDayInterventions(dayInterventionsList);
+      logger.info('CALENDAR', `Chargé ${dayInterventionsList.length} interventions pour ${dateString}`);
     } catch (error) {
-      logger.error('CALENDAR', 'Erreur chargement événements jour', error);
+      logger.error('CALENDAR', 'Erreur chargement interventions jour', error);
     }
-  }, []);
+  }, [interventions]);
 
   /**
    * Rafraîchir les données
@@ -158,10 +141,10 @@ export default function CalendarScreen() {
   }, [loadMonthEvents]);
 
   /**
-   * Ouvrir détails événement
+   * Ouvrir détails intervention
    */
-  const openEventDetails = useCallback((event: CalendarEvent) => {
-    setSelectedEvent(event);
+  const openEventDetails = useCallback((intervention: Intervention) => {
+    setSelectedIntervention(intervention);
     setModalVisible(true);
   }, []);
 
@@ -170,7 +153,7 @@ export default function CalendarScreen() {
    */
   const closeModal = useCallback(() => {
     setModalVisible(false);
-    setSelectedEvent(null);
+    setSelectedIntervention(null);
   }, []);
 
   // Chargement initial
@@ -180,11 +163,11 @@ export default function CalendarScreen() {
   }, []);
 
   /**
-   * Render item événement
+   * Render item intervention
    */
-  const renderEventItem = ({ item }: { item: CalendarEvent }) => {
-    const startTime = format(item.startDateTime, 'HH:mm');
-    const endTime = item.endDateTime ? format(item.endDateTime, 'HH:mm') : '';
+  const renderEventItem = ({ item }: { item: Intervention }) => {
+    const startTime = format(new Date(item.scheduledDate), 'HH:mm');
+    const endTime = item.scheduledEndDate ? format(new Date(item.scheduledEndDate), 'HH:mm') : '';
 
     return (
       <TouchableOpacity onPress={() => openEventDetails(item)}>
@@ -199,11 +182,11 @@ export default function CalendarScreen() {
                 mode="outlined"
                 style={[
                   styles.eventTypeChip,
-                  { borderColor: EVENT_TYPE_COLORS[item.eventType] || EVENT_TYPE_COLORS.other },
+                  { borderColor: STATUS_COLORS[item.status] || '#95a5a6' },
                 ]}
-                textStyle={{ color: EVENT_TYPE_COLORS[item.eventType] || EVENT_TYPE_COLORS.other }}
+                textStyle={{ color: STATUS_COLORS[item.status] || '#95a5a6' }}
               >
-                {EVENT_TYPE_LABELS[item.eventType] || 'Autre'}
+                {item.typeLabel}
               </Chip>
             </View>
 
@@ -213,9 +196,9 @@ export default function CalendarScreen() {
               <Text style={styles.eventCustomer}>Client: {item.customerName}</Text>
             )}
 
-            {item.address && (
+            {item.city && (
               <Text style={styles.eventAddress} numberOfLines={1}>
-                📍 {item.address}
+                📍 {item.city}
               </Text>
             )}
 
@@ -224,7 +207,7 @@ export default function CalendarScreen() {
               style={styles.eventStatusChip}
               textStyle={styles.eventStatusText}
             >
-              {EVENT_STATUS_LABELS[item.status] || item.status}
+              {item.statusLabel}
             </Chip>
           </Card.Content>
         </Card>
@@ -263,13 +246,13 @@ export default function CalendarScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#2196F3" />
           </View>
-        ) : dayEvents.length === 0 ? (
+        ) : dayInterventions.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aucun événement ce jour</Text>
+            <Text style={styles.emptyText}>Aucune intervention ce jour</Text>
           </View>
         ) : (
           <FlatList
-            data={dayEvents}
+            data={dayInterventions}
             renderItem={renderEventItem}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.eventsList}
@@ -287,9 +270,9 @@ export default function CalendarScreen() {
           onDismiss={closeModal}
           contentContainerStyle={styles.modalContainer}
         >
-          {selectedEvent && (
+          {selectedIntervention && (
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{selectedEvent.title}</Text>
+              <Text style={styles.modalTitle}>{selectedIntervention.title}</Text>
 
               <View style={styles.modalRow}>
                 <Text style={styles.modalLabel}>Type:</Text>
@@ -297,54 +280,54 @@ export default function CalendarScreen() {
                   mode="outlined"
                   style={[
                     styles.modalChip,
-                    { borderColor: EVENT_TYPE_COLORS[selectedEvent.eventType] },
+                    { borderColor: STATUS_COLORS[selectedIntervention.status] },
                   ]}
                 >
-                  {EVENT_TYPE_LABELS[selectedEvent.eventType]}
+                  {selectedIntervention.typeLabel}
                 </Chip>
               </View>
 
               <View style={styles.modalRow}>
                 <Text style={styles.modalLabel}>Statut:</Text>
                 <Text style={styles.modalValue}>
-                  {EVENT_STATUS_LABELS[selectedEvent.status]}
+                  {selectedIntervention.statusLabel}
                 </Text>
               </View>
 
               <View style={styles.modalRow}>
                 <Text style={styles.modalLabel}>Début:</Text>
                 <Text style={styles.modalValue}>
-                  {format(selectedEvent.startDateTime, 'dd/MM/yyyy HH:mm')}
+                  {format(new Date(selectedIntervention.scheduledDate), 'dd/MM/yyyy HH:mm')}
                 </Text>
               </View>
 
-              {selectedEvent.endDateTime && (
+              {selectedIntervention.scheduledEndDate && (
                 <View style={styles.modalRow}>
                   <Text style={styles.modalLabel}>Fin:</Text>
                   <Text style={styles.modalValue}>
-                    {format(selectedEvent.endDateTime, 'dd/MM/yyyy HH:mm')}
+                    {format(new Date(selectedIntervention.scheduledEndDate), 'dd/MM/yyyy HH:mm')}
                   </Text>
                 </View>
               )}
 
-              {selectedEvent.customerName && (
+              {selectedIntervention.customerName && (
                 <View style={styles.modalRow}>
                   <Text style={styles.modalLabel}>Client:</Text>
-                  <Text style={styles.modalValue}>{selectedEvent.customerName}</Text>
+                  <Text style={styles.modalValue}>{selectedIntervention.customerName}</Text>
                 </View>
               )}
 
-              {selectedEvent.address && (
+              {selectedIntervention.city && (
                 <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Adresse:</Text>
-                  <Text style={styles.modalValue}>{selectedEvent.address}</Text>
+                  <Text style={styles.modalLabel}>Ville:</Text>
+                  <Text style={styles.modalValue}>{selectedIntervention.city}</Text>
                 </View>
               )}
 
-              {selectedEvent.description && (
+              {selectedIntervention.description && (
                 <View style={styles.modalRow}>
                   <Text style={styles.modalLabel}>Description:</Text>
-                  <Text style={styles.modalValue}>{selectedEvent.description}</Text>
+                  <Text style={styles.modalValue}>{selectedIntervention.description}</Text>
                 </View>
               )}
 

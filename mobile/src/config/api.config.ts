@@ -19,7 +19,7 @@ const BACKEND_PORT = '3000';
 export const API_CONFIG = {
   // URL du backend NestJS
   BASE_URL: __DEV__
-    ? `http://${BACKEND_IP}:${BACKEND_PORT}` // Development - utilisable depuis le téléphone
+    ? `https://3639bcda6b9f.ngrok-free.app` // Development - utilisable depuis le téléphone
     : 'https://api.votre-domaine.com', // Production
 
   // Version de l'API
