@@ -13,12 +13,16 @@ import { InterventionsService } from './services/interventions.service';
 import { FileService } from './services/file.service';
 import { CustomersService } from './services/customers.service';
 import { SyncService } from './services/sync.service';
+import { SalesService } from './services/sales.service';
+import { ProjectsService } from './services/projects.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
 import { InterventionsController } from './controllers/interventions.controller';
 import { CustomersController } from './controllers/customers.controller';
 import { SyncController } from './controllers/sync.controller';
+import { SalesController } from './controllers/sales.controller';
+import { ProjectsController } from './controllers/projects.controller';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -50,6 +54,8 @@ import { RolesGuard } from './guards/roles.guard';
     InterventionsController,
     CustomersController,
     SyncController,
+    SalesController,
+    ProjectsController,
   ],
   providers: [
     DatabaseService,
@@ -58,6 +64,8 @@ import { RolesGuard } from './guards/roles.guard';
     FileService,
     CustomersService,
     SyncService,
+    SalesService,
+    ProjectsService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
