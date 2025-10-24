@@ -34,10 +34,30 @@ export const showInfoToast = (message: string, duration?: number) => {
 };
 
 /**
- * Afficher un toast personnalisé
+ * Afficher un toast avec type
  */
-export const showToast = (message: string, duration?: number) => {
-  ToastManager.show(message, duration || 3000, 'bottom');
+export const showToast = (
+  message: string,
+  type: 'success' | 'error' | 'warning' | 'info' = 'info',
+  duration?: number
+) => {
+  const defaultDuration = duration || 3000;
+
+  switch (type) {
+    case 'success':
+      ToastManager.success(message, defaultDuration, 'bottom');
+      break;
+    case 'error':
+      ToastManager.error(message, defaultDuration, 'bottom');
+      break;
+    case 'warning':
+      ToastManager.warn(message, defaultDuration, 'bottom');
+      break;
+    case 'info':
+    default:
+      ToastManager.info(message, defaultDuration, 'bottom');
+      break;
+  }
 };
 
 export default {
