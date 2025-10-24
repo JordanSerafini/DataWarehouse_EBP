@@ -10,6 +10,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Components
+import { ScrollableTabBar } from '../components/ScrollableTabBar';
+
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
 import PlanningScreen from '../screens/Planning/PlanningScreen';

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Card, Button, Avatar, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../stores/authStore';
 import { useSyncStore } from '../../stores/syncStore';
 import { showToast } from '../../utils/toast';
+import { apiService } from '../../services/api.service';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -12,15 +13,44 @@ const ProfileScreen = () => {
   const { user, logout, login } = useAuthStore();
   const { lastSyncDate } = useSyncStore();
   const [switching, setSwitching] = useState(false);
+  const [usersList, setUsersList] = useState<Array<{ email: string; full_name: string; role: string }>>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   /**
-   * Liste des utilisateurs administrateurs (identique à LoginScreen)
-   * Les autres utilisateurs (collègues EBP) seront importés automatiquement
+   * Charger la liste des utilisateurs au montage
    */
-  const testUsers = [
-    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-checkmark', color: '#e74c3c' },
-    { email: 'manager@test.local', role: 'Admin', icon: 'shield', color: '#e67e22' },
-  ];
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const users = await apiService.getUsersList();
+      setUsersList(users);
+    } catch (error) {
+      console.error('Erreur chargement utilisateurs:', error);
+      setUsersList([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  /**
+   * Récupérer icône et couleur selon le rôle
+   */
+  const getRoleConfig = (role: string): { icon: string; color: string } => {
+    const configs: Record<string, { icon: string; color: string }> = {
+      super_admin: { icon: 'shield-checkmark', color: '#e74c3c' },
+      admin: { icon: 'shield', color: '#e67e22' },
+      patron: { icon: 'briefcase', color: '#f39c12' },
+      chef_chantier: { icon: 'construct', color: '#3498db' },
+      commercial: { icon: 'person-circle', color: '#9b59b6' },
+      technicien: { icon: 'hammer', color: '#2ecc71' },
+    };
+
+    return configs[role] || { icon: 'person', color: '#95a5a6' };
+  };
 
   const handleLogout = async () => {
     try {
@@ -155,36 +185,48 @@ const ProfileScreen = () => {
           Cliquez pour changer de compte
         </Text>
 
-        <View style={styles.usersList}>
-          {testUsers.map((testUser) => (
-            <TouchableOpacity
-              key={testUser.email}
-              onPress={() => quickSwitch(testUser.email)}
-              style={[
-                styles.userCard,
-                user?.email === testUser.email && styles.userCardActive,
-              ]}
-              disabled={switching}
-            >
-              <View style={[styles.userIcon, { backgroundColor: testUser.color }]}>
-                <Ionicons name={testUser.icon as any} size={24} color="#fff" />
-              </View>
-              <View style={styles.userInfo}>
-                <Text variant="labelMedium" style={styles.userCardName}>
-                  {testUser.role}
-                </Text>
-                <Text variant="bodySmall" style={styles.userCardEmail}>
-                  {testUser.email}
-                </Text>
-              </View>
-              {user?.email === testUser.email ? (
-                <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
-              ) : (
-                <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
+        {loadingUsers ? (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#6200ee" />
+            <Text variant="bodyMedium" style={styles.loadingText}>
+              Chargement des utilisateurs...
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.usersList}>
+            {usersList.map((dbUser) => {
+              const roleConfig = getRoleConfig(dbUser.role);
+              return (
+                <TouchableOpacity
+                  key={dbUser.email}
+                  onPress={() => quickSwitch(dbUser.email)}
+                  style={[
+                    styles.userCard,
+                    user?.email === dbUser.email && styles.userCardActive,
+                  ]}
+                  disabled={switching}
+                >
+                  <View style={[styles.userIcon, { backgroundColor: roleConfig.color }]}>
+                    <Ionicons name={roleConfig.icon as any} size={24} color="#fff" />
+                  </View>
+                  <View style={styles.userInfo}>
+                    <Text variant="labelMedium" style={styles.userCardName}>
+                      {dbUser.full_name}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.userCardEmail}>
+                      {dbUser.email}
+                    </Text>
+                  </View>
+                  {user?.email === dbUser.email ? (
+                    <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
+                  ) : (
+                    <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         {switching && (
           <View style={styles.loadingOverlay}>
