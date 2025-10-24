@@ -124,6 +124,13 @@ class ApiService {
     });
   }
 
+  // ==================== USERS ====================
+
+  async getUsersList(): Promise<Array<{ email: string; full_name: string; role: string }>> {
+    const { data } = await this.client.get('/api/v1/users/list');
+    return data;
+  }
+
   // ==================== INTERVENTIONS ====================
 
   async getMyInterventions(query?: QueryInterventionsDto): Promise<Intervention[]> {
