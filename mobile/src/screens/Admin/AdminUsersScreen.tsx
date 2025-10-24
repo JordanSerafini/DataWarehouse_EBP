@@ -294,6 +294,30 @@ const AdminUsersScreen = ({ navigation }: any) => {
           style={styles.searchbar}
         />
 
+        {/* Filtre par statut */}
+        <SegmentedButtons
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as any)}
+          buttons={[
+            {
+              value: 'all',
+              label: 'Tous',
+              icon: 'account-multiple',
+            },
+            {
+              value: 'active',
+              label: 'Actifs',
+              icon: 'check-circle',
+            },
+            {
+              value: 'inactive',
+              label: 'Inactifs',
+              icon: 'cancel',
+            },
+          ]}
+          style={styles.statusFilter}
+        />
+
         <Button
           mode="contained-tonal"
           icon="sync"
@@ -371,6 +395,9 @@ const styles = StyleSheet.create({
   searchbar: {
     elevation: 0,
     backgroundColor: '#f5f5f5',
+  },
+  statusFilter: {
+    marginVertical: 8,
   },
   syncButton: {
     alignSelf: 'flex-start',
