@@ -61,9 +61,11 @@ export class UploadSignatureDto {
   @ApiProperty({
     description: 'Nom du signataire (client)',
     example: 'Jean Dupont',
+    required: false,
   })
   @IsString()
-  signerName: string;
+  @IsOptional()
+  signerName?: string;
 
   @ApiProperty({
     description: 'Fonction du signataire',

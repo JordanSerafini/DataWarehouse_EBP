@@ -122,7 +122,7 @@ class UploadService {
             Authorization: `Bearer ${tokens.accessToken}`,
           },
           parameters: {
-            timestamp: signature.timestamp.toISOString(),
+            signerName: 'Client', // Nom par défaut
           },
         }
       );

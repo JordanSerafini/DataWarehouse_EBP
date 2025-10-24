@@ -23,7 +23,7 @@ import {
 } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { logger } from '../utils/logger';
-import { toast } from '../utils/toast';
+import toast from '../utils/toast';
 
 export interface CapturedPhoto {
   uri: string;

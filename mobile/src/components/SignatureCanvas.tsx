@@ -15,7 +15,7 @@ import {
 } from 'react-native-paper';
 import SignatureScreen from 'react-native-signature-canvas';
 import { logger } from '../utils/logger';
-import { toast } from '../utils/toast';
+import toast from '../utils/toast';
 
 export interface SignatureData {
   base64: string;

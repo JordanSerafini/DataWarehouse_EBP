@@ -50,12 +50,13 @@ export default function App() {
       } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
       } finally {
-        setIsReady(true);
+        // Délai pour s'assurer que le runtime est prêt
+        setTimeout(() => setIsReady(true), 100);
       }
     };
 
     initialize();
-  }, []);
+  }, [loadFromStorage, loadSyncStatus]);
 
   // Afficher un loader pendant l'initialisation
   if (!isReady) {
