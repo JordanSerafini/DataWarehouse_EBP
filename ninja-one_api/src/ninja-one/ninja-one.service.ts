@@ -96,7 +96,9 @@ export class NinjaOneService {
       const lastCursorId = filters?.lastCursorId || 0;
 
       const url = `${this.baseUrl}/v2/ticketing/trigger/board/${boardId}/run`;
-      this.logger.log(`Fetching tickets from NinjaOne API (board ${boardId})...`);
+      this.logger.log(
+        `Fetching tickets from NinjaOne API (board ${boardId})...`,
+      );
 
       const requestBody = {
         sortBy: [
@@ -130,7 +132,10 @@ export class NinjaOneService {
       let tickets: any[] = [];
       if (Array.isArray(response.data)) {
         tickets = response.data;
-      } else if (response.data?.results && Array.isArray(response.data.results)) {
+      } else if (
+        response.data?.results &&
+        Array.isArray(response.data.results)
+      ) {
         tickets = response.data.results;
       } else if (response.data?.data && Array.isArray(response.data.data)) {
         tickets = response.data.data;
@@ -352,9 +357,7 @@ export class NinjaOneService {
         ),
       );
 
-      this.logger.log(
-        `Retrieved ${response.data?.length || 0} ticket boards`,
-      );
+      this.logger.log(`Retrieved ${response.data?.length || 0} ticket boards`);
       return response.data;
     } catch (error) {
       this.logger.error(

@@ -234,8 +234,28 @@ export class DatabaseSyncService {
     try {
       const tickets = await this.ninjaOneService.getTickets();
 
+      // Load all organizations and technicians for mapping names to IDs
+      const organizations = await this.organizationRepository.find();
+      const technicians = await this.technicianRepository.find();
+
+      const orgNameToId = new Map(
+        organizations.map(o => [o.organizationName?.toLowerCase(), o.organizationId])
+      );
+      const techNameToId = new Map(
+        technicians.map(t => [
+          (t.firstName + ' ' + t.lastName).toLowerCase(),
+          t.technicianId
+        ])
+      );
+
       for (const tkt of tickets) {
         try {
+          // Map organization name to ID
+          const orgId = orgNameToId.get(tkt.organization?.toLowerCase());
+
+          // Map technician name to ID
+          const techId = techNameToId.get(tkt.assignedAppUser?.toLowerCase());
+
           // Calculate date IDs for time dimension
           const createdDateId = tkt.createTime
             ? this.getDateId(new Date(tkt.createTime * 1000))
@@ -270,19 +290,19 @@ export class DatabaseSyncService {
           const ticket = this.ticketRepository.create({
             ticketId: tkt.id,
             ticketUid: tkt.uid || undefined,
-            ticketNumber: tkt.number?.toString() || undefined,
+            ticketNumber: tkt.ticketNumber?.toString() || tkt.number?.toString() || undefined,
             externalId: tkt.externalId || undefined,
-            organizationId: tkt.clientId || undefined,
+            organizationId: orgId || tkt.clientId || tkt.organizationId || undefined,
             locationId: tkt.locationId || undefined,
-            assignedTechnicianId: tkt.assignedTo || undefined,
-            createdByTechnicianId: tkt.createBy || undefined,
+            assignedTechnicianId: techId || tkt.assignedTo || undefined,
+            createdByTechnicianId: tkt.createBy || tkt.createdBy || undefined,
             deviceId: tkt.deviceId || undefined,
-            statusId: tkt.statusId || undefined,
+            statusId: tkt.status?.statusId || tkt.statusId || undefined,
             createdDateId: createdDateId || undefined,
             resolvedDateId: resolvedDateId || undefined,
             closedDateId: closedDateId || undefined,
             dueDateId: dueDateId || undefined,
-            title: tkt.subject || '',
+            title: tkt.summary || tkt.subject || '',
             description: tkt.description || undefined,
             category: tkt.category || undefined,
             subcategory: tkt.subcategory || undefined,
@@ -293,17 +313,17 @@ export class DatabaseSyncService {
             createdAt: tkt.createTime
               ? new Date(tkt.createTime * 1000)
               : new Date(),
-            updatedAt: tkt.lastUpdateTime
-              ? new Date(tkt.lastUpdateTime * 1000)
+            updatedAt: tkt.lastUpdateTime || tkt.updateTime
+              ? new Date((tkt.lastUpdateTime || tkt.updateTime) * 1000)
               : undefined,
-            resolvedAt: tkt.resolvedTime
-              ? new Date(tkt.resolvedTime * 1000)
+            resolvedAt: tkt.resolvedTime || tkt.closeTime
+              ? new Date((tkt.resolvedTime || tkt.closeTime) * 1000)
               : undefined,
-            closedAt: tkt.closedTime
-              ? new Date(tkt.closedTime * 1000)
+            closedAt: tkt.closedTime || tkt.closeTime
+              ? new Date((tkt.closedTime || tkt.closeTime) * 1000)
               : undefined,
             dueDate: tkt.dueDate ? new Date(tkt.dueDate * 1000) : undefined,
-            timeSpentSeconds: tkt.timeTracked || 0,
+            timeSpentSeconds: tkt.totalTimeTracked || tkt.timeTracked || 0,
             estimatedTimeSeconds: tkt.estimatedTime || undefined,
             timeToResolutionSeconds: timeToResolutionSeconds || undefined,
             timeToFirstResponseSeconds: tkt.timeToFirstResponse || undefined,
@@ -319,11 +339,11 @@ export class DatabaseSyncService {
             customFields: tkt.customFields || undefined,
             source: tkt.source || undefined,
             channel: tkt.channel || undefined,
-            requesterName: tkt.requester?.name || undefined,
-            requesterEmail: tkt.requester?.email || undefined,
-            requesterPhone: tkt.requester?.phone || undefined,
+            requesterName: typeof tkt.requester === 'string' ? tkt.requester : tkt.requester?.name || undefined,
+            requesterEmail: typeof tkt.requester === 'object' ? tkt.requester?.email : undefined,
+            requesterPhone: typeof tkt.requester === 'object' ? tkt.requester?.phone : undefined,
             etlSource: 'ninjaone_api',
-            etlVersion: '1.0',
+            etlVersion: '1.1',
           });
 
           await this.ticketRepository.save(ticket);
