@@ -134,9 +134,90 @@ npm run start:prod
 # Build
 npm run build
 
-# API will be available at http://localhost:3000
-# Key endpoints: /ninja-one/organizations, /ninja-one/technicians, /ninja-one/devices, /ninja-one/tickets
+# API runs on PORT 3001 (configured in .env to avoid conflicts with backend)
+# API documentation: ninja-one_api/API_TICKETS.md
 ```
+
+#### NinjaOne Tickets API - Vue d'ensemble
+
+L'API NinjaOne expose une **API REST complète** pour interroger et analyser les tickets avec filtres avancés, statistiques et agrégations.
+
+**Architecture:**
+- **TicketQueryService**: Service de requêtes avec filtres complexes, chargement optimisé des relations, et statistiques
+- **3 Contrôleurs REST**:
+  - `TicketsController`: Endpoints généraux (`/api/tickets`)
+  - `OrganizationTicketsController`: Par organisation (`/api/organizations/:id/tickets`)
+  - `TechnicianTicketsController`: Par technicien (`/api/technicians/:id/tickets`)
+
+**Endpoints principaux:**
+```bash
+# Liste de tickets avec filtres avancés
+GET /api/tickets?page=1&limit=50&organizationId=123&priority=HIGH
+
+# Détail d'un ticket avec relations
+GET /api/tickets/:id
+
+# Statistiques globales (peut être filtrées)
+GET /api/tickets/stats?organizationId=123
+
+# Stats par organisation
+GET /api/tickets/stats/by-organization
+
+# Stats par technicien
+GET /api/tickets/stats/by-technician
+
+# Stats par période (jour/semaine/mois)
+GET /api/tickets/stats/by-period?groupBy=day
+
+# Tickets d'une organisation
+GET /api/organizations/:id/tickets?isClosed=false
+
+# Tickets d'un technicien
+GET /api/technicians/:id/tickets?isClosed=false
+```
+
+**Filtres disponibles:**
+- **Par ID**: organizationId, assignedTechnicianId, createdByTechnicianId, deviceId, locationId, statusId
+- **Par texte**: statusName, priority (NONE/LOW/MEDIUM/HIGH), severity, source, category, search (full-text)
+- **Par dates**: createdAfter/Before, updatedAfter/Before, resolvedAfter/Before, closedAfter/Before, dueAfter/Before
+- **Booléens**: isOverdue, isResolved, isClosed, hasComments, hasAttachments, **unassigned** (important!)
+- **Spéciaux**: tag (recherche JSONB), search (titre + description)
+- **Tri**: createdAt, updatedAt, priority, title, timeSpentSeconds, etc. (ASC/DESC)
+- **Options**: includeOrganization, includeTechnicians, includeDevice
+
+**Cas d'usage métier:**
+1. **Dashboard Manager**: Vue organisation avec statistiques
+2. **Vue Technicien**: Ses tickets + pool non assignés
+3. **Admin globale**: Multi-organisation, identification tickets non assignés
+4. **Reporting**: KPIs, tendances, charge par technicien
+5. **Recherche avancée**: Combinaisons complexes de filtres
+
+**État actuel (965 tickets):**
+- 498 ouverts (51.6%), 467 fermés (48.4%)
+- **⚠️ 760 tickets non assignés (78.8%)** - Point critique!
+- 114 organisations, 11 techniciens
+- Distribution: 48% Fermés, 37% Nouveaux, 6% Ouverts
+- Priorités: 66% NONE, 22% HIGH, 12% MEDIUM
+
+**Exemples d'utilisation:**
+```bash
+# Stats globales
+curl http://localhost:3001/api/tickets/stats
+
+# Tickets non assignés (IMPORTANT pour le pool)
+curl http://localhost:3001/api/tickets?unassigned=true&isClosed=false
+
+# Tickets urgents non assignés créés cette semaine
+curl "http://localhost:3001/api/tickets?unassigned=true&priority=HIGH&createdAfter=2024-10-21&isClosed=false"
+
+# Recherche par mot-clé dans une organisation
+curl "http://localhost:3001/api/tickets?organizationId=123&search=wifi"
+
+# Tendances par mois pour une organisation
+curl "http://localhost:3001/api/tickets/stats/by-period?groupBy=month&organizationId=123"
+```
+
+**Documentation complète**: Voir `ninja-one_api/API_TICKETS.md` pour tous les détails, exemples et cas d'usage.
 
 ### backend/ - Main Mobile API
 ```bash
@@ -203,6 +284,14 @@ PORT=3000
 CLIENT_ID=<NinjaOne OAuth Client ID>
 CLIENT_SECRET=<NinjaOne OAuth Client Secret>
 NINJA_ONE_BASE_URL=https://eu.ninjarmm.com
+PORT=3001  # Uses port 3001 to avoid conflict with backend on 3000
+
+# Database (same as backend, uses ninjaone schema)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=ebp_db
 ```
 
 ### backend/.env
@@ -257,6 +346,7 @@ Column names preserve exact casing (e.g., `customer.Id`, `caption`).
 3. **Database/RECOMMANDATIONS_FINALES.md** - 12-month project roadmap with budget/ROI
 4. **EbpToPg_Module/README.md** - Sync application documentation
 5. **ninja-one_api/README_API.md** - NinjaOne API documentation
+6. **ninja-one_api/API_TICKETS.md** - **API complète Tickets NinjaOne** (filtres avancés, stats, cas d'usage)
 
 ### Architecture Documentation
 - **Database/AUDIT_DATABASE.md** - Complete database audit (319 tables analysis)
