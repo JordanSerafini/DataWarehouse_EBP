@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Screens
 import PlanningScreen from '../screens/Planning/PlanningScreen';
@@ -46,6 +47,8 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
  * Bottom Tabs Navigator
  */
 const BottomTabsNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -83,9 +86,9 @@ const BottomTabsNavigator = () => {
         tabBarActiveTintColor: '#6200ee',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
-          paddingBottom: 5,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 5, // Respecte la safe area
           paddingTop: 5,
-          height: 60,
+          height: 60 + (insets.bottom > 0 ? insets.bottom : 0), // Ajuste la hauteur
         },
         headerShown: true,
       })}

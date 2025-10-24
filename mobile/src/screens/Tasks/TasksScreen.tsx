@@ -14,12 +14,11 @@ import {
 import { Text, Card, Chip, ProgressBar } from 'react-native-paper';
 import { format, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { database } from '../../config/database';
-import Intervention from '../../models/Intervention';
 import { useAuthStore } from '../../stores/authStore';
-import { InterventionStatus } from '../../types/intervention.types';
-import { syncService } from '../../services/sync.service';
+import { Intervention, InterventionStatus } from '../../types/intervention.types';
+import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
+import { showToast } from '../../utils/toast';
 
 interface TaskGroup {
   title: string;
@@ -35,44 +34,35 @@ const TasksScreen = () => {
   const { isSyncing } = useSyncStore();
 
   /**
-   * Charger les tâches du jour
+   * Charger les tâches du jour depuis l'API
    */
   const loadTasks = async () => {
     try {
-      const interventionsCollection = database.get<Intervention>('interventions');
-
-      // Filtrer par technicien si c'est un technicien
-      const query = user?.colleagueId
-        ? interventionsCollection
-            .query()
-            .where('technician_id', user.colleagueId)
-        : interventionsCollection.query();
-
-      const allInterventions = await query.fetch();
+      const allInterventions = await apiService.getMyInterventions();
 
       // Filtrer uniquement les tâches du jour
       const todayTasks = allInterventions.filter((intervention) =>
-        isToday(intervention.scheduledDate)
+        isToday(new Date(intervention.scheduledDate))
       );
 
       setTasks(todayTasks);
     } catch (error) {
       console.error('Erreur lors du chargement des tâches:', error);
+      showToast('Erreur lors du chargement des tâches', 'error');
     }
   };
 
   /**
-   * Rafraîchir les données
+   * Rafraîchir les données depuis l'API
    */
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      if (syncService.shouldSync()) {
-        await syncService.fullSync();
-      }
       await loadTasks();
+      showToast('Tâches actualisées', 'success');
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
+      showToast('Erreur lors de l\'actualisation', 'error');
     } finally {
       setRefreshing(false);
     }
@@ -220,7 +210,7 @@ const TasksScreen = () => {
                           {task.title}
                         </Text>
                         <Text variant="labelMedium" style={styles.taskTime}>
-                          {format(task.scheduledDate, 'HH:mm')}
+                          {format(new Date(task.scheduledDate), 'HH:mm')}
                         </Text>
                       </View>
 

@@ -1,11 +1,25 @@
 /**
  * Configuration de l'API Backend
+ *
+ * IMPORTANT: Pour tester sur votre téléphone (iPhone/Android):
+ * 1. Trouvez l'adresse IP de votre machine:
+ *    - Windows: ipconfig (cherchez "IPv4")
+ *    - Mac/Linux: ifconfig ou ip addr (cherchez "inet")
+ * 2. Remplacez VOTRE_IP_LOCALE ci-dessous
+ * 3. Assurez-vous que le backend tourne sur cette machine (npm run start:dev)
+ *
+ * Exemple: Si votre IP est 192.168.1.100
+ * const BACKEND_IP = '192.168.1.100';
  */
+
+// ⚠️ CONFIGUREZ VOTRE IP ICI ⬇️
+const BACKEND_IP = '192.168.1.100'; // Remplacez par votre IP locale !
+const BACKEND_PORT = '3000';
 
 export const API_CONFIG = {
   // URL du backend NestJS
   BASE_URL: __DEV__
-    ? 'http://localhost:3000' // Development
+    ? `http://${BACKEND_IP}:${BACKEND_PORT}` // Development - utilisable depuis le téléphone
     : 'https://api.votre-domaine.com', // Production
 
   // Version de l'API

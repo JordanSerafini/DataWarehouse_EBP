@@ -14,12 +14,11 @@ import {
 import { Text, Card, SegmentedButtons, FAB } from 'react-native-paper';
 import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { database } from '../../config/database';
-import Intervention from '../../models/Intervention';
 import { useAuthStore } from '../../stores/authStore';
-import { InterventionStatus } from '../../types/intervention.types';
-import { syncService } from '../../services/sync.service';
+import { Intervention, InterventionStatus } from '../../types/intervention.types';
+import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
+import { showToast } from '../../utils/toast';
 
 type ViewMode = 'day' | 'week' | 'month';
 
@@ -32,45 +31,29 @@ const PlanningScreen = () => {
   const { isSyncing } = useSyncStore();
 
   /**
-   * Charger les interventions depuis WatermelonDB
+   * Charger les interventions depuis l'API
    */
   const loadInterventions = async () => {
     try {
-      // MODE EXPO GO - Database désactivée
-      if (!database) {
-        console.log('📱 Mode Expo Go - Pas de données disponibles');
-        setInterventions([]);
-        return;
-      }
-
-      const interventionsCollection = database.get<Intervention>('interventions');
-
-      // Filtrer par technicien si c'est un technicien
-      const query = user?.colleagueId
-        ? interventionsCollection
-            .query()
-            .where('technician_id', user.colleagueId)
-        : interventionsCollection.query();
-
-      const results = await query.fetch();
+      const results = await apiService.getMyInterventions();
       setInterventions(results);
     } catch (error) {
       console.error('Erreur lors du chargement des interventions:', error);
+      showToast('Erreur lors du chargement du planning', 'error');
     }
   };
 
   /**
-   * Rafraîchir les données
+   * Rafraîchir les données depuis l'API
    */
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      if (syncService.shouldSync()) {
-        await syncService.fullSync();
-      }
       await loadInterventions();
+      showToast('Planning actualisé', 'success');
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
+      showToast('Erreur lors de l\'actualisation', 'error');
     } finally {
       setRefreshing(false);
     }
@@ -90,7 +73,7 @@ const PlanningScreen = () => {
     const now = currentDate;
 
     return interventions.filter((intervention) => {
-      const date = intervention.scheduledDate;
+      const date = new Date(intervention.scheduledDate);
 
       switch (viewMode) {
         case 'day':
@@ -230,7 +213,7 @@ const PlanningScreen = () => {
 
                 <View style={styles.cardDetails}>
                   <Text variant="bodyMedium">
-                    🕒 {format(intervention.scheduledDate, 'HH:mm')}
+                    🕒 {format(new Date(intervention.scheduledDate), 'HH:mm')}
                   </Text>
                   {intervention.customerName && (
                     <Text variant="bodySmall">

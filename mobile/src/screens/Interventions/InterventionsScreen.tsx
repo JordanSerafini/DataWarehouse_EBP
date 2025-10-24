@@ -25,13 +25,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { database } from '../../config/database';
-import Intervention from '../../models/Intervention';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { InterventionStatus, InterventionType } from '../../types/intervention.types';
-import { syncService } from '../../services/sync.service';
+import { Intervention, InterventionStatus, InterventionType } from '../../types/intervention.types';
+import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
 import { useAuthStore } from '../../stores/authStore';
+import { showToast } from '../../utils/toast';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 
@@ -48,36 +47,30 @@ const InterventionsScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false);
 
   /**
-   * Charger les interventions
+   * Charger les interventions depuis l'API
    */
   const loadInterventions = async () => {
     try {
-      const interventionsCollection = database.get<Intervention>('interventions');
-
-      // Filtrer par technicien si nécessaire
-      const query = user?.colleagueId
-        ? interventionsCollection.query().where('technician_id', user.colleagueId)
-        : interventionsCollection.query();
-
-      const results = await query.fetch();
+      // Récupérer les interventions depuis le backend
+      const results = await apiService.getMyInterventions();
       setInterventions(results);
     } catch (error) {
       console.error('Erreur chargement interventions:', error);
+      showToast('Erreur lors du chargement des interventions', 'error');
     }
   };
 
   /**
-   * Rafraîchir
+   * Rafraîchir depuis l'API
    */
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      if (syncService.shouldSync()) {
-        await syncService.fullSync();
-      }
       await loadInterventions();
+      showToast('Interventions actualisées', 'success');
     } catch (error) {
       console.error('Erreur rafraîchissement:', error);
+      showToast('Erreur lors de l\'actualisation', 'error');
     } finally {
       setRefreshing(false);
     }
@@ -98,8 +91,8 @@ const InterventionsScreen = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (i) =>
-          i.title.toLowerCase().includes(query) ||
-          i.reference.toLowerCase().includes(query) ||
+          i.title?.toLowerCase().includes(query) ||
+          i.reference?.toLowerCase().includes(query) ||
           i.customerName?.toLowerCase().includes(query) ||
           i.city?.toLowerCase().includes(query)
       );
@@ -111,7 +104,7 @@ const InterventionsScreen = () => {
     }
 
     // Tri par date
-    filtered.sort((a, b) => b.scheduledDate.getTime() - a.scheduledDate.getTime());
+    filtered.sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime());
 
     setFilteredInterventions(filtered);
   }, [interventions, searchQuery, selectedStatuses]);
@@ -151,7 +144,7 @@ const InterventionsScreen = () => {
   const renderItem = ({ item }: { item: Intervention }) => (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate('InterventionDetails', { interventionId: item.serverId })
+        navigation.navigate('InterventionDetails', { interventionId: item.id })
       }
     >
       <Card style={styles.card}>
@@ -182,7 +175,7 @@ const InterventionsScreen = () => {
 
           <View style={styles.cardDetails}>
             <Text variant="bodyMedium">
-              🕒 {format(item.scheduledDate, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })}
+              🕒 {format(new Date(item.scheduledDate), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })}
             </Text>
 
             {item.customerName && (
