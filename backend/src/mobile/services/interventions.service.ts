@@ -2,6 +2,9 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { DatabaseService } from './database.service';
 import {
   InterventionDto,
+  InterventionPriorityDto,
+  InterventionStatusDto,
+  InterventionTypeDto,
   InterventionWithDistanceDto,
   TechnicianStatsDto,
 } from '../dto/interventions/intervention.dto';
@@ -21,6 +24,48 @@ import {
 export class InterventionsService {
   private readonly logger = new Logger(InterventionsService.name);
 
+  private static readonly INTERVENTION_BASE_QUERY = `
+    SELECT
+      se."Id"::text as id,
+      se."ScheduleEventNumber" as reference,
+      COALESCE(se."Caption", '') as title,
+      COALESCE(
+        NULLIF(se."Maintenance_InterventionDescriptionClear", ''),
+        NULLIF(se."Maintenance_InterventionDescription", ''),
+        NULLIF(se."Maintenance_InterventionReport", ''),
+        NULLIF(se."NotesClear", '')
+      ) as description,
+      se."Maintenance_InterventionReport" as report,
+      se."NotesClear" as notes,
+      se."StartDate" as "scheduledDate",
+      se."EndDate" as "scheduledEndDate",
+      se."EventState" as "eventState",
+      se."EventType" as "eventType",
+      se."ExpectedDuration_DurationInHours" as "estimatedDurationHours",
+      se."AchievedDuration_DurationInHours" as "achievedDurationHours",
+      se."CustomerId" as "customerId",
+      c."Name" as "customerName",
+      COALESCE(cnt."Contact_CellPhone", cnt."Contact_Phone") as "contactPhone",
+      se."ColleagueId" as "technicianId",
+      col."Name" as "technicianName",
+      CONCAT_WS(', ',
+        NULLIF(se."Address_Address1", ''),
+        NULLIF(se."Address_Address2", ''),
+        NULLIF(se."Address_ZipCode", ''),
+        NULLIF(se."Address_City", '')
+      ) as address,
+      se."Address_City" as city,
+      se."Address_ZipCode" as "postalCode",
+      se."Address_Latitude" as latitude,
+      se."Address_Longitude" as longitude,
+      se."sysCreatedDate" as "createdAt",
+      se."sysModifiedDate" as "updatedAt"
+    FROM public."ScheduleEvent" se
+    LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
+    LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
+    LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+  `;
+
   constructor(private readonly databaseService: DatabaseService) {}
 
   /**
@@ -33,29 +78,40 @@ export class InterventionsService {
   ): Promise<InterventionDto[]> {
     this.logger.log(`Fetching interventions for technician: ${technicianId}`);
 
-    const dateFrom = query.dateFrom || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 jours par défaut
-    const dateTo = query.dateTo || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // +30 jours par défaut
+    if (!technicianId) {
+      this.logger.warn('No colleagueId found on user payload, returning empty interventions list');
+      return [];
+    }
+
+    const dateFrom = this.resolveDateRangeStart(query.dateFrom);
+    const dateTo = this.resolveDateRangeEnd(query.dateTo);
 
     try {
-      const result = await this.databaseService.query<InterventionDto>(
-        `SELECT * FROM mobile.get_technician_interventions($1, $2, $3)`,
-        [technicianId, dateFrom, dateTo],
+      const sql = `
+        ${InterventionsService.INTERVENTION_BASE_QUERY}
+        WHERE se."ColleagueId" = $1
+          AND se."StartDate" >= $2
+          AND se."StartDate" <= $3
+        ORDER BY se."StartDate" ASC
+      `;
+
+      const result = await this.databaseService.query(sql, [technicianId, dateFrom, dateTo]);
+      const mapped = result.rows.map(row => this.buildInterventionDto(row));
+
+      let filtered = mapped;
+      if (query.status !== undefined) {
+        filtered = filtered.filter(intervention => intervention.status === query.status);
+      }
+
+      const offset = query.offset ?? 0;
+      const limit = query.limit ?? 50;
+      const paginated = filtered.slice(offset, offset + limit);
+
+      this.logger.log(
+        `Found ${paginated.length} interventions for technician ${technicianId} (fetched ${mapped.length})`,
       );
 
-      // Appliquer filtres additionnels si nécessaire
-      let interventions = result.rows;
-
-      if (query.status !== undefined) {
-        interventions = interventions.filter(i => i.status === query.status);
-      }
-
-      // Pagination
-      if (query.offset !== undefined && query.limit !== undefined) {
-        interventions = interventions.slice(query.offset, query.offset + query.limit);
-      }
-
-      this.logger.log(`Found ${interventions.length} interventions for technician ${technicianId}`);
-      return interventions;
+      return paginated;
     } catch (error) {
       this.logger.error(`Error fetching interventions for technician ${technicianId}:`, error);
       throw new BadRequestException('Erreur lors de la récupération des interventions');
