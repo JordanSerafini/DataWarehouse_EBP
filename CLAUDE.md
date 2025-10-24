@@ -138,16 +138,45 @@ npm run build
 # API documentation: ninja-one_api/API_TICKETS.md
 ```
 
-#### NinjaOne Tickets API - Vue d'ensemble
+#### NinjaOne API - Vue d'ensemble complète
 
-L'API NinjaOne expose une **API REST complète** pour interroger et analyser les tickets avec filtres avancés, statistiques et agrégations.
+L'API NinjaOne expose des **APIs REST complètes** pour interroger et gérer les données RMM (organisations, techniciens, appareils, tickets).
+
+**Documentation disponible:**
+- **[API_ORGANIZATIONS.md](ninja-one_api/API_ORGANIZATIONS.md)** - API complète Organisations (clients RMM)
+- **[API_TICKETS.md](ninja-one_api/API_TICKETS.md)** - API complète Tickets (filtres avancés, stats, cas d'usage)
 
 **Architecture:**
-- **TicketQueryService**: Service de requêtes avec filtres complexes, chargement optimisé des relations, et statistiques
+- **NinjaOneService**: Service principal d'authentification OAuth et appels API
+- **DatabaseSyncService**: Service de synchronisation vers PostgreSQL (schema `ninjaone`)
+- **TicketQueryService**: Service de requêtes tickets avec filtres complexes et statistiques
 - **3 Contrôleurs REST**:
-  - `TicketsController`: Endpoints généraux (`/api/tickets`)
+  - `NinjaOneController`: Endpoints de base (`/ninja-one/*`)
+  - `TicketsController`: Endpoints tickets généraux (`/api/tickets`)
   - `OrganizationTicketsController`: Par organisation (`/api/organizations/:id/tickets`)
   - `TechnicianTicketsController`: Par technicien (`/api/technicians/:id/tickets`)
+
+#### NinjaOne Organizations API
+
+**Endpoints implémentés:**
+- `GET /ninja-one/organizations` - Liste toutes les organisations (114 actuellement)
+- `POST /ninja-one/sync/organizations` - Synchronise les organisations vers PostgreSQL
+- `POST /ninja-one/sync/all` - Synchronisation complète (orgs + techs + devices + tickets)
+
+**Structure de données:** Table `ninjaone.dim_organizations` avec 114 organisations
+- Informations complètes: nom, adresse, contact, tags, champs personnalisés
+- Relations avec tickets, appareils, techniciens
+- Support JSONB pour tags et custom fields
+
+**Endpoints API NinjaOne disponibles (à implémenter):**
+- `GET /v2/organization/{id}` - Détails d'une organisation
+- `GET /v2/organization/{id}/locations` - Emplacements/sites multiples
+- `GET /v2/organization/{id}/documents` - Documents attachés (contrats, SLA)
+- `GET /v2/organization/documents/{id}/attributes` - Attributs de documents
+
+**Documentation complète**: Voir [ninja-one_api/API_ORGANIZATIONS.md](ninja-one_api/API_ORGANIZATIONS.md)
+
+#### NinjaOne Tickets API
 
 **Endpoints principaux:**
 ```bash

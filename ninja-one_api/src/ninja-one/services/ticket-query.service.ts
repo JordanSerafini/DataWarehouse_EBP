@@ -289,22 +289,27 @@ export class TicketQueryService {
       organizations.map((org) => [org.organizationId, org]),
     );
 
-    return byOrgRaw.map((row) => ({
-      organization: orgMap.get(row.organizationId),
-      stats: {
-        total: parseInt(row.total),
-        open: parseInt(row.open),
-        closed: parseInt(row.closed),
-        unassigned: parseInt(row.unassigned),
-        timeMetrics: {
-          avgTimeSpentHours: row.avgTimeSpent
-            ? parseFloat(row.avgTimeSpent) / 3600
-            : 0,
-          avgTimeToResolutionHours: 0,
-          totalTimeSpentHours: 0,
+    return byOrgRaw
+      .map((row) => ({
+        organization: orgMap.get(row.organizationId),
+        stats: {
+          total: parseInt(row.total),
+          open: parseInt(row.open),
+          closed: parseInt(row.closed),
+          unassigned: parseInt(row.unassigned),
+          timeMetrics: {
+            avgTimeSpentHours: row.avgTimeSpent
+              ? parseFloat(row.avgTimeSpent) / 3600
+              : 0,
+            avgTimeToResolutionHours: 0,
+            totalTimeSpentHours: 0,
+          },
         },
-      },
-    }));
+      }))
+      .filter((item) => item.organization !== undefined) as Array<{
+      organization: Organization;
+      stats: Partial<TicketStats>;
+    }>;
   }
 
   /**
@@ -349,23 +354,28 @@ export class TicketQueryService {
       technicians.map((tech) => [tech.technicianId, tech]),
     );
 
-    return byTechRaw.map((row) => ({
-      technician: techMap.get(row.technicianId),
-      stats: {
-        total: parseInt(row.total),
-        open: parseInt(row.open),
-        closed: parseInt(row.closed),
-        timeMetrics: {
-          avgTimeSpentHours: row.avgTimeSpent
-            ? parseFloat(row.avgTimeSpent) / 3600
-            : 0,
-          avgTimeToResolutionHours: row.avgTimeToResolution
-            ? parseFloat(row.avgTimeToResolution) / 3600
-            : 0,
-          totalTimeSpentHours: 0,
+    return byTechRaw
+      .map((row) => ({
+        technician: techMap.get(row.technicianId),
+        stats: {
+          total: parseInt(row.total),
+          open: parseInt(row.open),
+          closed: parseInt(row.closed),
+          timeMetrics: {
+            avgTimeSpentHours: row.avgTimeSpent
+              ? parseFloat(row.avgTimeSpent) / 3600
+              : 0,
+            avgTimeToResolutionHours: row.avgTimeToResolution
+              ? parseFloat(row.avgTimeToResolution) / 3600
+              : 0,
+            totalTimeSpentHours: 0,
+          },
         },
-      },
-    }));
+      }))
+      .filter((item) => item.technician !== undefined) as Array<{
+      technician: Technician;
+      stats: Partial<TicketStats>;
+    }>;
   }
 
   /**

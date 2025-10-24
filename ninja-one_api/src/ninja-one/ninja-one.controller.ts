@@ -45,6 +45,36 @@ export class NinjaOneController {
     return this.ninjaOneService.getOrganizations();
   }
 
+  @Get('organizations/:id')
+  async getOrganizationById(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationById(id);
+  }
+
+  @Get('organizations/:id/locations')
+  async getOrganizationLocations(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationLocations(id);
+  }
+
+  @Get('organizations/:id/devices')
+  async getOrganizationDevices(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationDevices(id);
+  }
+
+  @Get('organizations/:id/documents')
+  async getOrganizationDocuments(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationDocuments(id);
+  }
+
+  @Get('organizations/:id/end-users')
+  async getOrganizationEndUsers(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationEndUsers(id);
+  }
+
+  @Get('documents/:id/attributes')
+  async getOrganizationDocumentAttributes(@Param('id', ParseIntPipe) id: number) {
+    return this.ninjaOneService.getOrganizationDocumentAttributes(id);
+  }
+
   @Get('devices')
   async getDevices() {
     return this.ninjaOneService.getDevices();
