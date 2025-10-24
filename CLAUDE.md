@@ -336,9 +336,17 @@ CORS_ORIGIN=*
 ### Mobile Module Structure (backend/src/mobile/)
 The mobile module follows NestJS best practices:
 - **Controllers**: Handle HTTP requests (`controllers/`)
+  - `auth.controller.ts`: Authentication endpoints
+  - `sync.controller.ts`: Mobile synchronization endpoints
+  - `interventions.controller.ts`: Field service interventions
+  - `customers.controller.ts`: Customer management
 - **Services**: Business logic (`services/`)
   - `auth.service.ts`: JWT authentication
   - `database.service.ts`: Database operations
+  - `sync.service.ts`: Mobile data synchronization (670K → 50K rows)
+  - `interventions.service.ts`: Intervention management
+  - `customers.service.ts`: Customer data access
+  - `file.service.ts`: File and attachment handling
 - **DTOs**: Data transfer objects with validation (`dto/`)
 - **Guards**: Route protection (`guards/`)
   - `jwt-auth.guard.ts`: JWT validation
@@ -354,7 +362,32 @@ The mobile module follows NestJS best practices:
 4. Protected routes use `@UseGuards(JwtAuthGuard)` and `@Roles()` decorator
 5. Swagger docs use Bearer auth
 
+### Mobile Synchronization Architecture (backend/src/mobile/)
+
+The mobile sync system reduces EBP's 670K rows to ~50K optimized rows (92% reduction) for mobile devices:
+
+**Key Sync Endpoints** (`/api/v1/sync`):
+- `POST /sync/initial` - First-time sync when mobile app is installed (all roles)
+- `POST /sync/full` - Force complete refresh (admin only)
+- `GET /sync/status` - Check sync state and progress
+- `GET /sync/stats` - Per-table statistics
+- `POST /sync/pending` - Get entities awaiting sync for a device
+- `POST /sync/mark-synced` - Mark entity as successfully synced
+- `POST /sync/mark-failed` - Record sync failure for retry
+
+**How it works**:
+1. Sync endpoints call PL/pgSQL functions in `mobile` schema
+2. Functions like `initial_sync_all()` and `full_sync_all()` populate mobile tables
+3. Device-level tracking with `mobile.sync_status` table
+4. Supports bidirectional sync (up/down)
+5. Automatic retry logic for failed syncs
+
+**DTOs** in `dto/sync/`:
+- `sync-request.dto.ts`: Request validation (MarkEntitySyncedDto, GetPendingSyncDto, etc.)
+- `sync-response.dto.ts`: Response types (SyncResultDto, SyncStatsDto, SyncStatusDto, etc.)
+
 ### Type Mapping (MSSQL → PostgreSQL)
+
 The EbpToPg_Module automatically maps types:
 - `bit` → `BOOLEAN`
 - `int` → `INTEGER`

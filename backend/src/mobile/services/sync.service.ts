@@ -152,7 +152,7 @@ export class SyncService {
     // Trouve la date de dernière synchronisation
     const lastSyncDates = stats
       .filter((s) => s.lastSync)
-      .map((s) => new Date(s.lastSync))
+      .map((s) => new Date(s.lastSync!))
       .sort((a, b) => b.getTime() - a.getTime());
 
     const lastSyncDate = lastSyncDates.length > 0 ? lastSyncDates[0] : undefined;
@@ -163,7 +163,7 @@ export class SyncService {
     // Détermine la date de sync initiale (la plus ancienne)
     const initialSyncDates = stats
       .filter((s) => s.lastSync)
-      .map((s) => new Date(s.lastSync))
+      .map((s) => new Date(s.lastSync!))
       .sort((a, b) => a.getTime() - b.getTime());
 
     const initialSyncDate =

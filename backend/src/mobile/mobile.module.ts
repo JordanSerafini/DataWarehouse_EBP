@@ -11,10 +11,14 @@ import { DatabaseService } from './services/database.service';
 import { AuthService } from './services/auth.service';
 import { InterventionsService } from './services/interventions.service';
 import { FileService } from './services/file.service';
+import { CustomersService } from './services/customers.service';
+import { SyncService } from './services/sync.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
 import { InterventionsController } from './controllers/interventions.controller';
+import { CustomersController } from './controllers/customers.controller';
+import { SyncController } from './controllers/sync.controller';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -41,12 +45,19 @@ import { RolesGuard } from './guards/roles.guard';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController, InterventionsController],
+  controllers: [
+    AuthController,
+    InterventionsController,
+    CustomersController,
+    SyncController,
+  ],
   providers: [
     DatabaseService,
     AuthService,
     InterventionsService,
     FileService,
+    CustomersService,
+    SyncService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
