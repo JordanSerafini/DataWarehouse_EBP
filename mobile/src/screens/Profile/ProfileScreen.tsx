@@ -14,16 +14,12 @@ const ProfileScreen = () => {
   const [switching, setSwitching] = useState(false);
 
   /**
-   * Liste des utilisateurs de test (identique à LoginScreen)
+   * Liste des utilisateurs administrateurs (identique à LoginScreen)
+   * Les autres utilisateurs (collègues EBP) seront importés automatiquement
    */
   const testUsers = [
     { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-checkmark', color: '#e74c3c' },
     { email: 'manager@test.local', role: 'Admin', icon: 'shield', color: '#e67e22' },
-    { email: 'patron@test.local', role: 'Patron', icon: 'briefcase', color: '#f39c12' },
-    { email: 'chef@test.local', role: 'Chef de chantier', icon: 'construct', color: '#3498db' },
-    { email: 'commercial@test.local', role: 'Commercial', icon: 'person-circle', color: '#9b59b6' },
-    { email: 'technicien@test.local', role: 'Technicien 1', icon: 'hammer', color: '#2ecc71' },
-    { email: 'technicien2@test.local', role: 'Technicien 2', icon: 'build', color: '#27ae60' },
   ];
 
   const handleLogout = async () => {
