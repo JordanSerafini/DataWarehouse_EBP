@@ -3,34 +3,34 @@
  * Wrapper autour de toastify-react-native
  */
 
-import ToastManager from 'toastify-react-native';
+import { Toast } from 'toastify-react-native';
 
 /**
  * Afficher un toast de succès
  */
-export const showSuccessToast = (message: string, duration?: number) => {
-  ToastManager.success(message, duration || 3000, 'bottom');
+export const showSuccessToast = (message: string, position?: 'top' | 'bottom' | 'center') => {
+  Toast.success(message, position || 'bottom');
 };
 
 /**
  * Afficher un toast d'erreur
  */
-export const showErrorToast = (message: string, duration?: number) => {
-  ToastManager.error(message, duration || 4000, 'bottom');
+export const showErrorToast = (message: string, position?: 'top' | 'bottom' | 'center') => {
+  Toast.error(message, position || 'bottom');
 };
 
 /**
  * Afficher un toast d'avertissement
  */
-export const showWarningToast = (message: string, duration?: number) => {
-  ToastManager.warn(message, duration || 3000, 'bottom');
+export const showWarningToast = (message: string, position?: 'top' | 'bottom' | 'center') => {
+  Toast.warn(message, position || 'bottom');
 };
 
 /**
  * Afficher un toast d'information
  */
-export const showInfoToast = (message: string, duration?: number) => {
-  ToastManager.info(message, duration || 3000, 'bottom');
+export const showInfoToast = (message: string, position?: 'top' | 'bottom' | 'center') => {
+  Toast.info(message, position || 'bottom');
 };
 
 /**
@@ -39,23 +39,23 @@ export const showInfoToast = (message: string, duration?: number) => {
 export const showToast = (
   message: string,
   type: 'success' | 'error' | 'warning' | 'info' = 'info',
-  duration?: number
+  position?: 'top' | 'bottom' | 'center'
 ) => {
-  const defaultDuration = duration || 3000;
+  const pos = position || 'bottom';
 
   switch (type) {
     case 'success':
-      ToastManager.success(message, defaultDuration, 'bottom');
+      Toast.success(message, pos);
       break;
     case 'error':
-      ToastManager.error(message, defaultDuration, 'bottom');
+      Toast.error(message, pos);
       break;
     case 'warning':
-      ToastManager.warn(message, defaultDuration, 'bottom');
+      Toast.warn(message, pos);
       break;
     case 'info':
     default:
-      ToastManager.info(message, defaultDuration, 'bottom');
+      Toast.info(message, pos);
       break;
   }
 };
