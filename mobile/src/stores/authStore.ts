@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, AuthTokens } from '../types/user.types';
+import { apiService } from '../services/api.service';
 
 interface AuthState {
   // État
@@ -17,7 +18,8 @@ interface AuthState {
   // Actions
   setUser: (user: User | null) => void;
   setTokens: (tokens: AuthTokens | null) => void;
-  login: (user: User, tokens: AuthTokens) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithData: (user: User, tokens: AuthTokens) => Promise<void>;
   logout: () => Promise<void>;
   loadFromStorage: () => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
@@ -46,8 +48,49 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ tokens });
   },
 
-  // Login - Sauvegarde user + tokens
-  login: async (user, tokens) => {
+  // Login - Appel API puis sauvegarde
+  login: async (email, password) => {
+    try {
+      set({ isLoading: true });
+
+      // Appeler l'API de login
+      const response = await apiService.login({ email, password });
+
+      const user: User = {
+        id: response.user.id,
+        email: response.user.email,
+        role: response.user.role,
+        colleagueId: response.user.colleagueId,
+        name: response.user.name,
+        isActive: response.user.isActive,
+      };
+
+      const tokens: AuthTokens = {
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken || '',
+        expiresIn: response.expiresIn,
+      };
+
+      // Sauvegarder dans AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      await AsyncStorage.setItem(STORAGE_KEYS.TOKENS, JSON.stringify(tokens));
+
+      // Mettre à jour le state
+      set({
+        user,
+        tokens,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      set({ isLoading: false });
+      console.error('Erreur lors de la connexion:', error);
+      throw error;
+    }
+  },
+
+  // LoginWithData - Sauvegarde directe user + tokens (pour refresh, etc.)
+  loginWithData: async (user, tokens) => {
     try {
       // Sauvegarder dans AsyncStorage
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));

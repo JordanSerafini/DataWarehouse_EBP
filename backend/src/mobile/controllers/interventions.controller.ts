@@ -57,7 +57,7 @@ import {
 
 @ApiTags('Interventions')
 @Controller('api/v1/interventions')
-// @UseGuards(JwtAuthGuard, RolesGuard) // ⚠️ TEMPORAIREMENT DÉSACTIVÉ POUR TESTS
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class InterventionsController {
   constructor(
@@ -85,12 +85,10 @@ export class InterventionsController {
     @Request() req,
     @Query() query: QueryInterventionsDto,
   ): Promise<InterventionDto[]> {
-    // ⚠️ MODE TEST : Si pas d'auth, retourner TOUTES les interventions
-    const technicianId = req.user?.colleagueId;
+    const technicianId = req.user.colleagueId;
 
     if (!technicianId) {
-      // Mode test sans auth : retourner toutes les interventions
-      return this.interventionsService.getInterventionsForTechnician(null, query);
+      throw new Error('Utilisateur sans colleagueId - impossible de récupérer les interventions');
     }
 
     return this.interventionsService.getInterventionsForTechnician(technicianId, query);
