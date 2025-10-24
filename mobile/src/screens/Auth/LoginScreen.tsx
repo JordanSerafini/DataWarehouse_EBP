@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
+  TouchableOpacity,
 } from 'react-native';
 import {
   Text,
@@ -20,6 +20,7 @@ import {
   Card,
   ActivityIndicator,
 } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../stores/authStore';
 import { showToast } from '../../utils/toast';
 
@@ -32,6 +33,19 @@ const LoginScreen = () => {
   const [passwordError, setPasswordError] = useState('');
 
   const { login } = useAuthStore();
+
+  /**
+   * Liste complète des utilisateurs de test
+   */
+  const testUsers = [
+    { email: 'admin@test.local', role: 'Super Admin', icon: 'shield-crown', color: '#e74c3c' },
+    { email: 'manager@test.local', role: 'Admin', icon: 'shield-account', color: '#e67e22' },
+    { email: 'patron@test.local', role: 'Patron', icon: 'briefcase', color: '#f39c12' },
+    { email: 'chef@test.local', role: 'Chef de chantier', icon: 'hard-hat', color: '#3498db' },
+    { email: 'commercial@test.local', role: 'Commercial', icon: 'account-tie', color: '#9b59b6' },
+    { email: 'technicien@test.local', role: 'Technicien 1', icon: 'tools', color: '#2ecc71' },
+    { email: 'technicien2@test.local', role: 'Technicien 2', icon: 'tools', color: '#27ae60' },
+  ];
 
   /**
    * Valider l'email
@@ -65,8 +79,8 @@ const LoginScreen = () => {
       return false;
     }
 
-    if (text.length < 6) {
-      setPasswordError('Minimum 6 caractères');
+    if (text.length < 3) {
+      setPasswordError('Minimum 3 caractères');
       return false;
     }
 
@@ -107,22 +121,28 @@ const LoginScreen = () => {
   };
 
   /**
-   * Remplissage rapide (dev)
+   * Connexion rapide avec un utilisateur de test
    */
-  const fillTestCredentials = (role: string) => {
-    switch (role) {
-      case 'technicien':
-        setEmail('technicien@test.local');
-        setPassword('pass123');
-        break;
-      case 'admin':
-        setEmail('admin@test.local');
-        setPassword('pass123');
-        break;
-      case 'chef':
-        setEmail('chef@test.local');
-        setPassword('pass123');
-        break;
+  const quickLogin = async (userEmail: string) => {
+    setEmail(userEmail);
+    setPassword('pass123');
+    setEmailError('');
+    setPasswordError('');
+    setLoading(true);
+
+    try {
+      await login(userEmail, 'pass123');
+      showToast('Connexion réussie', 'success');
+    } catch (error: any) {
+      console.error('Quick login error:', error);
+
+      if (error.response?.status === 401) {
+        showToast('Erreur d\'authentification', 'error');
+      } else {
+        showToast('Erreur de connexion', 'error');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -222,43 +242,43 @@ const LoginScreen = () => {
             </Card.Content>
           </Card>
 
-          {/* Boutons de test (DEV uniquement) */}
-          {__DEV__ && (
-            <View style={styles.devSection}>
-              <Text variant="labelSmall" style={styles.devLabel}>
-                🔧 Mode développement
-              </Text>
-              <View style={styles.devButtons}>
-                <Button
-                  mode="outlined"
-                  onPress={() => fillTestCredentials('technicien')}
-                  compact
-                  style={styles.devButton}
+          {/* Liste complète des utilisateurs de test (DEV) */}
+          <View style={styles.devSection}>
+            <Text variant="titleSmall" style={styles.devTitle}>
+              🚀 Connexion rapide
+            </Text>
+            <Text variant="labelSmall" style={styles.devSubtitle}>
+              Cliquez sur un utilisateur pour vous connecter
+            </Text>
+
+            <View style={styles.usersList}>
+              {testUsers.map((user) => (
+                <TouchableOpacity
+                  key={user.email}
+                  onPress={() => quickLogin(user.email)}
+                  style={styles.userCard}
+                  disabled={loading}
                 >
-                  Technicien
-                </Button>
-                <Button
-                  mode="outlined"
-                  onPress={() => fillTestCredentials('chef')}
-                  compact
-                  style={styles.devButton}
-                >
-                  Chef
-                </Button>
-                <Button
-                  mode="outlined"
-                  onPress={() => fillTestCredentials('admin')}
-                  compact
-                  style={styles.devButton}
-                >
-                  Admin
-                </Button>
-              </View>
-              <Text variant="labelSmall" style={styles.devHint}>
-                Mot de passe : pass123
-              </Text>
+                  <View style={[styles.userIcon, { backgroundColor: user.color }]}>
+                    <Ionicons name={user.icon as any} size={24} color="#fff" />
+                  </View>
+                  <View style={styles.userInfo}>
+                    <Text variant="labelMedium" style={styles.userName}>
+                      {user.role}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.userEmail}>
+                      {user.email}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#9e9e9e" />
+                </TouchableOpacity>
+              ))}
             </View>
-          )}
+
+            <Text variant="labelSmall" style={styles.devHint}>
+              💡 Mot de passe : pass123 (tous les comptes)
+            </Text>
+          </View>
 
           {/* Footer */}
           <Text variant="bodySmall" style={styles.footer}>
@@ -313,30 +333,64 @@ const styles = StyleSheet.create({
   devSection: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ffc107',
+    backgroundColor: '#e8f5e9',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#4caf50',
   },
-  devLabel: {
+  devTitle: {
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
     fontWeight: 'bold',
-    color: '#856404',
+    color: '#2e7d32',
   },
-  devButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  devSubtitle: {
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#558b2f',
+  },
+  usersList: {
     gap: 8,
   },
-  devButton: {
+  userCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  userIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  userInfo: {
     flex: 1,
-    borderColor: '#ffc107',
+  },
+  userName: {
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  userEmail: {
+    color: '#757575',
   },
   devHint: {
     textAlign: 'center',
-    marginTop: 8,
-    color: '#856404',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#c8e6c9',
+    color: '#2e7d32',
   },
   footer: {
     textAlign: 'center',
