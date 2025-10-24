@@ -1,34 +1,90 @@
 /**
- * Application principale - VERSION ULTRA MINIMALE DE DEBUG
- * Aucune dépendance externe
+ * Application principale
+ * Configure les providers et la navigation
  */
 
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { PaperProvider, MD3LightTheme } from 'react-native-paper';
+import { StatusBar } from 'expo-status-bar';
+import ToastManager from 'toastify-react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+// Navigation
+import AppNavigator from './src/navigation/AppNavigator';
+
+// Stores
+import { useAuthStore } from './src/stores/authStore';
+import { useSyncStore } from './src/stores/syncStore';
+
+// Thème personnalisé
+const customTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#6200ee',
+    secondary: '#03dac6',
+    tertiary: '#018786',
+    error: '#b00020',
+    background: '#f5f5f5',
+    surface: '#ffffff',
+  },
+};
 
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
+  const { loadFromStorage } = useAuthStore();
+  const { loadSyncStatus } = useSyncStore();
+
+  /**
+   * Initialisation de l'application
+   */
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        // Charger les données persistées
+        await Promise.all([
+          loadFromStorage(),
+          loadSyncStatus(),
+        ]);
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error);
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    initialize();
+  }, [loadFromStorage, loadSyncStatus]);
+
+  // Afficher un loader pendant l'initialisation
+  if (!isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6200ee" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hello World</Text>
-      <Text style={styles.subtitle}>EBP Mobile App</Text>
-    </View>
+    <GestureHandlerRootView style={styles.container}>
+      <PaperProvider theme={customTheme}>
+        <ToastManager />
+        <StatusBar style="auto" />
+        <AppNavigator />
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
 });

@@ -1,5 +1,4 @@
-// Temporairement désactivé pour debug
-// import 'react-native-gesture-handler';
+import 'react-native-gesture-handler';
 import { registerRootComponent } from 'expo';
 
 import App from './App';
