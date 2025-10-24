@@ -393,6 +393,30 @@ The `./migrate.sh` script:
 3. Token is auto-cached and refreshed
 4. Create migrations in `ninja-one_api/migrations/` for NinjaOne-specific tables
 
+### When Working with NinjaOne Tickets API
+1. **Read** `ninja-one_api/API_TICKETS.md` for complete endpoint documentation
+2. **Use** `TicketQueryService` for all ticket queries (optimized with batch loading)
+3. **Important business logic**:
+   - 78.8% of tickets are unassigned → Use `?unassigned=true` filter
+   - Organization-based views → Use `/api/organizations/:id/tickets`
+   - Technician workload → Use `/api/technicians/:id/tickets`
+   - Statistics → Use `/api/tickets/stats` endpoints
+4. **Common patterns**:
+   ```typescript
+   // Get unassigned tickets for a pool
+   GET /api/tickets?unassigned=true&isClosed=false&sortBy=priority&sortOrder=DESC
+
+   // Get organization dashboard
+   GET /api/organizations/123/tickets/stats
+   GET /api/tickets/stats/by-period?groupBy=month&organizationId=123
+
+   // Get technician workload
+   GET /api/technicians/5/tickets?isClosed=false
+   GET /api/tickets/stats/by-technician
+   ```
+5. **Database schema**: All NinjaOne data is in `ninjaone` schema (separate from `public` and `mobile`)
+6. **Key tables**: `fact_tickets`, `dim_organizations`, `dim_technicians`, `dim_devices`, `dim_time`
+
 ## Testing
 
 ### Backend Tests
