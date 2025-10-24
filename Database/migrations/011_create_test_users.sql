@@ -19,7 +19,7 @@ BEGIN
 END $$;
 
 -- Supprimer les utilisateurs de test existants (si présents)
-DELETE FROM mobile.users WHERE email IN ('admin@test.local', 'manager@test.local');
+DELETE FROM mobile.users WHERE email IN ('admin@solution-logique.fr', 'manager@solution-logique.fr');
 
 -- ============================================================
 -- UTILISATEURS ADMINISTRATEURS
@@ -40,7 +40,7 @@ INSERT INTO mobile.users (
 )
 VALUES (
   gen_random_uuid(),
-  'admin@test.local',
+  'admin@solution-logique.fr',
   '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.',
   'Super Administrateur',
   'super_admin',
@@ -66,7 +66,7 @@ INSERT INTO mobile.users (
 )
 VALUES (
   gen_random_uuid(),
-  'manager@test.local',
+  'manager@solution-logique.fr',
   '$2b$10$N1byxUHQa2O2A7VCRsuNxOhURuHfR0f9gPbB4Th5s5D5IRGors76.',
   'Administrateur',
   'admin',
@@ -87,14 +87,14 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO v_count
   FROM mobile.users
-  WHERE email IN ('admin@test.local', 'manager@test.local');
+  WHERE email IN ('admin@solution-logique.fr', 'manager@solution-logique.fr');
 
   RAISE NOTICE '';
   RAISE NOTICE '✅ Migration 011 appliquée avec succès';
   RAISE NOTICE '👥 % utilisateurs administrateurs créés:', v_count;
   RAISE NOTICE '';
-  RAISE NOTICE '   📧 admin@test.local (Super Admin) - Mot de passe: pass123';
-  RAISE NOTICE '   📧 manager@test.local (Admin) - Mot de passe: pass123';
+  RAISE NOTICE '   📧 admin@solution-logique.fr (Super Admin) - Mot de passe: pass123';
+  RAISE NOTICE '   📧 manager@solution-logique.fr (Admin) - Mot de passe: pass123';
   RAISE NOTICE '';
   RAISE NOTICE '💡 Les autres utilisateurs (collègues EBP) seront importés automatiquement';
   RAISE NOTICE '   depuis la table public."Colleague" avec mot de passe par défaut: pass123';

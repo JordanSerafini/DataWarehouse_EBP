@@ -37,6 +37,7 @@ const AdminUsersScreen = ({ navigation }: any) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [syncing, setSyncing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   // Menu par utilisateur
   const [menuVisible, setMenuVisible] = useState<{ [key: string]: boolean }>({});

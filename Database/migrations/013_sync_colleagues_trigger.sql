@@ -27,7 +27,7 @@ SELECT
       '',
       'g'
     )
-  ) || '@ebp.local' AS suggested_email,
+  ) || '@solution-logique.fr' AS suggested_email,
 
   -- Nom complet
   COALESCE(
