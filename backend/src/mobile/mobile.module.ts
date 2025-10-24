@@ -16,6 +16,7 @@ import { SyncService } from './services/sync.service';
 import { SalesService } from './services/sales.service';
 import { ProjectsService } from './services/projects.service';
 import { CalendarService } from './services/calendar.service';
+import { ActivityService } from './services/activity.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
@@ -25,6 +26,7 @@ import { SyncController } from './controllers/sync.controller';
 import { SalesController } from './controllers/sales.controller';
 import { ProjectsController } from './controllers/projects.controller';
 import { CalendarController } from './controllers/calendar.controller';
+import { ActivityController } from './controllers/activity.controller';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -59,6 +61,7 @@ import { RolesGuard } from './guards/roles.guard';
     SalesController,
     ProjectsController,
     CalendarController,
+    ActivityController,
   ],
   providers: [
     DatabaseService,
@@ -70,6 +73,7 @@ import { RolesGuard } from './guards/roles.guard';
     SalesService,
     ProjectsService,
     CalendarService,
+    ActivityService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
