@@ -14,11 +14,12 @@ import { Organization } from './entities/organization.entity';
 import { Technician } from './entities/technician.entity';
 import { Device } from './entities/device.entity';
 import { Ticket } from './entities/ticket.entity';
+import { Location } from './entities/location.entity';
 
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature([Organization, Technician, Device, Ticket]),
+    TypeOrmModule.forFeature([Organization, Technician, Device, Ticket, Location]),
   ],
   controllers: [
     NinjaOneController,

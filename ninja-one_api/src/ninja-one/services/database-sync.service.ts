@@ -5,6 +5,7 @@ import { Organization } from '../entities/organization.entity';
 import { Technician } from '../entities/technician.entity';
 import { Device } from '../entities/device.entity';
 import { Ticket } from '../entities/ticket.entity';
+import { Location } from '../entities/location.entity';
 import { NinjaOneService } from '../ninja-one.service';
 
 @Injectable()
@@ -20,6 +21,8 @@ export class DatabaseSyncService {
     private deviceRepository: Repository<Device>,
     @InjectRepository(Ticket)
     private ticketRepository: Repository<Ticket>,
+    @InjectRepository(Location)
+    private locationRepository: Repository<Location>,
     private ninjaOneService: NinjaOneService,
   ) {}
 
@@ -369,10 +372,89 @@ export class DatabaseSyncService {
   }
 
   /**
+   * Sync all locations from NinjaOne API to database
+   * Must be called after syncOrganizations()
+   */
+  async syncLocations(): Promise<{
+    synced: number;
+    errors: number;
+    message: string;
+  }> {
+    this.logger.log('Starting locations sync...');
+    let synced = 0;
+    let errors = 0;
+
+    try {
+      // Get all organizations first
+      const organizations = await this.organizationRepository.find();
+
+      for (const org of organizations) {
+        try {
+          // Fetch locations for this organization from NinjaOne API
+          const locations = await this.ninjaOneService.getOrganizationLocations(
+            org.organizationId,
+          );
+
+          for (const loc of locations) {
+            try {
+              const location = this.locationRepository.create({
+                locationId: loc.id,
+                locationUid: loc.uid || undefined,
+                organizationId: org.organizationId,
+                locationName: loc.name,
+                description: loc.description || undefined,
+                address: loc.address || undefined,
+                city: loc.city || undefined,
+                state: loc.state || undefined,
+                country: loc.country || undefined,
+                postalCode: loc.postalCode || undefined,
+                phone: loc.phone || undefined,
+                tags: loc.tags || undefined,
+                customFields: loc.fields || undefined,
+                createdAt: loc.createTime
+                  ? new Date(loc.createTime * 1000)
+                  : undefined,
+                isActive: true,
+                etlSource: 'ninjaone_api',
+              });
+
+              await this.locationRepository.save(location);
+              synced++;
+            } catch (error) {
+              this.logger.error(
+                `Error syncing location ${loc.id} for org ${org.organizationId}: ${error.message}`,
+              );
+              errors++;
+            }
+          }
+        } catch (error) {
+          // If organization has no locations or API error, just log and continue
+          this.logger.warn(
+            `Could not fetch locations for organization ${org.organizationId}: ${error.message}`,
+          );
+        }
+      }
+
+      this.logger.log(
+        `Locations sync completed: ${synced} synced, ${errors} errors`,
+      );
+      return {
+        synced,
+        errors,
+        message: `Locations sync completed: ${synced} synced, ${errors} errors`,
+      };
+    } catch (error) {
+      this.logger.error(`Error in locations sync: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
    * Sync all data from NinjaOne API to database
    */
   async syncAll(): Promise<{
     organizations: any;
+    locations: any;
     technicians: any;
     devices: any;
     tickets: any;
@@ -381,12 +463,14 @@ export class DatabaseSyncService {
     this.logger.log('Starting full sync of all NinjaOne data...');
 
     const organizations = await this.syncOrganizations();
+    const locations = await this.syncLocations();
     const technicians = await this.syncTechnicians();
     const devices = await this.syncDevices();
     const tickets = await this.syncTickets();
 
     return {
       organizations,
+      locations,
       technicians,
       devices,
       tickets,

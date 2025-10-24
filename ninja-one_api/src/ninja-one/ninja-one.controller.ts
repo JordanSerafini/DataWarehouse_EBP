@@ -112,6 +112,11 @@ export class NinjaOneController {
     return this.databaseSyncService.syncOrganizations();
   }
 
+  @Post('sync/locations')
+  async syncLocations() {
+    return this.databaseSyncService.syncLocations();
+  }
+
   @Post('sync/technicians')
   async syncTechnicians() {
     return this.databaseSyncService.syncTechnicians();

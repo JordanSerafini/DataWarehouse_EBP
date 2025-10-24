@@ -9,9 +9,11 @@ import databaseConfig from '../config/database.config';
 // Services
 import { DatabaseService } from './services/database.service';
 import { AuthService } from './services/auth.service';
+import { InterventionsService } from './services/interventions.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
+import { InterventionsController } from './controllers/interventions.controller';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -38,10 +40,11 @@ import { RolesGuard } from './guards/roles.guard';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, InterventionsController],
   providers: [
     DatabaseService,
     AuthService,
+    InterventionsService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
