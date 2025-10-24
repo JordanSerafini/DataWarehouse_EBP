@@ -1,0 +1,45 @@
+
+  async getUsers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+  }): Promise<{
+    data: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const { data } = await this.client.get('/api/v1/users', { params });
+    return data;
+  }
+
+  async getUserById(id: string): Promise<any> {
+    const { data } = await this.client.get(`/api/v1/users/${id}`);
+    return data;
+  }
+
+  async createUser(userData: any): Promise<any> {
+    const { data } = await this.client.post('/api/v1/users', userData);
+    return data;
+  }
+
+  async updateUser(id: string, userData: any): Promise<any> {
+    const { data } = await this.client.put(`/api/v1/users/${id}`, userData);
+    return data;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.client.delete(`/api/v1/users/${id}`);
+  }
+
+  async resetUserPassword(id: string): Promise<any> {
+    const { data } = await this.client.post(`/api/v1/users/${id}/reset-password`);
+    return data;
+  }
+
+  async syncColleagues(): Promise<any> {
+    const { data } = await this.client.post('/api/v1/users/sync/colleagues');
+    return data;
+  }
