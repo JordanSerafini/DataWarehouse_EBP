@@ -314,7 +314,7 @@ export class AuthService {
       email: user.email,
       fullName: user.full_name,
       role: user.role,
-      colleagueId: user.colleague_id,
+      colleagueId: user.colleague_id || undefined,
       permissions: this.getUserPermissions(user.role),
     };
   }
