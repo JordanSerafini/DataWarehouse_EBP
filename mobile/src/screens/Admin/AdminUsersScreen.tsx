@@ -22,6 +22,7 @@ import {
   Menu,
   ActivityIndicator,
   FAB,
+  SegmentedButtons,
 } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { apiService } from '../../services/api.service';
@@ -44,7 +45,7 @@ const AdminUsersScreen = ({ navigation }: any) => {
 
   useEffect(() => {
     loadUsers();
-  }, [page, searchQuery]);
+  }, [page, searchQuery, statusFilter]);
 
   const loadUsers = async () => {
     try {
@@ -55,7 +56,15 @@ const AdminUsersScreen = ({ navigation }: any) => {
         search: searchQuery || undefined,
       });
 
-      setUsers(response.data);
+      // Filtrer localement par statut
+      let filteredData = response.data;
+      if (statusFilter === 'active') {
+        filteredData = response.data.filter((u: any) => u.is_active);
+      } else if (statusFilter === 'inactive') {
+        filteredData = response.data.filter((u: any) => !u.is_active);
+      }
+
+      setUsers(filteredData);
       setTotalPages(response.totalPages);
     } catch (error: any) {
       console.error('Erreur chargement utilisateurs:', error);
@@ -108,22 +117,25 @@ const AdminUsersScreen = ({ navigation }: any) => {
     );
   };
 
-  const handleDeleteUser = async (userId: string, userName: string) => {
+  const handleToggleUserStatus = async (userId: string, userName: string, currentStatus: boolean) => {
+    const action = currentStatus ? 'désactiver' : 'activer';
+    const actionCap = currentStatus ? 'Désactiver' : 'Activer';
+
     Alert.alert(
-      'Désactiver l\'utilisateur',
-      `Voulez-vous vraiment désactiver ${userName} ?`,
+      `${actionCap} l'utilisateur`,
+      `Voulez-vous vraiment ${action} ${userName} ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Désactiver',
-          style: 'destructive',
+          text: actionCap,
+          style: currentStatus ? 'destructive' : 'default',
           onPress: async () => {
             try {
-              await apiService.deleteUser(userId);
-              showToast('Utilisateur désactivé', 'success');
+              await apiService.updateUser(userId, { isActive: !currentStatus });
+              showToast(`Utilisateur ${action === 'activer' ? 'activé' : 'désactivé'}`, 'success');
               loadUsers();
             } catch (error) {
-              showToast('Erreur lors de la désactivation', 'error');
+              showToast(`Erreur lors de la ${action === 'activer' ? 'activation' : 'désactivation'}`, 'error');
             }
           },
         },
@@ -229,10 +241,10 @@ const AdminUsersScreen = ({ navigation }: any) => {
             <Menu.Item
               onPress={() => {
                 toggleMenu(item.id);
-                handleDeleteUser(item.id, item.full_name);
+                handleToggleUserStatus(item.id, item.full_name, item.is_active);
               }}
-              title="Désactiver"
-              leadingIcon="delete"
+              title={item.is_active ? 'Désactiver' : 'Activer'}
+              leadingIcon={item.is_active ? 'cancel' : 'check-circle'}
             />
           </Menu>
         </View>
