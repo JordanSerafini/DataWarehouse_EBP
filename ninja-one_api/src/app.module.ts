@@ -1,12 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NinjaOneModule } from './ninja-one/ninja-one.module';
-import { Organization } from './ninja-one/entities/organization.entity';
-import { Technician } from './ninja-one/entities/technician.entity';
-import { Device } from './ninja-one/entities/device.entity';
-import { Ticket } from './ninja-one/entities/ticket.entity';
+import { CommonModule } from './common';
+import { OrganizationsModule } from './organizations';
+import { LocationsModule } from './locations/locations.module';
+import { TechniciansModule } from './technicians/technicians.module';
+import { DevicesModule } from './devices/devices.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { Organization } from './organizations/entities/organization.entity';
+import { Location } from './locations/entities/location.entity';
+import { Technician } from './technicians/entities/technician.entity';
+import { Device } from './devices/entities/device.entity';
+import { Ticket } from './tickets/entities/ticket.entity';
 
+/**
+ * Module racine de l'application NinjaOne API
+ * Structure modulaire organisée par ressource métier
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,13 +32,18 @@ import { Ticket } from './ninja-one/entities/ticket.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [Organization, Technician, Device, Ticket],
+        entities: [Organization, Location, Technician, Device, Ticket],
         synchronize: false, // We'll use our SQL schema instead
         logging: true,
       }),
       inject: [ConfigService],
     }),
-    NinjaOneModule,
+    CommonModule,
+    OrganizationsModule,
+    LocationsModule,
+    TechniciansModule,
+    DevicesModule,
+    TicketsModule,
   ],
   controllers: [],
   providers: [],
