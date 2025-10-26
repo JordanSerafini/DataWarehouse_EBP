@@ -27,7 +27,12 @@ import {
 } from 'react-native-paper';
 import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { CalendarService, CalendarEvent } from '../../services/calendar.service.v2';
+import {
+  CalendarService,
+  CalendarEvent,
+  getStatusLabel,
+  getStatusColor,
+} from '../../services/calendar.service.v2';
 import { showToast } from '../../utils/toast';
 
 const { width } = Dimensions.get('window');

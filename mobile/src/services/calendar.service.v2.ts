@@ -8,34 +8,60 @@
 
 import { apiService} from './api.service';
 
+// Correspond au backend CalendarEventDto
 export interface CalendarEvent {
   id: string;
-  reference: string;
   title: string;
   description?: string;
-  scheduledDate: string;
-  scheduledEndDate?: string;
-  status: number;
-  statusLabel: string;
-  type: number;
-  typeLabel: string;
-  priority: number;
+  startDateTime: string;
+  endDateTime?: string;
+  eventType: string; // 'intervention' | 'appointment' | 'maintenance'
+  status: string; // 'planned' | 'in_progress' | 'completed' | 'cancelled'
+  colleagueId?: string;
+  colleagueName?: string;
   customerId?: string;
   customerName?: string;
-  technicianId?: string;
-  technicianName?: string;
   address?: string;
   city?: string;
-  postalCode?: string;
+  zipcode?: string;
   latitude?: number;
   longitude?: number;
-  estimatedDuration?: number;
-  actualDuration?: number;
-  timeSpentSeconds?: number;
-  notes?: string;
+  creatorId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Helper pour obtenir le label du statut
+export const getStatusLabel = (status: string): string => {
+  const labels: Record<string, string> = {
+    'planned': 'Planifié',
+    'in_progress': 'En cours',
+    'completed': 'Terminé',
+    'cancelled': 'Annulé',
+  };
+  return labels[status] || status;
+};
+
+// Helper pour obtenir la couleur du statut
+export const getStatusColor = (status: string): string => {
+  const colors: Record<string, string> = {
+    'planned': '#2196F3',      // Bleu
+    'in_progress': '#FF9800',  // Orange
+    'completed': '#4CAF50',    // Vert
+    'cancelled': '#F44336',    // Rouge
+  };
+  return colors[status] || '#9E9E9E';
+};
+
+// Helper pour obtenir le label du type
+export const getEventTypeLabel = (eventType: string): string => {
+  const labels: Record<string, string> = {
+    'intervention': 'Intervention',
+    'appointment': 'Rendez-vous',
+    'maintenance': 'Maintenance',
+  };
+  return labels[eventType] || eventType;
+};
 
 export interface CalendarStats {
   totalEvents: number;
@@ -142,12 +168,12 @@ export class CalendarService {
    */
   static groupEventsByDate(events: CalendarEvent[]): Record<string, CalendarEvent[]> {
     return events.reduce((acc, event) => {
-      // Ignorer les événements sans date planifiée
-      if (!event.scheduledDate) {
+      // Ignorer les événements sans date de début
+      if (!event.startDateTime) {
         return acc;
       }
 
-      const date = event.scheduledDate.split('T')[0]; // YYYY-MM-DD
+      const date = event.startDateTime.split('T')[0]; // YYYY-MM-DD
       if (!acc[date]) {
         acc[date] = [];
       }
@@ -162,8 +188,8 @@ export class CalendarService {
   static getDaysWithEvents(events: CalendarEvent[]): Set<string> {
     return new Set(
       events
-        .filter(event => event.scheduledDate) // Filtrer les événements sans date
-        .map(event => event.scheduledDate.split('T')[0])
+        .filter(event => event.startDateTime) // Filtrer les événements sans date
+        .map(event => event.startDateTime.split('T')[0])
     );
   }
 }
