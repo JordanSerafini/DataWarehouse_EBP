@@ -142,6 +142,11 @@ export class CalendarService {
    */
   static groupEventsByDate(events: CalendarEvent[]): Record<string, CalendarEvent[]> {
     return events.reduce((acc, event) => {
+      // Ignorer les événements sans date planifiée
+      if (!event.scheduledDate) {
+        return acc;
+      }
+
       const date = event.scheduledDate.split('T')[0]; // YYYY-MM-DD
       if (!acc[date]) {
         acc[date] = [];
@@ -155,6 +160,10 @@ export class CalendarService {
    * Obtenir les jours du mois avec événements
    */
   static getDaysWithEvents(events: CalendarEvent[]): Set<string> {
-    return new Set(events.map(event => event.scheduledDate.split('T')[0]));
+    return new Set(
+      events
+        .filter(event => event.scheduledDate) // Filtrer les événements sans date
+        .map(event => event.scheduledDate.split('T')[0])
+    );
   }
 }

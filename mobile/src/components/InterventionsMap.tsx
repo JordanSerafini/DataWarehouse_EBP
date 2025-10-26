@@ -16,6 +16,7 @@ import { Text, Card, Chip, ActivityIndicator, Button } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { showToast } from '../utils/toast';
+import { InterventionStatus } from '../services/intervention.service';
 
 /**
  * Interface Intervention simplifiée pour la carte
@@ -27,7 +28,7 @@ export interface MapIntervention {
   address?: string;
   latitude?: number;
   longitude?: number;
-  status: string;
+  status: InterventionStatus;
   scheduledDate?: string;
 }
 
@@ -100,16 +101,18 @@ export const InterventionsMap: React.FC<InterventionsMapProps> = ({
   /**
    * Couleur marqueur selon statut
    */
-  const getMarkerColor = (status: string): string => {
+  const getMarkerColor = (status: InterventionStatus): string => {
     switch (status) {
-      case 'PENDING':
+      case InterventionStatus.PENDING:
         return '#ff9800'; // Orange
-      case 'IN_PROGRESS':
+      case InterventionStatus.IN_PROGRESS:
         return '#2196f3'; // Bleu
-      case 'COMPLETED':
+      case InterventionStatus.COMPLETED:
         return '#4caf50'; // Vert
-      case 'CANCELLED':
+      case InterventionStatus.CANCELLED:
         return '#f44336'; // Rouge
+      case InterventionStatus.SCHEDULED:
+        return '#9c27b0'; // Violet
       default:
         return '#9e9e9e'; // Gris
     }
@@ -118,16 +121,18 @@ export const InterventionsMap: React.FC<InterventionsMapProps> = ({
   /**
    * Label statut
    */
-  const getStatusLabel = (status: string): string => {
+  const getStatusLabel = (status: InterventionStatus): string => {
     switch (status) {
-      case 'PENDING':
+      case InterventionStatus.PENDING:
         return 'En attente';
-      case 'IN_PROGRESS':
+      case InterventionStatus.IN_PROGRESS:
         return 'En cours';
-      case 'COMPLETED':
+      case InterventionStatus.COMPLETED:
         return 'Terminée';
-      case 'CANCELLED':
+      case InterventionStatus.CANCELLED:
         return 'Annulée';
+      case InterventionStatus.SCHEDULED:
+        return 'Planifiée';
       default:
         return 'Inconnu';
     }
@@ -187,6 +192,30 @@ export const InterventionsMap: React.FC<InterventionsMapProps> = ({
         <Text variant="bodyMedium" style={styles.loadingText}>
           Chargement de la carte...
         </Text>
+      </View>
+    );
+  }
+
+  // Si aucune intervention n'a de GPS
+  if (interventionsWithGPS.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Card style={styles.emptyCard}>
+          <Card.Content style={styles.emptyContent}>
+            <Ionicons name="location-outline" size={64} color="#9e9e9e" />
+            <Text variant="titleLarge" style={styles.emptyTitle}>
+              Aucune intervention géolocalisée
+            </Text>
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              Les interventions sans coordonnées GPS ne peuvent pas être affichées sur la carte.
+            </Text>
+            {interventions.length > 0 && (
+              <Text variant="bodySmall" style={styles.emptyHint}>
+                {interventions.length} intervention{interventions.length > 1 ? 's' : ''} au total
+              </Text>
+            )}
+          </Card.Content>
+        </Card>
       </View>
     );
   }
@@ -299,6 +328,38 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     color: '#757575',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 32,
+  },
+  emptyCard: {
+    width: '100%',
+    maxWidth: 400,
+    elevation: 4,
+  },
+  emptyContent: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyTitle: {
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    marginTop: 8,
+    textAlign: 'center',
+    color: '#757575',
+  },
+  emptyHint: {
+    marginTop: 16,
+    color: '#9e9e9e',
+    fontStyle: 'italic',
   },
   controls: {
     position: 'absolute',
