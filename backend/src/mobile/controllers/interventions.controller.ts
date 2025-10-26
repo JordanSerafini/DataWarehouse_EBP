@@ -121,9 +121,9 @@ export class InterventionsController {
   }
 
   /**
-   * Récupère une intervention par ID
+   * Recherche d'interventions (endpoint générique)
    */
-  @Get(':id')
+  @Get('search')
   @Roles(
     UserRole.TECHNICIEN,
     UserRole.CHEF_CHANTIER,
@@ -133,18 +133,28 @@ export class InterventionsController {
     UserRole.SUPER_ADMIN,
   )
   @ApiOperation({
-    summary: 'Détail intervention',
-    description: 'Récupère les détails d\'une intervention',
+    summary: 'Recherche interventions',
+    description: 'Recherche d\'interventions avec filtres (pour les admins)',
   })
-  @ApiParam({ name: 'id', description: 'ID de l\'intervention (UUID)' })
   @ApiResponse({
     status: 200,
-    description: 'Détail de l\'intervention',
-    type: InterventionDto,
+    description: 'Liste des interventions',
+    type: [InterventionDto],
   })
-  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
-  async getInterventionById(@Param('id') id: string): Promise<InterventionDto> {
-    return this.interventionsService.getInterventionById(id);
+  async searchInterventions(
+    @Query() query: QueryInterventionsDto,
+    @Request() req,
+  ): Promise<InterventionDto[]> {
+    // Pour les techniciens, filtrer par leur ID
+    const technicianId = req.user.role === UserRole.TECHNICIEN ? req.user.colleagueId : null;
+
+    if (technicianId) {
+      return this.interventionsService.getInterventionsForTechnician(technicianId, query);
+    }
+
+    // Pour les admins: TODO - implémenter recherche globale
+    // Pour l'instant, retourne vide pour les non-techniciens
+    return [];
   }
 
   /**
@@ -171,6 +181,79 @@ export class InterventionsController {
     }
 
     return this.interventionsService.getNearbyInterventions(query);
+  }
+
+  /**
+   * Récupère les interventions d'un technicien spécifique (admin uniquement)
+   * IMPORTANT: Cette route doit être AVANT @Get(':id') pour éviter que "technician" soit interprété comme un ID
+   */
+  @Get('technician/:technicianId')
+  @Roles(UserRole.CHEF_CHANTIER, UserRole.PATRON, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Interventions d\'un technicien (admin)',
+    description: 'Récupère les interventions d\'un technicien spécifique',
+  })
+  @ApiParam({ name: 'technicianId', description: 'ID du technicien EBP' })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des interventions',
+    type: [InterventionDto],
+  })
+  async getTechnicianInterventions(
+    @Param('technicianId') technicianId: string,
+    @Query() query: QueryInterventionsDto,
+  ): Promise<InterventionDto[]> {
+    return this.interventionsService.getInterventionsForTechnician(technicianId, query);
+  }
+
+  /**
+   * Récupère les statistiques d'un technicien spécifique (admin uniquement)
+   */
+  @Get('technician/:technicianId/stats')
+  @Roles(UserRole.CHEF_CHANTIER, UserRole.PATRON, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Statistiques technicien (admin)',
+    description: 'Statistiques d\'un technicien spécifique',
+  })
+  @ApiParam({ name: 'technicianId', description: 'ID du technicien EBP' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistiques',
+    type: TechnicianStatsDto,
+  })
+  async getTechnicianStatsById(
+    @Param('technicianId') technicianId: string,
+  ): Promise<TechnicianStatsDto> {
+    return this.interventionsService.getTechnicianStats(technicianId);
+  }
+
+  /**
+   * Récupère une intervention par ID
+   * IMPORTANT: Cette route doit être APRÈS les routes spécifiques (search, nearby, technician, etc.)
+   * car :id matche tout segment d'URL
+   */
+  @Get(':id')
+  @Roles(
+    UserRole.TECHNICIEN,
+    UserRole.CHEF_CHANTIER,
+    UserRole.COMMERCIAL,
+    UserRole.PATRON,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
+  @ApiOperation({
+    summary: 'Détail intervention',
+    description: 'Récupère les détails d\'une intervention',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Détail de l\'intervention',
+    type: InterventionDto,
+  })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async getInterventionById(@Param('id') id: string): Promise<InterventionDto> {
+    return this.interventionsService.getInterventionById(id);
   }
 
   /**
@@ -273,49 +356,6 @@ export class InterventionsController {
   ): Promise<{ success: boolean; message: string }> {
     const technicianId = req.user.colleagueId;
     return this.interventionsService.createTimesheet(technicianId, dto);
-  }
-
-  /**
-   * Récupère les interventions d'un technicien spécifique (admin uniquement)
-   */
-  @Get('technician/:technicianId')
-  @Roles(UserRole.CHEF_CHANTIER, UserRole.PATRON, UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  @ApiOperation({
-    summary: 'Interventions d\'un technicien (admin)',
-    description: 'Récupère les interventions d\'un technicien spécifique',
-  })
-  @ApiParam({ name: 'technicianId', description: 'ID du technicien EBP' })
-  @ApiResponse({
-    status: 200,
-    description: 'Liste des interventions',
-    type: [InterventionDto],
-  })
-  async getTechnicianInterventions(
-    @Param('technicianId') technicianId: string,
-    @Query() query: QueryInterventionsDto,
-  ): Promise<InterventionDto[]> {
-    return this.interventionsService.getInterventionsForTechnician(technicianId, query);
-  }
-
-  /**
-   * Récupère les statistiques d'un technicien spécifique (admin uniquement)
-   */
-  @Get('technician/:technicianId/stats')
-  @Roles(UserRole.CHEF_CHANTIER, UserRole.PATRON, UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  @ApiOperation({
-    summary: 'Statistiques technicien (admin)',
-    description: 'Statistiques d\'un technicien spécifique',
-  })
-  @ApiParam({ name: 'technicianId', description: 'ID du technicien EBP' })
-  @ApiResponse({
-    status: 200,
-    description: 'Statistiques',
-    type: TechnicianStatsDto,
-  })
-  async getTechnicianStatsById(
-    @Param('technicianId') technicianId: string,
-  ): Promise<TechnicianStatsDto> {
-    return this.interventionsService.getTechnicianStats(technicianId);
   }
 
   /**

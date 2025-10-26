@@ -2,9 +2,9 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { DatabaseService } from './database.service';
 import {
   InterventionDto,
-  InterventionPriorityDto,
   InterventionStatusDto,
   InterventionTypeDto,
+  InterventionPriorityDto,
   InterventionWithDistanceDto,
   TechnicianStatsDto,
 } from '../dto/interventions/intervention.dto';
@@ -125,42 +125,19 @@ export class InterventionsService {
     this.logger.log(`Fetching intervention: ${interventionId}`);
 
     try {
-      const result = await this.databaseService.query<InterventionDto>(
-        `
-        SELECT
-          se."Id"::text as "interventionId",
-          COALESCE(se."Maintenance_InterventionDescription", se."Caption") as title,
-          se."Maintenance_InterventionReport" as description,
-          c."Name" as "customerName",
-          cnt."Contact_Phone" as "contactPhone",
-          CONCAT_WS(', ',
-            se."Address_Address1",
-            se."Address_Address2",
-            se."Address_ZipCode",
-            se."Address_City"
-          ) as address,
-          se."Address_City" as city,
-          se."Address_Latitude" as latitude,
-          se."Address_Longitude" as longitude,
-          se."StartDate" as "startDate",
-          se."EndDate" as "endDate",
-          se."EventState" as status,
-          se."ExpectedDuration_DurationInHours" as "estimatedDuration",
-          se."AchievedDuration_DurationInHours" as "achievedDuration",
-          se."NotesClear" as notes
-        FROM public."ScheduleEvent" se
-        LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
-        LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
+      const sql = `
+        ${InterventionsService.INTERVENTION_BASE_QUERY}
         WHERE se."Id" = $1
-        `,
-        [interventionId],
-      );
+        LIMIT 1
+      `;
+
+      const result = await this.databaseService.query(sql, [interventionId]);
 
       if (result.rows.length === 0) {
         throw new NotFoundException(`Intervention ${interventionId} non trouvée`);
       }
 
-      return result.rows[0];
+      return this.buildInterventionDto(result.rows[0]);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       this.logger.error(`Error fetching intervention ${interventionId}:`, error);
@@ -249,7 +226,7 @@ export class InterventionsService {
 
     try {
       // Vérifier que l'intervention existe et appartient au technicien
-      const intervention = await this.getInterventionById(interventionId);
+      await this.getInterventionById(interventionId);
 
       // Mettre à jour le statut et la date de début
       await this.databaseService.query(
@@ -431,6 +408,123 @@ export class InterventionsService {
     } catch (error) {
       this.logger.error('Error creating timesheet:', error);
       throw new BadRequestException('Erreur lors de l\'enregistrement du temps');
+    }
+  }
+
+  /**
+   * Résout la date de début pour une requête de plage de dates
+   * Par défaut: début du jour actuel
+   */
+  private resolveDateRangeStart(dateFrom?: Date | string): Date {
+    if (dateFrom) {
+      return typeof dateFrom === 'string' ? new Date(dateFrom) : dateFrom;
+    }
+    // Par défaut: début d'aujourd'hui
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
+  /**
+   * Résout la date de fin pour une requête de plage de dates
+   * Par défaut: 30 jours à partir d'aujourd'hui
+   */
+  private resolveDateRangeEnd(dateTo?: Date | string): Date {
+    if (dateTo) {
+      return typeof dateTo === 'string' ? new Date(dateTo) : dateTo;
+    }
+    // Par défaut: 30 jours à partir d'aujourd'hui
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+    future.setHours(23, 59, 59, 999);
+    return future;
+  }
+
+  /**
+   * Construit un DTO d'intervention à partir d'une ligne de base de données
+   */
+  private buildInterventionDto(row: any): InterventionDto {
+    const status = this.mapEventStateToStatusDto(row.eventState);
+    const estimatedMinutes = parseFloat(row.estimatedDurationHours) * 60 || undefined;
+    const actualMinutes = parseFloat(row.achievedDurationHours) * 60 || undefined;
+
+    return {
+      id: row.id,
+      reference: row.reference || '',
+      title: row.title || '',
+      description: row.description || undefined,
+      scheduledDate: row.scheduledDate?.toISOString() || new Date().toISOString(),
+      scheduledEndDate: row.scheduledEndDate?.toISOString() || undefined,
+      actualStartDate: undefined,
+      actualEndDate: undefined,
+      status: status,
+      statusLabel: this.getStatusLabel(status),
+      type: InterventionTypeDto.MAINTENANCE, // Par défaut, pourrait être dérivé de EventType
+      typeLabel: 'Maintenance',
+      priority: InterventionPriorityDto.NORMAL, // Par défaut, EBP n'a pas de priorité
+      customerId: row.customerId || undefined,
+      customerName: row.customerName || undefined,
+      contactPhone: row.contactPhone || undefined,
+      projectId: undefined,
+      projectName: undefined,
+      technicianId: row.technicianId || undefined,
+      technicianName: row.technicianName || undefined,
+      address: row.address || undefined,
+      city: row.city || undefined,
+      postalCode: row.postalCode || undefined,
+      latitude: row.latitude ? parseFloat(row.latitude) : undefined,
+      longitude: row.longitude ? parseFloat(row.longitude) : undefined,
+      estimatedDuration: estimatedMinutes,
+      actualDuration: actualMinutes,
+      notes: row.notes || undefined,
+      createdAt: row.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: row.updatedAt?.toISOString() || undefined,
+    };
+  }
+
+  /**
+   * Mappe EventState de EBP vers InterventionStatusDto
+   */
+  private mapEventStateToStatusDto(eventState: number): InterventionStatusDto {
+    // Mapping basé sur les valeurs EBP EventState:
+    // 0 = Planned/Scheduled
+    // 1 = In Progress (ou Confirmed)
+    // 2 = Completed
+    // 3 = Cancelled
+    // 4 = Pending
+    switch (eventState) {
+      case 0:
+        return InterventionStatusDto.SCHEDULED;
+      case 1:
+        return InterventionStatusDto.IN_PROGRESS;
+      case 2:
+        return InterventionStatusDto.COMPLETED;
+      case 3:
+        return InterventionStatusDto.CANCELLED;
+      case 4:
+        return InterventionStatusDto.PENDING;
+      default:
+        return InterventionStatusDto.SCHEDULED;
+    }
+  }
+
+  /**
+   * Retourne le libellé français d'un statut
+   */
+  private getStatusLabel(status: InterventionStatusDto): string {
+    switch (status) {
+      case InterventionStatusDto.SCHEDULED:
+        return 'Planifiée';
+      case InterventionStatusDto.IN_PROGRESS:
+        return 'En cours';
+      case InterventionStatusDto.COMPLETED:
+        return 'Terminée';
+      case InterventionStatusDto.CANCELLED:
+        return 'Annulée';
+      case InterventionStatusDto.PENDING:
+        return 'En attente';
+      default:
+        return 'Planifiée';
     }
   }
 }
