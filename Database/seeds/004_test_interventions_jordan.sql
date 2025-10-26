@@ -200,7 +200,6 @@ BEGIN
             'Réparation système électrique',
             v_jordan_id, v_customer_id,
             NOW() - INTERVAL '1 hour', NOW() + INTERVAL '2 hours',
-            NOW() - INTERVAL '1 hour',
             1, -- IN_PROGRESS
             'bb9d173f-9937-4cde-a665-58a66a24ea15'::uuid, -- Rendez-vous
             2.5, 1.0, -- 1h déjà passée
@@ -442,7 +441,6 @@ BEGIN
             "Maintenance_InterventionReport",
             "ColleagueId", "CustomerId",
             "StartDateTime", "EndDateTime",
-            "ActualStartDate", "EndDate",
             "EventState", "EventType",
             "ExpectedDuration_DurationInHours", "AchievedDuration_DurationInHours",
             "Address_Address1", "Address_City", "Address_ZipCode",
@@ -490,8 +488,6 @@ BEGIN
             'Maintenance préventive mensuelle',
             'Contrôle effectué. Tous systèmes OK. Prochaine maintenance dans 1 mois.',
             v_jordan_id, v_customer_id,
-            NOW() - INTERVAL '1 day' - INTERVAL '5 hours',
-            NOW() - INTERVAL '1 day' - INTERVAL '2 hours',
             NOW() - INTERVAL '1 day' - INTERVAL '5 hours',
             NOW() - INTERVAL '1 day' - INTERVAL '2 hours',
             2, -- COMPLETED
