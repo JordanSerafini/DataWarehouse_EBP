@@ -73,7 +73,7 @@ export class CalendarController {
     @Request() req,
     @Query() query: QueryCalendarEventsDto,
   ): Promise<CalendarEventDto[]> {
-    const technicianId = req.user.userId;
+    const technicianId = req.user.colleagueId; // Utiliser colleagueId pour ScheduleEvent
     return this.calendarService.getEventsForTechnician(technicianId, query);
   }
 
@@ -99,7 +99,7 @@ export class CalendarController {
     type: [CalendarEventDto],
   })
   async getTodayEvents(@Request() req): Promise<CalendarEventDto[]> {
-    const technicianId = req.user.userId;
+    const technicianId = req.user.colleagueId;
     return this.calendarService.getTodayEvents(technicianId);
   }
 
@@ -125,7 +125,7 @@ export class CalendarController {
     type: [CalendarEventDto],
   })
   async getWeekEvents(@Request() req): Promise<CalendarEventDto[]> {
-    const technicianId = req.user.userId;
+    const technicianId = req.user.colleagueId;
     return this.calendarService.getWeekEvents(technicianId);
   }
 
@@ -165,7 +165,7 @@ export class CalendarController {
     @Param('year') year: number,
     @Param('month') month: number,
   ): Promise<CalendarEventDto[]> {
-    const technicianId = req.user.userId;
+    const technicianId = req.user.colleagueId;
     return this.calendarService.getMonthEvents(technicianId, +year, +month);
   }
 
@@ -239,7 +239,7 @@ export class CalendarController {
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
   ): Promise<CalendarStatsDto> {
-    const technicianId = req.user.userId;
+    const technicianId = req.user.colleagueId;
     return this.calendarService.getCalendarStats(
       technicianId,
       new Date(startDate),

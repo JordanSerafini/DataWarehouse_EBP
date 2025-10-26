@@ -28,7 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { InterventionService, Intervention } from '../../services/intervention.service';
+import { InterventionService, Intervention, InterventionStatus } from '../../services/intervention.service';
 import { showToast } from '../../utils/toast';
 import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
@@ -172,16 +172,18 @@ const InterventionDetailsScreenV2 = () => {
   /**
    * Obtenir la couleur du statut
    */
-  const getStatusColor = (status?: string) => {
+  const getStatusColor = (status?: InterventionStatus) => {
     switch (status) {
-      case 'PENDING':
+      case InterventionStatus.PENDING:
         return '#ff9800';
-      case 'IN_PROGRESS':
+      case InterventionStatus.IN_PROGRESS:
         return '#2196f3';
-      case 'COMPLETED':
+      case InterventionStatus.COMPLETED:
         return '#4caf50';
-      case 'CANCELLED':
+      case InterventionStatus.CANCELLED:
         return '#f44336';
+      case InterventionStatus.SCHEDULED:
+        return '#9c27b0';
       default:
         return '#9e9e9e';
     }
@@ -190,16 +192,18 @@ const InterventionDetailsScreenV2 = () => {
   /**
    * Obtenir le libellé du statut
    */
-  const getStatusLabel = (status?: string) => {
+  const getStatusLabel = (status?: InterventionStatus) => {
     switch (status) {
-      case 'PENDING':
+      case InterventionStatus.PENDING:
         return 'En attente';
-      case 'IN_PROGRESS':
+      case InterventionStatus.IN_PROGRESS:
         return 'En cours';
-      case 'COMPLETED':
+      case InterventionStatus.COMPLETED:
         return 'Terminée';
-      case 'CANCELLED':
+      case InterventionStatus.CANCELLED:
         return 'Annulée';
+      case InterventionStatus.SCHEDULED:
+        return 'Planifiée';
       default:
         return 'Inconnu';
     }
@@ -228,9 +232,9 @@ const InterventionDetailsScreenV2 = () => {
     );
   }
 
-  const canStart = intervention.status === 'PENDING';
-  const canComplete = intervention.status === 'IN_PROGRESS';
-  const canAddMedia = intervention.status === 'IN_PROGRESS' || intervention.status === 'COMPLETED';
+  const canStart = intervention.status === InterventionStatus.PENDING;
+  const canComplete = intervention.status === InterventionStatus.IN_PROGRESS;
+  const canAddMedia = intervention.status === InterventionStatus.IN_PROGRESS || intervention.status === InterventionStatus.COMPLETED;
 
   return (
     <ScrollView
@@ -369,7 +373,7 @@ const InterventionDetailsScreenV2 = () => {
           console.log('Time saved:', timeSpent);
           loadIntervention(); // Recharger pour rafraîchir
         }}
-        disabled={intervention.status !== 'IN_PROGRESS'}
+        disabled={intervention.status !== InterventionStatus.IN_PROGRESS}
       />
 
       {/* Photos (si intervention en cours ou terminée) */}
@@ -445,7 +449,7 @@ const InterventionDetailsScreenV2 = () => {
               Clôturer l'intervention
             </Button>
           )}
-          {intervention.status === 'COMPLETED' && (
+          {intervention.status === InterventionStatus.COMPLETED && (
             <View style={styles.completedBadge}>
               <Ionicons name="checkmark-circle" size={48} color="#4caf50" />
               <Text variant="titleMedium" style={styles.completedText}>

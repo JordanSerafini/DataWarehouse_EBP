@@ -66,7 +66,7 @@ export interface InterventionFiles {
 }
 
 export interface QueryInterventionsParams {
-  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status?: InterventionStatus;
   startDate?: string;
   endDate?: string;
   customerId?: string;
@@ -78,7 +78,7 @@ export interface QueryNearbyParams {
   latitude: number;
   longitude: number;
   radius?: number; // En kilomètres (défaut: 10km)
-  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  status?: InterventionStatus;
 }
 
 export interface StartInterventionDto {
