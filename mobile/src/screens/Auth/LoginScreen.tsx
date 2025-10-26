@@ -28,8 +28,9 @@ import { BiometricService } from '../../services/biometric.service';
 import { BiometricPrompt } from '../../components/BiometricPrompt';
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Pré-remplir avec Jordan pour les tests (DEV uniquement)
+  const [email, setEmail] = useState(__DEV__ ? 'jordan@solution-logique.fr' : '');
+  const [password, setPassword] = useState(__DEV__ ? 'pass123' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');

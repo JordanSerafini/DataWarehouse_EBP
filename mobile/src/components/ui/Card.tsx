@@ -57,7 +57,7 @@ export function Card({
   `;
 
   // Contenu de la carte
-  const CardContent = () => (
+  const InnerCardContent = () => (
     <>
       {/* Glassmorphism avec BlurView (Tendance 2025) */}
       {variant === 'glass' && blur && Platform.OS !== 'web' ? (
@@ -77,7 +77,7 @@ export function Card({
         onPress={onPress}
         {...(props as PressableProps)}
       >
-        <CardContent />
+        <InnerCardContent />
       </Pressable>
     );
   }
@@ -85,7 +85,7 @@ export function Card({
   // Sinon, utiliser View simple
   return (
     <View className={combinedClassName} {...(props as ViewProps)}>
-      <CardContent />
+      <InnerCardContent />
     </View>
   );
 }

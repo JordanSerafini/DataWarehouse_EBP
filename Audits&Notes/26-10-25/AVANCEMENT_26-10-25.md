@@ -152,13 +152,103 @@ PUT  /api/v1/customers/:id/gps
 
 ---
 
+### Phase Backend - Tests & Seeds (100% ✅) 🆕
+
+**Objectif :** Implémenter endpoint TimeSheet backend + créer données de test
+
+**Tâches accomplies :**
+
+#### 1. Backend TimeSheet Endpoint ✅
+- ✅ **DTO** : `UpdateTimeSpentDto` - Validation temps en secondes
+- ✅ **Service** : `InterventionsService.updateTimeSpent()` - Conversion secondes ↔ heures
+- ✅ **Controller** : `PUT /api/v1/interventions/:id/time` - Endpoint sécurisé avec roles
+- ✅ **DTO Response** : Ajout champ `timeSpentSeconds` dans `InterventionDto`
+- ✅ **Mobile Service** : `InterventionService.updateTimeSpent()` - Appel API
+- ✅ **Mobile Component** : `TimeSheet.tsx` - Connexion API (TODO removed)
+
+**Implémentation TimeSheet :**
+```typescript
+// Backend
+PUT /api/v1/interventions/:id/time
+Body: { "timeSpentSeconds": 7200 }  // 2 heures
+
+// Conversion automatique
+7200 secondes → 2.0 heures → AchievedDuration_DurationInHours
+
+// Mobile
+await InterventionService.updateTimeSpent(interventionId, 7200);
+```
+
+#### 2. Database Seeds (données de test) ✅
+- ✅ **001_create_jordan_user.sql** - Utilisateur Jordan dans `mobile.users`
+  - Email: jordan@solution-logique.fr
+  - Mot de passe: password123 (bcrypt)
+  - Rôle: super_admin
+  - Colleague ID: JORDAN
+
+- ✅ **003_jordan_colleague_ebp.sql** - Colleague Jordan dans `public."Colleague"`
+  - ID: JORDAN
+  - Configuration horaires de travail (8h-18h)
+  - 44 colonnes NOT NULL gérées
+
+- ✅ **004_test_interventions_jordan.sql** - 5 interventions de test
+  - INT-001: PENDING (dans 2h)
+  - INT-002: IN_PROGRESS (1h passée) - **Pour tester TimeSheet**
+  - INT-003: SCHEDULED (demain 9h)
+  - INT-004: SCHEDULED (après-demain 14h)
+  - INT-005: COMPLETED (hier, 2h45)
+  - Gestion 130 colonnes NOT NULL de ScheduleEvent (PayrollVariable, ExceptionDaySchedule)
+
+#### 3. Tests Backend API ✅
+- ✅ **Login** : `POST /api/v1/auth/login` - JWT token généré
+- ✅ **Interventions** : `GET /api/v1/interventions/my-interventions` - 9 interventions (5 test + 4 anciennes)
+- ✅ **TimeSheet** : `PUT /api/v1/interventions/:id/time` - Mise à jour 1h → 2h réussie
+
+**Résultats Tests :**
+```bash
+# Login Jordan
+✅ Token JWT reçu (expire dans 7 jours)
+✅ User info: super_admin, permissions: ["*"]
+
+# Liste interventions
+✅ 9 interventions retournées
+✅ Champ timeSpentSeconds présent (3600s pour INT-002)
+
+# Update TimeSheet INT-002
+✅ 3600s (1h) → 7200s (2h)
+✅ actualDuration: 60min → 120min
+✅ updatedAt: 2025-10-26T08:58:14.035Z
+```
+
+**Fichiers créés :**
+- `backend/src/mobile/dto/interventions/update-time-spent.dto.ts` (20 lignes)
+- `Database/seeds/001_create_jordan_user.sql` (71 lignes)
+- `Database/seeds/003_jordan_colleague_ebp.sql` (209 lignes)
+- `Database/seeds/004_test_interventions_jordan.sql` (541 lignes)
+
+**Fichiers modifiés :**
+- `backend/src/mobile/services/interventions.service.ts` (ajout updateTimeSpent)
+- `backend/src/mobile/controllers/interventions.controller.ts` (ajout PUT /time)
+- `backend/src/mobile/dto/interventions/intervention.dto.ts` (ajout timeSpentSeconds)
+- `mobile/src/services/intervention.service.ts` (ajout updateTimeSpent)
+- `mobile/src/components/TimeSheet.tsx` (connexion API)
+
+**Endpoints testés :**
+```bash
+POST /api/v1/auth/login
+GET  /api/v1/interventions/my-interventions
+PUT  /api/v1/interventions/:id/time
+```
+
+---
+
 ## 📈 Statistiques Globales
 
-- **Durée session :** ~6 heures
-- **Phases complétées :** 4/15 (Phase 2, 3, 3 bis, 4) - **267% objectif initial**
-- **Fichiers créés :** 14 nouveaux fichiers
-- **Fichiers modifiés :** 10 fichiers
-- **Lignes de code :** ~4500 lignes
+- **Durée session :** ~7 heures
+- **Phases complétées :** 5/15 (Phase 2, 3, 3 bis, 4, Backend Tests) - **333% objectif initial**
+- **Fichiers créés :** 18 nouveaux fichiers (14 mobile + 4 seeds/backend)
+- **Fichiers modifiés :** 15 fichiers
+- **Lignes de code :** ~5400 lignes (4500 mobile + 900 backend/seeds)
 - **Packages installés :** 6 packages Expo
 - **Bugs corrigés :** 2 (LoginCredentials type, authStore imports)
 - **Features bonus :** TimeSheet + Carte GPS + Vue 360° clients
@@ -174,7 +264,7 @@ PUT  /api/v1/customers/:id/gps
 - ✅ Upload photos/signature opérationnel
 - ✅ Authentification JWT + RBAC
 - ✅ 6 rôles utilisateurs
-- ⚠️ **TODO Backend** : Endpoint PUT `/interventions/:id/time` pour TimeSheet
+- ✅ **TimeSheet Endpoint** : `PUT /interventions/:id/time` - Conversion secondes ↔ heures ✅
 
 ### Mobile (avancement majeur)
 - ✅ **Authentification** : Login + biométrie + auto-login

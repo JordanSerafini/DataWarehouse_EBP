@@ -13,13 +13,13 @@
  */
 
 // ⚠️ CONFIGUREZ VOTRE IP ICI ⬇️
-const BACKEND_IP = '192.168.1.100'; // Remplacez par votre IP locale !
+const BACKEND_IP = 'localhost'; // localhost pour émulateur/simulateur sur même machine
 const BACKEND_PORT = '3000';
 
 export const API_CONFIG = {
   // URL du backend NestJS
   BASE_URL: __DEV__
-    ? `https://98cb69d0c15f.ngrok-free.app` // Development - utilisable depuis le téléphone
+    ? `https://f572d3bf08e6.ngrok-free.app` // Development - ngrok pour téléphone physique
     : 'https://api.votre-domaine.com', // Production
 
   // Version de l'API

@@ -17,7 +17,7 @@ import { ScrollableTabBar } from '../components/ScrollableTabBar';
 // Screens
 import LoginScreen from '../screens/Auth/LoginScreen';
 import PlanningScreen from '../screens/Planning/PlanningScreen';
-// import CalendarScreen from '../screens/Calendar/CalendarScreen'; // TEMP: Commented to debug displayName error
+import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
 import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
@@ -88,11 +88,9 @@ const BottomTabsNavigator = () => {
             case 'Planning':
               iconName = focused ? 'calendar' : 'calendar-outline';
               break;
-            /* TEMP: Commented to debug displayName error
             case 'Calendar':
               iconName = focused ? 'calendar-sharp' : 'calendar-outline';
               break;
-            */
             case 'Tasks':
               iconName = focused ? 'list' : 'list-outline';
               break;
@@ -130,13 +128,11 @@ const BottomTabsNavigator = () => {
         component={PlanningScreen}
         options={{ title: 'Planning' }}
       />
-      {/* TEMP: Commented to debug displayName error
       <Tab.Screen
         name="Calendar"
         component={CalendarScreen}
         options={{ title: 'Calendrier' }}
       />
-      */}
       <Tab.Screen
         name="Tasks"
         component={TasksScreen}
