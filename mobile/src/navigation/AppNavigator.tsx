@@ -27,6 +27,7 @@ import ProjectDetailsScreen from '../screens/Projects/ProjectDetailsScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import AdminUsersScreen from '../screens/Admin/AdminUsersScreen';
 import UserFormScreen from '../screens/Admin/UserFormScreen';
+import UITestScreen from '../screens/Test/UITestScreen';
 
 // Stores
 import { useAuthStore } from '../stores/authStore';
@@ -50,6 +51,7 @@ export type BottomTabParamList = {
   Projects: undefined;
   Admin: undefined;
   Profile: undefined;
+  UITest: undefined; // Dev only
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -94,6 +96,9 @@ const BottomTabsNavigator = () => {
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
+              break;
+            case 'UITest':
+              iconName = focused ? 'flask' : 'flask-outline';
               break;
             default:
               iconName = 'help-outline';
@@ -148,6 +153,16 @@ const BottomTabsNavigator = () => {
         component={ProfileScreen}
         options={{ title: 'Profil' }}
       />
+      {__DEV__ && (
+        <Tab.Screen
+          name="UITest"
+          component={UITestScreen}
+          options={{
+            title: 'UI Test',
+            tabBarBadge: 'DEV'
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 };

@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
 
       // Appeler l'API de login
-      const response = await apiService.login({ email, password });
+      const response = await apiService.login({ username: email, password });
 
       const user: User = {
         id: response.user.id,

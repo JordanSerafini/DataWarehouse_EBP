@@ -3,6 +3,8 @@
  * Configure les providers et la navigation
  */
 
+import './global.css'; // NativeWind styles
+
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
