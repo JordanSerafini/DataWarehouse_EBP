@@ -199,7 +199,7 @@ export class FileService {
     file: UploadedFile,
     interventionId: string,
     userId: string,
-    signerName: string,
+    signerName?: string,
   ): Promise<FileMetadata> {
     this.logger.log(`Uploading signature for intervention ${interventionId}`);
 
