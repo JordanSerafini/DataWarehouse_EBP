@@ -31,6 +31,8 @@ import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
 import { useAuthStore } from '../../stores/authStore';
 import { showToast } from '../../utils/toast';
+import { InterventionsMap, MapIntervention } from '../../components/InterventionsMap';
+import { Ionicons } from '@expo/vector-icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 
@@ -45,6 +47,7 @@ const InterventionsScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<InterventionStatus[]>([]);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   /**
    * Charger les interventions depuis l'API
@@ -259,48 +262,86 @@ const InterventionsScreen = () => {
         </View>
       </View>
 
-      {/* Statistiques */}
+      {/* Statistiques et toggle vue */}
       <View style={styles.statsContainer}>
         <Text variant="bodyMedium" style={styles.statsText}>
           {filteredInterventions.length} intervention(s)
           {selectedStatuses.length > 0 && ' filtrée(s)'}
         </Text>
-        {selectedStatuses.length > 0 && (
+        <View style={styles.viewToggle}>
+          {selectedStatuses.length > 0 && (
+            <Button
+              mode="text"
+              onPress={() => setSelectedStatuses([])}
+              compact
+              style={styles.clearButton}
+            >
+              Réinitialiser
+            </Button>
+          )}
           <Button
-            mode="text"
-            onPress={() => setSelectedStatuses([])}
+            mode={viewMode === 'list' ? 'contained' : 'outlined'}
+            onPress={() => setViewMode('list')}
             compact
-            style={styles.clearButton}
+            icon="format-list-bulleted"
+            style={styles.viewButton}
           >
-            Réinitialiser
+            Liste
           </Button>
-        )}
+          <Button
+            mode={viewMode === 'map' ? 'contained' : 'outlined'}
+            onPress={() => setViewMode('map')}
+            compact
+            icon="map"
+            style={styles.viewButton}
+          >
+            Carte
+          </Button>
+        </View>
       </View>
 
-      {/* Liste */}
-      <FlatList
-        data={filteredInterventions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing || isSyncing} onRefresh={handleRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text variant="titleLarge" style={styles.emptyText}>
-              Aucune intervention
-            </Text>
-            <Text variant="bodyMedium" style={styles.emptySubtext}>
-              {searchQuery || selectedStatuses.length > 0
-                ? 'Essayez de modifier vos filtres'
-                : 'Aucune intervention à afficher'}
-            </Text>
-          </View>
-        }
-        contentContainerStyle={
-          filteredInterventions.length === 0 ? styles.emptyContentContainer : undefined
-        }
-      />
+      {/* Vue Liste ou Carte */}
+      {viewMode === 'list' ? (
+        <FlatList
+          data={filteredInterventions}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl refreshing={refreshing || isSyncing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text variant="titleLarge" style={styles.emptyText}>
+                Aucune intervention
+              </Text>
+              <Text variant="bodyMedium" style={styles.emptySubtext}>
+                {searchQuery || selectedStatuses.length > 0
+                  ? 'Essayez de modifier vos filtres'
+                  : 'Aucune intervention à afficher'}
+              </Text>
+            </View>
+          }
+          contentContainerStyle={
+            filteredInterventions.length === 0 ? styles.emptyContentContainer : undefined
+          }
+        />
+      ) : (
+        <InterventionsMap
+          interventions={filteredInterventions.map((i) => ({
+            id: i.id,
+            reference: i.reference || '',
+            customerName: i.customerName || '',
+            address: i.address,
+            latitude: i.latitude,
+            longitude: i.longitude,
+            status: i.status || '',
+            scheduledDate: i.scheduledDate,
+          }))}
+          onMarkerPress={(interventionId) => {
+            navigation.navigate('InterventionDetails', { interventionId });
+          }}
+        />
+      )}
 
       {/* FAB Créer */}
       <FAB
@@ -347,6 +388,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     backgroundColor: '#fff',
+    flexWrap: 'wrap',
+    gap: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -355,6 +398,14 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     marginVertical: -8,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  viewButton: {
+    minWidth: 80,
   },
   card: {
     marginHorizontal: 16,

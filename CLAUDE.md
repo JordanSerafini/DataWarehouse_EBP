@@ -11,7 +11,7 @@ All documentation and comments are in **French**. The project serves a French bu
 
 ## High-Level Architecture
 
-The repository contains 4 main components:
+The repository contains 6 main components:
 
 ### 1. Database/ - Database Analysis & TypeScript Generation
 - **Purpose**: Analyzes the EBP PostgreSQL database (319 tables, 670K rows) and generates TypeScript interfaces
@@ -49,6 +49,21 @@ The repository contains 4 main components:
 - **Features**: Migration history tracking, rollback support, checksums, execution time logging
 - **Migrations path**: `Database/migrations/`
 - **History table**: `mobile.migration_history`
+
+### 6. mobile/ - React Native Mobile Field Service App
+- **Purpose**: Expo React Native mobile application for field technicians
+- **Key features**:
+  - Offline-first architecture with WatermelonDB
+  - Biometric authentication (Face ID/Touch ID)
+  - Complete intervention workflow (PENDING → IN_PROGRESS → COMPLETED)
+  - Photo uploads with GPS tagging
+  - Client signature capture
+  - TimeSheet with stopwatch
+  - GPS map view of interventions
+  - Advanced customer search with 360° view
+  - Material Design 3 UI
+- **Tech**: Expo SDK 54 + React Native 0.81 + TypeScript + Zustand
+- **Status**: Phases 1-4 complete, production-ready
 
 ## Database Architecture
 
@@ -277,6 +292,40 @@ npm run format
 # API docs: http://localhost:3000/api/docs
 ```
 
+### mobile/ - React Native Mobile App
+```bash
+cd mobile
+npm install
+
+# Development mode (Expo Go)
+npm start
+
+# Android development
+npm run android
+
+# iOS development (requires macOS)
+npm run ios
+
+# Run on web (for quick testing)
+npm run web
+
+# Linting
+npm run lint
+npm run lint:fix
+
+# Build for Android (requires EAS account)
+eas build --platform android --profile preview
+
+# Build for iOS (requires EAS account)
+eas build --platform ios --profile preview
+```
+
+**Configuration**: Edit `src/config/api.config.ts` to set backend URL
+
+**Development**: Use Expo Go app for rapid testing (WatermelonDB disabled in Expo Go)
+
+**Production Build**: Requires development build or EAS for WatermelonDB support
+
 ## Environment Variables
 
 Each module has its own `.env` file:
@@ -399,6 +448,52 @@ The EbpToPg_Module automatically maps types:
 - `varbinary` → `BYTEA`
 
 Column names preserve exact casing (e.g., `customer.Id`, `caption`).
+
+### Mobile App Architecture (mobile/src/)
+
+The mobile app follows an API-first, offline-ready architecture:
+
+**Directory Structure:**
+- **components/**: Reusable UI components
+  - `PhotoPicker.tsx`: Camera/gallery with GPS tagging
+  - `PhotoGallery.tsx`: Photo viewer with full-screen modal
+  - `SignaturePad.tsx`: Canvas-based signature capture
+  - `TimeSheet.tsx`: Stopwatch + manual time entry
+  - `InterventionsMap.tsx`: GPS map with intervention markers
+  - `BiometricPrompt.tsx`: Biometric authentication modal
+- **screens/**: Main application screens
+  - `Auth/LoginScreen.tsx`: Login with biometric option
+  - `Planning/PlanningScreen.tsx`: Day/week/month views
+  - `Tasks/TasksScreen.tsx`: Daily task dashboard
+  - `Interventions/InterventionsScreen.tsx`: List + map toggle
+  - `Interventions/InterventionDetailsScreen.v2.tsx`: Full workflow
+  - `Customers/CustomersScreen.tsx`: Search with filters
+  - `Customers/CustomerDetailsScreen.tsx`: 360° client view
+  - `Profile/ProfileScreen.tsx`: User profile + settings
+- **services/**: API communication layer
+  - `api.service.ts`: Axios wrapper with auth
+  - `intervention.service.ts`: Intervention endpoints (17 methods)
+  - `customer.service.ts`: Customer endpoints (6 methods)
+  - `biometric.service.ts`: Face ID/Touch ID integration
+  - `secure-storage.service.ts`: Encrypted credential storage
+- **stores/**: Zustand state management
+  - `authStore.v2.ts`: Authentication + biometric + persistence
+  - `syncStore.ts`: Sync status tracking
+- **models/**: WatermelonDB models (for offline mode)
+  - `schema.ts`, `Intervention.ts`, `Customer.ts`, `Project.ts`
+- **types/**: TypeScript definitions
+- **utils/**: Logger, toast notifications, permissions RBAC
+
+**State Management:**
+- **Zustand v5** with persist middleware (30% less code than Redux)
+- **Immer** for immutable state updates
+- Secure storage for credentials (Keychain/EncryptedSharedPreferences)
+
+**Offline Strategy:**
+- **WatermelonDB** (SQLite) for local data (requires development build)
+- **API-first** in Expo Go (direct backend calls, no offline storage)
+- Pull/Push synchronization with conflict resolution
+- Device-level sync tracking
 
 ## Important Files to Read
 

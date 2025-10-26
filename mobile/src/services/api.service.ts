@@ -90,6 +90,28 @@ class ApiService {
     );
   }
 
+  // ==================== GENERIC HTTP METHODS ====================
+
+  async get<T = any>(url: string, config?: any): Promise<{ data: T }> {
+    return this.client.get<T>(url, config);
+  }
+
+  async post<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.post<T>(url, data, config);
+  }
+
+  async put<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.put<T>(url, data, config);
+  }
+
+  async delete<T = any>(url: string, config?: any): Promise<{ data: T }> {
+    return this.client.delete<T>(url, config);
+  }
+
+  async patch<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.patch<T>(url, data, config);
+  }
+
   // ==================== AUTHENTICATION ====================
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {

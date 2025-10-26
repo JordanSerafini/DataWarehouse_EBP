@@ -251,6 +251,23 @@ export class InterventionService {
   }
 
   /**
+   * Met à jour le temps passé sur une intervention
+   */
+  static async updateTimeSpent(
+    interventionId: string,
+    timeSpentSeconds: number
+  ): Promise<Intervention> {
+    const response = await apiService.put(
+      `/api/v1/interventions/${interventionId}/time`,
+      {
+        timeSpentSeconds,
+      }
+    );
+
+    return response.data;
+  }
+
+  /**
    * Récupère tous les fichiers d'une intervention
    */
   static async getInterventionFiles(interventionId: string): Promise<InterventionFiles> {

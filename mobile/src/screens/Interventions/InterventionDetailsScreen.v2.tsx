@@ -33,6 +33,7 @@ import { showToast } from '../../utils/toast';
 import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
 import { SignaturePad } from '../../components/SignaturePad';
+import { TimeSheet } from '../../components/TimeSheet';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -359,6 +360,17 @@ const InterventionDetailsScreenV2 = () => {
           )}
         </Card.Content>
       </Card>
+
+      {/* TimeSheet (si intervention en cours) */}
+      <TimeSheet
+        interventionId={interventionId}
+        initialTime={intervention.timeSpentSeconds || 0}
+        onTimeSaved={(timeSpent) => {
+          console.log('Time saved:', timeSpent);
+          loadIntervention(); // Recharger pour rafraîchir
+        }}
+        disabled={intervention.status !== 'IN_PROGRESS'}
+      />
 
       {/* Photos (si intervention en cours ou terminée) */}
       {canAddMedia && (

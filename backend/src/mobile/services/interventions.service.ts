@@ -37,17 +37,17 @@ export class InterventionsService {
       ) as description,
       se."Maintenance_InterventionReport" as report,
       se."NotesClear" as notes,
-      se."StartDate" as "scheduledDate",
-      se."EndDate" as "scheduledEndDate",
+      se."StartDateTime" as "scheduledDate",
+      se."EndDateTime" as "scheduledEndDate",
       se."EventState" as "eventState",
       se."EventType" as "eventType",
       se."ExpectedDuration_DurationInHours" as "estimatedDurationHours",
       se."AchievedDuration_DurationInHours" as "achievedDurationHours",
       se."CustomerId" as "customerId",
       c."Name" as "customerName",
-      COALESCE(cnt."Contact_CellPhone", cnt."Contact_Phone") as "contactPhone",
+      COALESCE(cnt."ContactFields_CellPhone", cnt."ContactFields_Phone") as "contactPhone",
       se."ColleagueId" as "technicianId",
-      col."Name" as "technicianName",
+      col."Contact_Name" as "technicianName",
       CONCAT_WS(', ',
         NULLIF(se."Address_Address1", ''),
         NULLIF(se."Address_Address2", ''),
@@ -90,9 +90,9 @@ export class InterventionsService {
       const sql = `
         ${InterventionsService.INTERVENTION_BASE_QUERY}
         WHERE se."ColleagueId" = $1
-          AND se."StartDate" >= $2
-          AND se."StartDate" <= $3
-        ORDER BY se."StartDate" ASC
+          AND se."StartDateTime" >= $2
+          AND se."StartDateTime" <= $3
+        ORDER BY se."StartDateTime" ASC
       `;
 
       const result = await this.databaseService.query(sql, [technicianId, dateFrom, dateTo]);
@@ -370,6 +370,41 @@ export class InterventionsService {
   }
 
   /**
+   * Met à jour le temps passé sur une intervention
+   */
+  async updateTimeSpent(
+    interventionId: string,
+    timeSpentSeconds: number,
+  ): Promise<InterventionDto> {
+    this.logger.log(`Updating time spent for intervention ${interventionId}: ${timeSpentSeconds}s`);
+
+    try {
+      // Vérifier que l'intervention existe
+      await this.getInterventionById(interventionId);
+
+      // Convertir les secondes en heures (format EBP)
+      const timeSpentHours = timeSpentSeconds / 3600;
+
+      // Mettre à jour le champ AchievedDuration_DurationInHours
+      await this.databaseService.query(
+        `
+        UPDATE public."ScheduleEvent"
+        SET "AchievedDuration_DurationInHours" = $1,
+            "sysModifiedDate" = NOW()
+        WHERE "Id" = $2
+        `,
+        [timeSpentHours, interventionId],
+      );
+
+      this.logger.log(`Time spent updated successfully for intervention ${interventionId}`);
+      return this.getInterventionById(interventionId);
+    } catch (error) {
+      this.logger.error(`Error updating time spent for intervention ${interventionId}:`, error);
+      throw new BadRequestException('Erreur lors de la mise à jour du temps passé');
+    }
+  }
+
+  /**
    * Crée un timesheet (temps passé)
    */
   async createTimesheet(
@@ -447,6 +482,7 @@ export class InterventionsService {
     const status = this.mapEventStateToStatusDto(row.eventState);
     const estimatedMinutes = parseFloat(row.estimatedDurationHours) * 60 || undefined;
     const actualMinutes = parseFloat(row.achievedDurationHours) * 60 || undefined;
+    const timeSpentSeconds = parseFloat(row.achievedDurationHours) * 3600 || undefined;
 
     return {
       id: row.id,
@@ -476,6 +512,7 @@ export class InterventionsService {
       longitude: row.longitude ? parseFloat(row.longitude) : undefined,
       estimatedDuration: estimatedMinutes,
       actualDuration: actualMinutes,
+      timeSpentSeconds: timeSpentSeconds,
       notes: row.notes || undefined,
       createdAt: row.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: row.updatedAt?.toISOString() || undefined,

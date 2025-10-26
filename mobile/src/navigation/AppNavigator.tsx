@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -239,8 +240,5 @@ const LoadingScreen = () => (
     <Text style={{ marginTop: 16, color: '#757575' }}>Chargement...</Text>
   </View>
 );
-
-// Import React Native components for LoadingScreen
-import { View, Text, ActivityIndicator } from 'react-native';
 
 export default AppNavigator;

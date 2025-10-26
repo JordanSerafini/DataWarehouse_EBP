@@ -265,6 +265,15 @@ export class InterventionDto {
   actualDuration?: number;
 
   @ApiProperty({
+    description: 'Temps passé en secondes (pour TimeSheet)',
+    required: false,
+    example: 10800,
+  })
+  @IsNumber()
+  @IsOptional()
+  timeSpentSeconds?: number;
+
+  @ApiProperty({
     description: 'Notes ou rapport saisi',
     required: false,
   })
