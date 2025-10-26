@@ -10,6 +10,17 @@
 
 import { apiService } from './api.service';
 
+/**
+ * Statuts d'intervention (synchronisé avec le backend)
+ */
+export enum InterventionStatus {
+  SCHEDULED = 0,
+  IN_PROGRESS = 1,
+  COMPLETED = 2,
+  CANCELLED = 3,
+  PENDING = 4,
+}
+
 export interface Intervention {
   id: string;
   reference: string;
@@ -17,7 +28,7 @@ export interface Intervention {
   customerId: string;
   technicianName?: string;
   technicianId?: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: InterventionStatus;
   scheduledDate: string;
   startedAt?: string;
   completedAt?: string;
@@ -26,6 +37,7 @@ export interface Intervention {
   latitude?: number;
   longitude?: number;
   distance?: number; // Pour les interventions nearby
+  timeSpentSeconds?: number; // Temps passé en secondes
 }
 
 export interface TechnicianStats {
