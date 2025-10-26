@@ -44,10 +44,10 @@ export class InterventionsService {
       se."ExpectedDuration_DurationInHours" as "estimatedDurationHours",
       se."AchievedDuration_DurationInHours" as "achievedDurationHours",
       se."CustomerId" as "customerId",
-      c."Caption" as "customerName",
+      c."Name" as "customerName",
       COALESCE(cnt."ContactFields_CellPhone", cnt."ContactFields_Phone") as "contactPhone",
       se."ColleagueId" as "technicianId",
-      col."Caption" as "technicianName",
+      col."Contact_Name" as "technicianName",
       CONCAT_WS(', ',
         NULLIF(se."Address_Address1", ''),
         NULLIF(se."Address_Address2", ''),
@@ -267,17 +267,40 @@ export class InterventionsService {
       // Vérifier que l'intervention existe et appartient au technicien
       await this.getInterventionById(interventionId);
 
+      // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
+      // EventState = 1 dans EBP signifie IN_PROGRESS
+      const inProgressCheck = await this.databaseService.query(
+        `
+        SELECT "Id"::text as id, "ScheduleEventNumber" as reference
+        FROM public."ScheduleEvent"
+        WHERE "ColleagueId" = $1
+          AND "EventState" = 1
+          AND "Id" != $3
+        LIMIT 1
+        `,
+        [technicianId, interventionId],
+      );
+
+      if (inProgressCheck.rows.length > 0) {
+        const ongoing = inProgressCheck.rows[0];
+        throw new BadRequestException(
+          `Vous avez déjà une intervention en cours : ${ongoing.reference}. ` +
+          `Veuillez la clôturer avant d'en démarrer une nouvelle.`,
+        );
+      }
+
       // Mettre à jour le statut et la date de début
+      // EventState = 1 dans EBP signifie IN_PROGRESS
       await this.databaseService.query(
         `
         UPDATE public."ScheduleEvent"
         SET
-          "EventState" = $1,
+          "EventState" = 1,
           "ActualStartDate" = $2,
           "sysModifiedDate" = NOW()
         WHERE "Id" = $3
         `,
-        [InterventionStatus.IN_PROGRESS, new Date(), interventionId],
+        [new Date(), interventionId],
       );
 
       // Ajouter notes de démarrage si fournies
@@ -315,20 +338,20 @@ export class InterventionsService {
       await this.getInterventionById(interventionId);
 
       // Mettre à jour l'intervention
+      // EventState = 2 dans EBP signifie COMPLETED
       await this.databaseService.query(
         `
         UPDATE public."ScheduleEvent"
         SET
-          "EventState" = $1,
-          "EndDate" = $2,
-          "AchievedDuration_DurationInHours" = $3,
-          "Maintenance_TravelDuration" = $4,
-          "Maintenance_InterventionReport" = $5,
+          "EventState" = 2,
+          "EndDate" = $1,
+          "AchievedDuration_DurationInHours" = $2,
+          "Maintenance_TravelDuration" = $3,
+          "Maintenance_InterventionReport" = $4,
           "sysModifiedDate" = NOW()
-        WHERE "Id" = $6
+        WHERE "Id" = $5
         `,
         [
-          InterventionStatus.COMPLETED,
           new Date(),
           dto.timeSpentHours,
           dto.travelDuration || 0,
