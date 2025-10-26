@@ -1,16 +1,18 @@
 /**
- * Card Component - Material Design 3 avec NativeWind
- * Composant carte réutilisable avec variants
+ * Card Component - Material Design 3 avec NativeWind (2025 Enhanced)
+ * Composant carte réutilisable avec glassmorphism et animations
  */
 
 import React from 'react';
-import { View, Pressable, Text } from 'react-native';
+import { View, Pressable, Text, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
 import type { ViewProps, PressableProps } from 'react-native';
 
 interface BaseCardProps {
-  variant?: 'elevated' | 'filled' | 'outlined';
+  variant?: 'elevated' | 'filled' | 'outlined' | 'glass'; // Tendance 2025: Glassmorphism
   padding?: 'none' | 'sm' | 'md' | 'lg';
   children: React.ReactNode;
+  blur?: boolean; // Tendance 2025: Effet de flou
 }
 
 type CardProps = BaseCardProps &
@@ -22,25 +24,27 @@ type CardProps = BaseCardProps &
 export function Card({
   variant = 'elevated',
   padding = 'md',
+  blur = false,
   children,
   className,
   onPress,
   ...props
 }: CardProps) {
-  // Classes de base
-  const baseClasses = 'bg-surface rounded-lg overflow-hidden';
+  // Classes de base (Material Design 3 2025)
+  const baseClasses = 'bg-surface rounded-2xl overflow-hidden'; // rounded-2xl pour look plus moderne
 
   // Classes de variant
   const variantClasses = {
-    elevated: 'shadow-elevation-2',
+    elevated: 'shadow-elevation-3 bg-white',
     filled: 'bg-primary-50',
-    outlined: 'border border-gray-200',
+    outlined: 'border-2 border-gray-200 bg-white',
+    glass: 'bg-white/20 border border-white/30', // Glassmorphism (Tendance 2025)
   };
 
   // Classes de padding
   const paddingClasses = {
     none: '',
-    sm: 'p-2',
+    sm: 'p-3',
     md: 'p-4',
     lg: 'p-6',
   };
@@ -52,15 +56,28 @@ export function Card({
     ${className || ''}
   `;
 
-  // Si onPress est fourni, utiliser Pressable
+  // Contenu de la carte
+  const CardContent = () => (
+    <>
+      {/* Glassmorphism avec BlurView (Tendance 2025) */}
+      {variant === 'glass' && blur && Platform.OS !== 'web' ? (
+        <BlurView intensity={20} tint="light" className="absolute inset-0" />
+      ) : null}
+      <View className={variant === 'glass' ? 'relative z-10' : ''}>
+        {children}
+      </View>
+    </>
+  );
+
+  // Si onPress est fourni, utiliser Pressable avec animation
   if (onPress) {
     return (
       <Pressable
-        className={`${combinedClassName} active:opacity-80`}
+        className={`${combinedClassName} active:scale-[0.98] transition-transform duration-150`}
         onPress={onPress}
         {...(props as PressableProps)}
       >
-        {children}
+        <CardContent />
       </Pressable>
     );
   }
@@ -68,7 +85,7 @@ export function Card({
   // Sinon, utiliser View simple
   return (
     <View className={combinedClassName} {...(props as ViewProps)}>
-      {children}
+      <CardContent />
     </View>
   );
 }

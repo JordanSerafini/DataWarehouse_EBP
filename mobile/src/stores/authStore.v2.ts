@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>()(
         });
 
         try {
-          const response = await apiService.login({ username: email, password });
+          const response = await apiService.login({ email, password });
 
           const user: User = {
             id: response.user.id,

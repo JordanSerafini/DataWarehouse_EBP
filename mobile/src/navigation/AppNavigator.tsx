@@ -19,7 +19,7 @@ import PlanningScreen from '../screens/Planning/PlanningScreen';
 import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
-import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen';
+import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
@@ -30,7 +30,7 @@ import UserFormScreen from '../screens/Admin/UserFormScreen';
 import UITestScreen from '../screens/Test/UITestScreen';
 
 // Stores
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore, authSelectors } from '../stores/authStore.v2';
 
 // Navigation types
 export type RootStackParamList = {
@@ -62,8 +62,8 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
  */
 const BottomTabsNavigator = () => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+  const user = useAuthStore(authSelectors.user);
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
 
   return (
     <Tab.Navigator
@@ -171,7 +171,8 @@ const BottomTabsNavigator = () => {
  * Root Stack Navigator
  */
 const AppNavigator = () => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
+  const isLoading = useAuthStore(authSelectors.isLoading);
 
   // Afficher un loader pendant la vérification de l'auth
   if (isLoading) {

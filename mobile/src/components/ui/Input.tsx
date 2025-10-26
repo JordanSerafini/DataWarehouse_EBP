@@ -1,10 +1,10 @@
 /**
- * Input Component - Material Design 3 avec NativeWind
- * Champ de saisie réutilisable avec label et erreur
+ * Input Component - Material Design 3 avec NativeWind (2025 Enhanced)
+ * Champ de saisie avec floating labels, animations fluides et états visuels modernes
  */
 
-import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, Text, Pressable, Animated } from 'react-native';
 import type { TextInputProps } from 'react-native';
 
 export interface InputProps extends TextInputProps {
@@ -13,8 +13,9 @@ export interface InputProps extends TextInputProps {
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  variant?: 'outlined' | 'filled';
+  variant?: 'outlined' | 'filled' | 'standard'; // Ajout variant standard
   fullWidth?: boolean;
+  floatingLabel?: boolean; // Tendance 2025: Label flottant animé
 }
 
 export function Input({
@@ -25,77 +26,151 @@ export function Input({
   rightIcon,
   variant = 'outlined',
   fullWidth = true,
+  floatingLabel = false,
   className,
   editable = true,
+  value,
   ...props
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
-  // Classes de variant
+  // Animation pour le floating label (Tendance 2025)
+  const labelAnimation = useRef(new Animated.Value(value ? 1 : 0)).current;
+  const borderAnimation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (floatingLabel) {
+      Animated.timing(labelAnimation, {
+        toValue: isFocused || value ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [isFocused, value, floatingLabel]);
+
+  useEffect(() => {
+    Animated.timing(borderAnimation, {
+      toValue: isFocused ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isFocused]);
+
+  // Classes de variant (Material Design 3 2025)
   const variantClasses = {
     outlined: `
       border-2
       ${error ? 'border-error' : isFocused ? 'border-primary' : 'border-gray-300'}
       bg-transparent
+      rounded-xl
     `,
     filled: `
       border-b-2
       ${error ? 'border-error' : isFocused ? 'border-primary' : 'border-gray-300'}
       bg-gray-50
+      rounded-t-xl
+    `,
+    standard: `
+      border-b-2
+      ${error ? 'border-error' : isFocused ? 'border-primary' : 'border-gray-300'}
+      bg-transparent
     `,
   };
 
+  // Animation du label flottant
+  const labelStyle = floatingLabel ? {
+    position: 'absolute' as const,
+    left: leftIcon ? 48 : 16,
+    top: labelAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, -8],
+    }),
+    fontSize: labelAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, 12],
+    }),
+    backgroundColor: variant === 'outlined' ? '#ffffff' : 'transparent',
+    paddingHorizontal: 4,
+  } : {};
+
   return (
     <View className={`${fullWidth ? 'w-full' : ''} ${className || ''}`}>
-      {/* Label */}
-      {label && (
-        <Text
-          className={`
-            text-sm font-medium mb-1.5
-            ${error ? 'text-error' : isFocused ? 'text-primary' : 'text-text-secondary'}
-          `}
-        >
-          {label}
-        </Text>
-      )}
-
-      {/* Input Container */}
-      <View
-        className={`
-          flex-row items-center
-          rounded-lg
-          ${variantClasses[variant]}
-          ${!editable ? 'opacity-50' : ''}
-        `}
-      >
-        {/* Left Icon */}
-        {leftIcon && (
-          <View className="pl-3 pr-2">
-            {leftIcon}
-          </View>
+      <View className="relative">
+        {/* Floating Label (Tendance 2025) */}
+        {label && floatingLabel && (
+          <Animated.Text
+            style={labelStyle}
+            className={`
+              font-medium z-10
+              ${error ? 'text-error' : isFocused ? 'text-primary' : 'text-text-secondary'}
+            `}
+          >
+            {label}
+          </Animated.Text>
         )}
 
-        {/* TextInput */}
-        <TextInput
-          className={`
-            flex-1
-            px-4 py-3
-            text-base text-text-primary
-            ${leftIcon ? 'pl-0' : ''}
-            ${rightIcon ? 'pr-0' : ''}
-          `}
-          placeholderTextColor="#00000099"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          editable={editable}
-          {...props}
-        />
+        {/* Static Label */}
+        {label && !floatingLabel && (
+          <Text
+            className={`
+              text-sm font-medium mb-2
+              ${error ? 'text-error' : isFocused ? 'text-primary' : 'text-text-secondary'}
+            `}
+          >
+            {label}
+          </Text>
+        )}
 
-        {/* Right Icon */}
-        {rightIcon && (
-          <View className="pr-3 pl-2">
-            {rightIcon}
-          </View>
+        {/* Input Container */}
+        <View
+          className={`
+            flex-row items-center
+            ${variantClasses[variant]}
+            ${!editable ? 'opacity-50' : ''}
+            transition-all duration-200
+          `}
+        >
+          {/* Left Icon */}
+          {leftIcon && (
+            <View className="pl-4 pr-2">
+              {leftIcon}
+            </View>
+          )}
+
+          {/* TextInput */}
+          <TextInput
+            className={`
+              flex-1
+              px-4 py-3.5
+              text-base text-text-primary
+              ${leftIcon ? 'pl-0' : ''}
+              ${rightIcon ? 'pr-0' : ''}
+              ${floatingLabel && (isFocused || value) ? 'pt-5' : ''}
+            `}
+            placeholderTextColor="#00000066"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            editable={editable}
+            value={value}
+            {...props}
+          />
+
+          {/* Right Icon */}
+          {rightIcon && (
+            <View className="pr-4 pl-2">
+              {rightIcon}
+            </View>
+          )}
+        </View>
+
+        {/* Focus Indicator (Tendance 2025 - subtle animation) */}
+        {isFocused && variant !== 'standard' && (
+          <Animated.View
+            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+            style={{
+              opacity: borderAnimation,
+            }}
+          />
         )}
       </View>
 
@@ -103,8 +178,8 @@ export function Input({
       {(error || helperText) && (
         <Text
           className={`
-            text-xs mt-1 ml-1
-            ${error ? 'text-error' : 'text-text-secondary'}
+            text-xs mt-1.5 ml-1
+            ${error ? 'text-error font-medium' : 'text-text-secondary'}
           `}
         >
           {error || helperText}

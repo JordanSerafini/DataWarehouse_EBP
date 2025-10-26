@@ -4,7 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { API_CONFIG } from '../config/api.config';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore.v2';
 import {
   LoginCredentials,
   LoginResponse,
@@ -64,10 +64,10 @@ class ApiService {
             const { tokens } = useAuthStore.getState();
             if (tokens?.refreshToken) {
               const response = await this.refreshToken(tokens.refreshToken);
-              const { login } = useAuthStore.getState();
+              const { loginWithData } = useAuthStore.getState();
 
-              // Mettre à jour les tokens
-              await login(response.user, {
+              // Mettre à jour les tokens avec loginWithData (v2)
+              loginWithData(response.user, {
                 accessToken: response.accessToken,
                 refreshToken: response.refreshToken,
                 expiresIn: response.expiresIn,

@@ -4,8 +4,30 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
-import { Button, Card, CardHeader, CardContent, CardActions, Input, PasswordInput, SearchInput } from '../../components/ui';
+import { View, Text, ScrollView, Alert, Image } from 'react-native';
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Input,
+  PasswordInput,
+  SearchInput,
+  Badge,
+  Chip,
+  ChipGroup,
+  Switch,
+  Avatar,
+  AvatarGroup,
+  Skeleton,
+  SkeletonCard,
+  SkeletonList,
+  SkeletonText,
+  SkeletonAvatar,
+  Toast,
+  useToast,
+} from '../../components/ui';
 
 // Test des stores v2
 import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
@@ -17,6 +39,15 @@ export default function UITestScreen() {
   const [password, setPassword] = useState('');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // State pour les nouveaux composants 2025
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [selectedChip, setSelectedChip] = useState('1');
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  // Toast hook
+  const toast = useToast();
 
   // Test authStore v2
   const user = useAuthStore(authSelectors.user);
@@ -70,11 +101,12 @@ export default function UITestScreen() {
         {/* Header */}
         <View className="mb-4">
           <Text className="text-3xl font-bold text-primary">
-            UI Test Screen
+            UI Test Screen 2025
           </Text>
           <Text className="text-sm text-text-secondary mt-1">
-            Test des composants NativeWind et stores v2
+            Composants Material Design 3 avec tendances 2025
           </Text>
+          <Badge count={12} color="error" className="mt-2" />
         </View>
 
         {/* Section: Stores v2 Status */}
@@ -263,9 +295,203 @@ export default function UITestScreen() {
           </CardContent>
         </Card>
 
+        {/* Section: Nouveaux Composants 2025 */}
+        <Card variant="elevated">
+          <CardHeader
+            title="Composants 2025"
+            subtitle="Badge, Chip, Switch, Avatar"
+          />
+          <CardContent className="gap-4">
+            {/* Badges */}
+            <View>
+              <Text className="text-sm font-semibold mb-2">Badges</Text>
+              <View className="flex-row gap-3">
+                <Badge count={5} color="primary" />
+                <Badge count={12} color="error" />
+                <Badge count={100} max={99} color="success" />
+                <Badge dot color="warning" />
+              </View>
+            </View>
+
+            {/* Chips */}
+            <View>
+              <Text className="text-sm font-semibold mb-2">Chips</Text>
+              <ChipGroup
+                chips={[
+                  { id: '1', label: 'Tous' },
+                  { id: '2', label: 'En cours' },
+                  { id: '3', label: 'Terminés' },
+                ]}
+                selected={selectedChip}
+                onSelect={(id) => setSelectedChip(id as string)}
+              />
+              <View className="flex-row gap-2 mt-2">
+                <Chip label="React Native" color="primary" variant="outlined" />
+                <Chip
+                  label="TypeScript"
+                  color="success"
+                  onDelete={() => Alert.alert('Supprimé!')}
+                />
+              </View>
+            </View>
+
+            {/* Switches */}
+            <View>
+              <Text className="text-sm font-semibold mb-2">Switches</Text>
+              <View className="flex-row items-center justify-between">
+                <Text>Mode sombre</Text>
+                <Switch value={darkMode} onValueChange={setDarkMode} color="primary" />
+              </View>
+              <View className="flex-row items-center justify-between mt-2">
+                <Text>Notifications</Text>
+                <Switch
+                  value={notifications}
+                  onValueChange={setNotifications}
+                  color="success"
+                />
+              </View>
+            </View>
+
+            {/* Avatars */}
+            <View>
+              <Text className="text-sm font-semibold mb-2">Avatars</Text>
+              <View className="flex-row gap-3">
+                <Avatar fallback="JD" color="primary" />
+                <Avatar fallback="AB" color="secondary" status="online" />
+                <Avatar fallback="XY" color="success" status="away" size="lg" />
+              </View>
+              <View className="mt-3">
+                <Text className="text-xs text-text-secondary mb-2">Avatar Group</Text>
+                <AvatarGroup
+                  avatars={[
+                    { id: '1', fallback: 'JD' },
+                    { id: '2', fallback: 'AB' },
+                    { id: '3', fallback: 'XY' },
+                    { id: '4', fallback: 'CD' },
+                    { id: '5', fallback: 'EF' },
+                  ]}
+                  max={3}
+                />
+              </View>
+            </View>
+          </CardContent>
+        </Card>
+
+        {/* Section: Skeleton Loaders */}
+        <Card variant="outlined">
+          <CardHeader title="Skeleton Loaders" subtitle="États de chargement modernes" />
+          <CardContent>
+            <Button
+              variant="outlined"
+              size="sm"
+              onPress={() => setShowSkeleton(!showSkeleton)}
+              className="mb-4"
+            >
+              {showSkeleton ? 'Masquer' : 'Afficher'} Skeletons
+            </Button>
+
+            {showSkeleton ? (
+              <View className="gap-3">
+                <SkeletonCard />
+                <SkeletonList count={2} />
+                <SkeletonText lines={3} />
+              </View>
+            ) : (
+              <Text className="text-text-secondary text-center py-4">
+                Cliquez pour voir les skeletons
+              </Text>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Section: Toast Notifications */}
+        <Card variant="filled">
+          <CardHeader title="Toast Notifications" subtitle="Notifications Material 3" />
+          <CardContent className="gap-2">
+            <Button
+              variant="filled"
+              size="sm"
+              onPress={() => toast.success('Opération réussie!')}
+            >
+              Toast Success
+            </Button>
+            <Button
+              variant="outlined"
+              size="sm"
+              onPress={() => toast.error('Une erreur est survenue')}
+            >
+              Toast Error
+            </Button>
+            <Button
+              variant="text"
+              size="sm"
+              onPress={() =>
+                toast.show('Action annulable', 'info', 5000, {
+                  label: 'Annuler',
+                  onPress: () => Alert.alert('Annulé!'),
+                })
+              }
+            >
+              Toast avec Action
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Section: Variant Tonal (nouveau 2025) */}
+        <Card variant="elevated">
+          <CardHeader title="Button Tonal" subtitle="Nouveau variant Material 3 2025" />
+          <CardContent className="gap-3">
+            <Button variant="tonal" size="md">
+              Tonal Button
+            </Button>
+            <Text className="text-xs text-text-secondary">
+              Le variant "tonal" offre un compromis entre filled et outlined
+            </Text>
+          </CardContent>
+        </Card>
+
+        {/* Section: Floating Labels (nouveau 2025) */}
+        <Card variant="outlined">
+          <CardHeader title="Floating Labels" subtitle="Labels animés tendance 2025" />
+          <CardContent className="gap-4">
+            <Input
+              label="Email avec floating label"
+              placeholder="Tapez votre email..."
+              value={email}
+              onChangeText={setEmail}
+              floatingLabel
+              variant="outlined"
+            />
+            <Input
+              label="Variant Standard"
+              placeholder="Texte..."
+              variant="standard"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Section: Glassmorphism (nouveau 2025) */}
+        <View className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-2xl">
+          <Card variant="glass" blur className="mb-0">
+            <CardHeader
+              title="Glassmorphism"
+              subtitle="Effet de verre tendance 2025"
+            />
+            <CardContent>
+              <Text className="text-sm">
+                Ce variant utilise un effet de flou pour créer un aspect "verre dépoli"
+                très moderne.
+              </Text>
+            </CardContent>
+          </Card>
+        </View>
+
         {/* Spacer */}
         <View className="h-8" />
       </View>
+
+      {/* Toast Component */}
+      <Toast {...toast.toast} onClose={toast.hide} />
     </ScrollView>
   );
 }
