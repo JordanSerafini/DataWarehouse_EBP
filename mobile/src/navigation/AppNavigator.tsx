@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,7 +20,7 @@ import PlanningScreen from '../screens/Planning/PlanningScreen';
 import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
-import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen';
+import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
@@ -27,12 +28,14 @@ import ProjectDetailsScreen from '../screens/Projects/ProjectDetailsScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import AdminUsersScreen from '../screens/Admin/AdminUsersScreen';
 import UserFormScreen from '../screens/Admin/UserFormScreen';
+import UITestScreen from '../screens/Test/UITestScreen';
 
 // Stores
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore, authSelectors } from '../stores/authStore.v2';
 
 // Navigation types
 export type RootStackParamList = {
+  Loading: undefined;
   Login: undefined;
   MainTabs: undefined;
   InterventionDetails: { interventionId: string };
@@ -50,18 +53,29 @@ export type BottomTabParamList = {
   Projects: undefined;
   Admin: undefined;
   Profile: undefined;
+  UITest: undefined; // Dev only
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 /**
+ * Loading Screen - Pendant la vérification de l'auth
+ */
+const LoadingScreen = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
+    <ActivityIndicator size="large" color="#6200ee" />
+    <Text style={{ marginTop: 16, color: '#757575' }}>Chargement...</Text>
+  </View>
+);
+
+/**
  * Bottom Tabs Navigator
  */
 const BottomTabsNavigator = () => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+  const user = useAuthStore(authSelectors.user);
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
 
   return (
     <Tab.Navigator
@@ -94,6 +108,9 @@ const BottomTabsNavigator = () => {
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
+              break;
+            case 'UITest':
+              iconName = focused ? 'flask' : 'flask-outline';
               break;
             default:
               iconName = 'help-outline';
@@ -148,6 +165,16 @@ const BottomTabsNavigator = () => {
         component={ProfileScreen}
         options={{ title: 'Profil' }}
       />
+      {__DEV__ && (
+        <Tab.Screen
+          name="UITest"
+          component={UITestScreen}
+          options={{
+            title: 'UI Test',
+            tabBarBadge: 'DEV'
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 };
@@ -156,7 +183,8 @@ const BottomTabsNavigator = () => {
  * Root Stack Navigator
  */
 const AppNavigator = () => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
+  const isLoading = useAuthStore(authSelectors.isLoading);
 
   // Afficher un loader pendant la vérification de l'auth
   if (isLoading) {
@@ -213,18 +241,5 @@ const AppNavigator = () => {
     </NavigationContainer>
   );
 };
-
-/**
- * Loading Screen - Pendant la vérification de l'auth
- */
-const LoadingScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-    <ActivityIndicator size="large" color="#6200ee" />
-    <Text style={{ marginTop: 16, color: '#757575' }}>Chargement...</Text>
-  </View>
-);
-
-// Import React Native components for LoadingScreen
-import { View, Text, ActivityIndicator } from 'react-native';
 
 export default AppNavigator;

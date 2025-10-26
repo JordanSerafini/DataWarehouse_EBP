@@ -44,6 +44,7 @@ import {
   CompleteInterventionDto,
   CreateTimesheetDto,
 } from '../dto/interventions/update-intervention.dto';
+import { UpdateTimeSpentDto } from '../dto/interventions/update-time-spent.dto';
 import {
   QueryInterventionsDto,
   QueryNearbyInterventionsDto,
@@ -304,6 +305,29 @@ export class InterventionsController {
   ): Promise<InterventionDto> {
     const technicianId = req.user.colleagueId;
     return this.interventionsService.completeIntervention(id, technicianId, dto);
+  }
+
+  /**
+   * Met à jour le temps passé sur une intervention
+   */
+  @Put(':id/time')
+  @Roles(UserRole.TECHNICIEN, UserRole.CHEF_CHANTIER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({
+    summary: 'Mettre à jour le temps passé',
+    description: 'Met à jour le temps passé sur une intervention (en secondes)',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
+  @ApiResponse({
+    status: 200,
+    description: 'Temps passé mis à jour',
+    type: InterventionDto,
+  })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async updateTimeSpent(
+    @Param('id') id: string,
+    @Body() dto: UpdateTimeSpentDto,
+  ): Promise<InterventionDto> {
+    return this.interventionsService.updateTimeSpent(id, dto.timeSpentSeconds);
   }
 
   /**

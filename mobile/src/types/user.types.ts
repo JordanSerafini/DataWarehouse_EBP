@@ -30,8 +30,9 @@ export interface AuthTokens {
 }
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
+  deviceId?: string; // Optionnel, pour tracking
 }
 
 export interface LoginResponse {

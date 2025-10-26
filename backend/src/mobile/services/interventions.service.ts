@@ -37,17 +37,17 @@ export class InterventionsService {
       ) as description,
       se."Maintenance_InterventionReport" as report,
       se."NotesClear" as notes,
-      se."StartDate" as "scheduledDate",
-      se."EndDate" as "scheduledEndDate",
+      se."StartDateTime" as "scheduledDate",
+      se."EndDateTime" as "scheduledEndDate",
       se."EventState" as "eventState",
       se."EventType" as "eventType",
       se."ExpectedDuration_DurationInHours" as "estimatedDurationHours",
       se."AchievedDuration_DurationInHours" as "achievedDurationHours",
       se."CustomerId" as "customerId",
       c."Name" as "customerName",
-      COALESCE(cnt."Contact_CellPhone", cnt."Contact_Phone") as "contactPhone",
+      COALESCE(cnt."ContactFields_CellPhone", cnt."ContactFields_Phone") as "contactPhone",
       se."ColleagueId" as "technicianId",
-      col."Name" as "technicianName",
+      col."Contact_Name" as "technicianName",
       CONCAT_WS(', ',
         NULLIF(se."Address_Address1", ''),
         NULLIF(se."Address_Address2", ''),
@@ -59,11 +59,46 @@ export class InterventionsService {
       se."Address_Latitude" as latitude,
       se."Address_Longitude" as longitude,
       se."sysCreatedDate" as "createdAt",
-      se."sysModifiedDate" as "updatedAt"
+      se."sysModifiedDate" as "updatedAt",
+      'schedule_event' as source_type
     FROM public."ScheduleEvent" se
     LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
     LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
     LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+
+    UNION ALL
+
+    SELECT
+      i."Id"::text as id,
+      i."Id" as reference,
+      COALESCE(i."Caption", '') as title,
+      COALESCE(
+        NULLIF(i."DescriptionClear", ''),
+        NULLIF(i."Description", '')
+      ) as description,
+      NULL as report,
+      i."DescriptionClear" as notes,
+      i."StartDate" as "scheduledDate",
+      i."EndDate" as "scheduledEndDate",
+      i."Status" as "eventState",
+      NULL as "eventType",
+      i."PredictedDuration" as "estimatedDurationHours",
+      i."AccomplishedDuration" as "achievedDurationHours",
+      i."CustomerId" as "customerId",
+      i."CustomerName" as "customerName",
+      NULL as "contactPhone",
+      i."CreatorColleagueId" as "technicianId",
+      col2."Contact_Name" as "technicianName",
+      NULL as address,
+      NULL as city,
+      NULL as "postalCode",
+      NULL as latitude,
+      NULL as longitude,
+      i."sysCreatedDate" as "createdAt",
+      i."sysModifiedDate" as "updatedAt",
+      'incident' as source_type
+    FROM public."Incident" i
+    LEFT JOIN public."Colleague" col2 ON col2."Id" = i."CreatorColleagueId"
   `;
 
   constructor(private readonly databaseService: DatabaseService) {}
@@ -88,11 +123,13 @@ export class InterventionsService {
 
     try {
       const sql = `
-        ${InterventionsService.INTERVENTION_BASE_QUERY}
-        WHERE se."ColleagueId" = $1
-          AND se."StartDate" >= $2
-          AND se."StartDate" <= $3
-        ORDER BY se."StartDate" ASC
+        SELECT * FROM (
+          ${InterventionsService.INTERVENTION_BASE_QUERY}
+        ) AS interventions
+        WHERE "technicianId" = $1
+          AND "scheduledDate" >= $2
+          AND "scheduledDate" <= $3
+        ORDER BY "scheduledDate" ASC
       `;
 
       const result = await this.databaseService.query(sql, [technicianId, dateFrom, dateTo]);
@@ -126,8 +163,10 @@ export class InterventionsService {
 
     try {
       const sql = `
-        ${InterventionsService.INTERVENTION_BASE_QUERY}
-        WHERE se."Id" = $1
+        SELECT * FROM (
+          ${InterventionsService.INTERVENTION_BASE_QUERY}
+        ) AS interventions
+        WHERE id = $1
         LIMIT 1
       `;
 
@@ -228,17 +267,40 @@ export class InterventionsService {
       // Vérifier que l'intervention existe et appartient au technicien
       await this.getInterventionById(interventionId);
 
+      // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
+      // EventState = 1 dans EBP signifie IN_PROGRESS
+      const inProgressCheck = await this.databaseService.query(
+        `
+        SELECT "Id"::text as id, "ScheduleEventNumber" as reference
+        FROM public."ScheduleEvent"
+        WHERE "ColleagueId" = $1
+          AND "EventState" = 1
+          AND "Id" != $3
+        LIMIT 1
+        `,
+        [technicianId, interventionId],
+      );
+
+      if (inProgressCheck.rows.length > 0) {
+        const ongoing = inProgressCheck.rows[0];
+        throw new BadRequestException(
+          `Vous avez déjà une intervention en cours : ${ongoing.reference}. ` +
+          `Veuillez la clôturer avant d'en démarrer une nouvelle.`,
+        );
+      }
+
       // Mettre à jour le statut et la date de début
+      // EventState = 1 dans EBP signifie IN_PROGRESS
       await this.databaseService.query(
         `
         UPDATE public."ScheduleEvent"
         SET
-          "EventState" = $1,
+          "EventState" = 1,
           "ActualStartDate" = $2,
           "sysModifiedDate" = NOW()
         WHERE "Id" = $3
         `,
-        [InterventionStatus.IN_PROGRESS, new Date(), interventionId],
+        [new Date(), interventionId],
       );
 
       // Ajouter notes de démarrage si fournies
@@ -276,20 +338,20 @@ export class InterventionsService {
       await this.getInterventionById(interventionId);
 
       // Mettre à jour l'intervention
+      // EventState = 2 dans EBP signifie COMPLETED
       await this.databaseService.query(
         `
         UPDATE public."ScheduleEvent"
         SET
-          "EventState" = $1,
-          "EndDate" = $2,
-          "AchievedDuration_DurationInHours" = $3,
-          "Maintenance_TravelDuration" = $4,
-          "Maintenance_InterventionReport" = $5,
+          "EventState" = 2,
+          "EndDate" = $1,
+          "AchievedDuration_DurationInHours" = $2,
+          "Maintenance_TravelDuration" = $3,
+          "Maintenance_InterventionReport" = $4,
           "sysModifiedDate" = NOW()
-        WHERE "Id" = $6
+        WHERE "Id" = $5
         `,
         [
-          InterventionStatus.COMPLETED,
           new Date(),
           dto.timeSpentHours,
           dto.travelDuration || 0,
@@ -366,6 +428,41 @@ export class InterventionsService {
     } catch (error) {
       this.logger.error(`Error updating intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la mise à jour de l\'intervention');
+    }
+  }
+
+  /**
+   * Met à jour le temps passé sur une intervention
+   */
+  async updateTimeSpent(
+    interventionId: string,
+    timeSpentSeconds: number,
+  ): Promise<InterventionDto> {
+    this.logger.log(`Updating time spent for intervention ${interventionId}: ${timeSpentSeconds}s`);
+
+    try {
+      // Vérifier que l'intervention existe
+      await this.getInterventionById(interventionId);
+
+      // Convertir les secondes en heures (format EBP)
+      const timeSpentHours = timeSpentSeconds / 3600;
+
+      // Mettre à jour le champ AchievedDuration_DurationInHours
+      await this.databaseService.query(
+        `
+        UPDATE public."ScheduleEvent"
+        SET "AchievedDuration_DurationInHours" = $1,
+            "sysModifiedDate" = NOW()
+        WHERE "Id" = $2
+        `,
+        [timeSpentHours, interventionId],
+      );
+
+      this.logger.log(`Time spent updated successfully for intervention ${interventionId}`);
+      return this.getInterventionById(interventionId);
+    } catch (error) {
+      this.logger.error(`Error updating time spent for intervention ${interventionId}:`, error);
+      throw new BadRequestException('Erreur lors de la mise à jour du temps passé');
     }
   }
 
@@ -447,6 +544,7 @@ export class InterventionsService {
     const status = this.mapEventStateToStatusDto(row.eventState);
     const estimatedMinutes = parseFloat(row.estimatedDurationHours) * 60 || undefined;
     const actualMinutes = parseFloat(row.achievedDurationHours) * 60 || undefined;
+    const timeSpentSeconds = parseFloat(row.achievedDurationHours) * 3600 || undefined;
 
     return {
       id: row.id,
@@ -476,6 +574,7 @@ export class InterventionsService {
       longitude: row.longitude ? parseFloat(row.longitude) : undefined,
       estimatedDuration: estimatedMinutes,
       actualDuration: actualMinutes,
+      timeSpentSeconds: timeSpentSeconds,
       notes: row.notes || undefined,
       createdAt: row.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: row.updatedAt?.toISOString() || undefined,

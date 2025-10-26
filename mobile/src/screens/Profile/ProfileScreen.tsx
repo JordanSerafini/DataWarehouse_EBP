@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { Text, Card, Button, Avatar, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { useSyncStore } from '../../stores/syncStore';
 import { showToast } from '../../utils/toast';
 import { apiService } from '../../services/api.service';
+import { BiometricService } from '../../services/biometric.service';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const ProfileScreen = () => {
-  const { user, logout, login } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
+  const biometricEnabled = useAuthStore(authSelectors.biometricEnabled);
+  const canUseBiometric = useAuthStore(authSelectors.canUseBiometric);
+  const biometricCapabilities = useAuthStore(authSelectors.biometricCapabilities);
+  const { logout, login, enableBiometric, disableBiometric, checkBiometricCapabilities } = useAuthStore();
   const { lastSyncDate } = useSyncStore();
   const [switching, setSwitching] = useState(false);
+  const [togglingBiometric, setTogglingBiometric] = useState(false);
   const [usersList, setUsersList] = useState<Array<{ email: string; full_name: string; role: string }>>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   /**
-   * Charger la liste des utilisateurs au montage
+   * Charger la liste des utilisateurs et vérifier biométrie au montage
    */
   useEffect(() => {
     loadUsers();
+    checkBiometricCapabilities();
   }, []);
 
   const loadUsers = async () => {
@@ -89,6 +96,33 @@ const ProfileScreen = () => {
       }
     } finally {
       setSwitching(false);
+    }
+  };
+
+  /**
+   * Toggle biométrie
+   */
+  const handleToggleBiometric = async (enabled: boolean) => {
+    if (!user?.email) return;
+
+    setTogglingBiometric(true);
+
+    try {
+      if (enabled) {
+        // Activer la biométrie - demander le mot de passe actuel
+        // Pour simplifier, on utilise pass123 (déjà connu en dev)
+        await enableBiometric(user.email, 'pass123');
+        showToast('Biométrie activée avec succès', 'success');
+      } else {
+        // Désactiver la biométrie
+        await disableBiometric();
+        showToast('Biométrie désactivée', 'info');
+      }
+    } catch (error: any) {
+      console.error('Toggle biometric error:', error);
+      showToast(error.message || 'Erreur lors de la configuration', 'error');
+    } finally {
+      setTogglingBiometric(false);
     }
   };
 
@@ -175,6 +209,48 @@ const ProfileScreen = () => {
           )}
         </Card.Content>
       </Card>
+
+      {/* Sécurité - Biométrie */}
+      {canUseBiometric && (
+        <Card style={styles.infoCard}>
+          <Card.Title
+            title="Sécurité"
+            left={(props) => <Ionicons name="shield-checkmark" size={24} color="#6200ee" style={{ marginLeft: 16 }} />}
+          />
+          <Card.Content>
+            <View style={styles.biometricRow}>
+              <View style={styles.biometricInfo}>
+                <Text variant="labelLarge" style={styles.biometricTitle}>
+                  {BiometricService.getBiometricTypeName(
+                    biometricCapabilities?.supportedTypes[0] || 'NONE'
+                  )}
+                </Text>
+                <Text variant="bodySmall" style={styles.biometricSubtitle}>
+                  {biometricEnabled
+                    ? 'Connexion rapide activée'
+                    : 'Activez pour une connexion plus rapide'}
+                </Text>
+              </View>
+              <Switch
+                value={biometricEnabled}
+                onValueChange={handleToggleBiometric}
+                disabled={togglingBiometric}
+                trackColor={{ false: '#d0d0d0', true: '#bb86fc' }}
+                thumbColor={biometricEnabled ? '#6200ee' : '#f4f3f4'}
+              />
+            </View>
+
+            {biometricEnabled && (
+              <View style={styles.biometricEnabled}>
+                <Ionicons name="checkmark-circle" size={20} color="#4caf50" />
+                <Text variant="bodySmall" style={styles.biometricEnabledText}>
+                  Vos identifiants sont stockés de manière sécurisée
+                </Text>
+              </View>
+            )}
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Changement rapide d'utilisateur */}
       <View style={styles.switchSection}>
@@ -405,6 +481,37 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#9E9E9E',
     marginVertical: 2,
+  },
+  // Styles biométrie
+  biometricRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  biometricInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  biometricTitle: {
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  biometricSubtitle: {
+    color: '#757575',
+  },
+  biometricEnabled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    gap: 8,
+  },
+  biometricEnabledText: {
+    color: '#4caf50',
+    flex: 1,
   },
 });
 

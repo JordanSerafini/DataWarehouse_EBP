@@ -3,6 +3,8 @@
  * Configure les providers et la navigation
  */
 
+import './global.css'; // NativeWind styles
+
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
@@ -14,7 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 
 // Stores
-import { useAuthStore } from './src/stores/authStore';
+import { useAuthStore, useAuthHydrated } from './src/stores/authStore.v2';
 import { useSyncStore } from './src/stores/syncStore';
 
 // Thème personnalisé
@@ -33,7 +35,7 @@ const customTheme = {
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
-  const { loadFromStorage } = useAuthStore();
+  const authHydrated = useAuthHydrated(); // authStore.v2 gère l'hydratation automatiquement
   const { loadSyncStatus } = useSyncStore();
 
   /**
@@ -42,11 +44,8 @@ export default function App() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Charger les données persistées
-        await Promise.all([
-          loadFromStorage(),
-          loadSyncStatus(),
-        ]);
+        // Charger uniquement syncStatus (auth est auto-hydraté)
+        await loadSyncStatus();
       } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
       } finally {
@@ -54,11 +53,14 @@ export default function App() {
       }
     };
 
-    initialize();
-  }, [loadFromStorage, loadSyncStatus]);
+    // Attendre que le store auth soit hydraté
+    if (authHydrated) {
+      initialize();
+    }
+  }, [authHydrated, loadSyncStatus]);
 
   // Afficher un loader pendant l'initialisation
-  if (!isReady) {
+  if (!isReady || !authHydrated) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6200ee" />

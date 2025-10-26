@@ -1,350 +1,417 @@
 /**
- * CalendarScreen - Écran Calendrier
- * Affiche les événements du technicien dans un calendrier mensuel
+ * CalendarScreen
+ *
+ * Écran de calendrier avec 3 vues : Mois, Semaine, Jour
+ * Affiche les interventions planifiées avec navigation entre les vues
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
-import { Text, Card, Chip, FAB, Portal, Modal, Button, ActivityIndicator } from 'react-native-paper';
-import { Calendar, DateData } from 'react-native-calendars';
-import { useNavigation } from '@react-navigation/native';
-import { format, startOfMonth, endOfMonth, isAfter, isBefore, isSameDay } from 'date-fns';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
+import {
+  Text,
+  Card,
+  Chip,
+  FAB,
+  SegmentedButtons,
+  Portal,
+  Modal,
+  Button,
+  IconButton,
+} from 'react-native-paper';
+import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import logger from '../../utils/logger';
+import {
+  CalendarService,
+  CalendarEvent,
+  getStatusLabel,
+  getStatusColor,
+} from '../../services/calendar.service.v2';
 import { showToast } from '../../utils/toast';
-import { apiService } from '../../services/api.service';
-import { Intervention } from '../../types/intervention.types';
 
-// Couleurs pour les statuts d'interventions
-const STATUS_COLORS: Record<number, string> = {
-  0: '#95a5a6', // Pending
-  1: '#3498db', // Scheduled
-  2: '#f39c12', // In Progress
-  3: '#27ae60', // Completed
-  4: '#e74c3c', // Cancelled
-};
+const { width } = Dimensions.get('window');
 
-export default function CalendarScreen() {
-  const navigation = useNavigation();
+type ViewMode = 'month' | 'week' | 'day';
 
+export default function CalendarScreen({ navigation }: any) {
   // État
-  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [interventions, setInterventions] = useState<Intervention[]>([]);
-  const [markedDates, setMarkedDates] = useState<any>({});
-  const [dayInterventions, setDayInterventions] = useState<Intervention[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  /**
-   * Charge les interventions du mois depuis l'API
-   */
-  const loadMonthEvents = useCallback(async (date: Date) => {
+  // Charger les événements selon la vue
+  const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const monthStart = startOfMonth(date);
-      const monthEnd = endOfMonth(date);
+      let fetchedEvents: CalendarEvent[] = [];
 
-      // Récupérer toutes les interventions
-      const allInterventions = await apiService.getMyInterventions();
+      if (viewMode === 'day') {
+        // Aujourd'hui
+        fetchedEvents = await CalendarService.getTodayEvents();
+      } else if (viewMode === 'week') {
+        // Semaine en cours
+        fetchedEvents = await CalendarService.getWeekEvents();
+      } else {
+        // Mois en cours
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth() + 1;
+        fetchedEvents = await CalendarService.getMonthEvents(year, month);
+      }
 
-      // Filtrer pour le mois
-      const monthInterventions = allInterventions.filter((intervention) => {
-        const interventionDate = new Date(intervention.scheduledDate);
-        return !isBefore(interventionDate, monthStart) && !isAfter(interventionDate, monthEnd);
-      });
-
-      setInterventions(monthInterventions);
-
-      // Créer les marques pour le calendrier
-      const marks: any = {};
-      monthInterventions.forEach((intervention) => {
-        const dateKey = format(new Date(intervention.scheduledDate), 'yyyy-MM-dd');
-        if (!marks[dateKey]) {
-          marks[dateKey] = { marked: true, dots: [] };
-        }
-        marks[dateKey].dots.push({
-          key: intervention.id,
-          color: STATUS_COLORS[intervention.status] || '#95a5a6',
-        });
-      });
-
-      // Marquer le jour sélectionné
-      marks[selectedDate] = {
-        ...marks[selectedDate],
-        selected: true,
-        selectedColor: '#2196F3',
-      };
-
-      setMarkedDates(marks);
-      logger.info('CALENDAR', `Chargé ${monthInterventions.length} interventions pour ${format(date, 'MMMM yyyy', { locale: fr })}`);
-    } catch (error) {
-      logger.error('CALENDAR', 'Erreur chargement interventions mois', error);
-      showToast('Erreur lors du chargement du calendrier', 'error');
+      setEvents(fetchedEvents);
+    } catch (error: any) {
+      console.error('Error loading events:', error);
+      showToast('Erreur lors du chargement des événements', 'error');
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [viewMode, selectedDate]);
 
-  /**
-   * Charge les interventions d'un jour spécifique
-   */
-  const loadDayEvents = useCallback(async (dateString: string) => {
-    try {
-      const selectedDay = new Date(dateString);
-
-      // Filtrer les interventions du jour sélectionné
-      const dayInterventionsList = interventions.filter((intervention) => {
-        const interventionDate = new Date(intervention.scheduledDate);
-        return isSameDay(interventionDate, selectedDay);
-      });
-
-      // Trier par heure
-      dayInterventionsList.sort((a, b) =>
-        new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
-      );
-
-      setDayInterventions(dayInterventionsList);
-      logger.info('CALENDAR', `Chargé ${dayInterventionsList.length} interventions pour ${dateString}`);
-    } catch (error) {
-      logger.error('CALENDAR', 'Erreur chargement interventions jour', error);
-    }
-  }, [interventions]);
-
-  /**
-   * Rafraîchir les données
-   */
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadMonthEvents(currentMonth);
-    await loadDayEvents(selectedDate);
-    setRefreshing(false);
-  }, [currentMonth, selectedDate, loadMonthEvents, loadDayEvents]);
-
-  /**
-   * Changement de jour
-   */
-  const onDayPress = useCallback((day: DateData) => {
-    setSelectedDate(day.dateString);
-    loadDayEvents(day.dateString);
-  }, [loadDayEvents]);
-
-  /**
-   * Changement de mois
-   */
-  const onMonthChange = useCallback((month: DateData) => {
-    const newMonth = new Date(month.year, month.month - 1, 1);
-    setCurrentMonth(newMonth);
-    loadMonthEvents(newMonth);
-  }, [loadMonthEvents]);
-
-  /**
-   * Ouvrir détails intervention
-   */
-  const openEventDetails = useCallback((intervention: Intervention) => {
-    setSelectedIntervention(intervention);
-    setModalVisible(true);
-  }, []);
-
-  /**
-   * Fermer modal
-   */
-  const closeModal = useCallback(() => {
-    setModalVisible(false);
-    setSelectedIntervention(null);
-  }, []);
-
-  // Chargement initial
   useEffect(() => {
-    loadMonthEvents(currentMonth);
-    loadDayEvents(selectedDate);
-  }, []);
+    loadEvents();
+  }, [loadEvents]);
 
-  /**
-   * Render item intervention
-   */
-  const renderEventItem = ({ item }: { item: Intervention }) => {
-    const startTime = format(new Date(item.scheduledDate), 'HH:mm');
-    const endTime = item.scheduledEndDate ? format(new Date(item.scheduledEndDate), 'HH:mm') : '';
+  // Pull to refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadEvents();
+    setRefreshing(false);
+  };
+
+  // Changer de vue
+  const handleViewModeChange = (newMode: string) => {
+    setViewMode(newMode as ViewMode);
+  };
+
+  // Navigation mois/semaine/jour
+  const goToPrevious = () => {
+    if (viewMode === 'month') {
+      setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
+    } else if (viewMode === 'week') {
+      setSelectedDate(addDays(selectedDate, -7));
+    } else {
+      setSelectedDate(addDays(selectedDate, -1));
+    }
+  };
+
+  const goToNext = () => {
+    if (viewMode === 'month') {
+      setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
+    } else if (viewMode === 'week') {
+      setSelectedDate(addDays(selectedDate, 7));
+    } else {
+      setSelectedDate(addDays(selectedDate, 1));
+    }
+  };
+
+  const goToToday = () => {
+    setSelectedDate(new Date());
+  };
+
+  // Ouvrir détails événement
+  const openEventDetails = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setShowEventModal(true);
+  };
+
+  // Obtenir la couleur selon le statut
+  const getStatusColor = (status: number) => {
+    switch (status) {
+      case 0: return '#2196F3'; // SCHEDULED - Bleu
+      case 1: return '#FF9800'; // IN_PROGRESS - Orange
+      case 2: return '#4CAF50'; // COMPLETED - Vert
+      case 3: return '#F44336'; // CANCELLED - Rouge
+      case 4: return '#FFC107'; // PENDING - Jaune
+      default: return '#9E9E9E';
+    }
+  };
+
+  // Rendu d'un événement
+  const renderEvent = (event: CalendarEvent, compact = false) => (
+    <TouchableOpacity
+      key={event.id}
+      onPress={() => openEventDetails(event)}
+      style={styles.eventCard}
+    >
+      <View style={[styles.eventIndicator, { backgroundColor: getStatusColor(event.status) }]} />
+      <View style={styles.eventContent}>
+        <Text variant="titleSmall" numberOfLines={1}>{event.title}</Text>
+        {!compact && (
+          <>
+            <Text variant="bodySmall" style={styles.eventTime}>
+              {format(new Date(event.scheduledDate), 'HH:mm', { locale: fr })}
+              {event.scheduledEndDate && ` - ${format(new Date(event.scheduledEndDate), 'HH:mm', { locale: fr })}`}
+            </Text>
+            {event.customerName && (
+              <Text variant="bodySmall" numberOfLines={1}>👤 {event.customerName}</Text>
+            )}
+          </>
+        )}
+      </View>
+      <Chip compact style={[styles.statusChip, { backgroundColor: getStatusColor(event.status) }]}>
+        {event.statusLabel}
+      </Chip>
+    </TouchableOpacity>
+  );
+
+  // VUE MENSUELLE
+  const renderMonthView = () => {
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+    const eventsByDate = CalendarService.groupEventsByDate(events);
 
     return (
-      <TouchableOpacity onPress={() => openEventDetails(item)}>
-        <Card style={styles.eventCard}>
-          <Card.Content>
-            <View style={styles.eventHeader}>
-              <View style={styles.eventTimeContainer}>
-                <Text style={styles.eventTime}>{startTime}</Text>
-                {endTime && <Text style={styles.eventTime}>- {endTime}</Text>}
-              </View>
-              <Chip
-                mode="outlined"
-                style={[
-                  styles.eventTypeChip,
-                  { borderColor: STATUS_COLORS[item.status] || '#95a5a6' },
-                ]}
-                textStyle={{ color: STATUS_COLORS[item.status] || '#95a5a6' }}
-              >
-                {item.typeLabel}
-              </Chip>
-            </View>
+      <View>
+        {/* Grille calendrier */}
+        <View style={styles.monthGrid}>
+          {/* En-têtes jours de la semaine */}
+          <View style={styles.weekDaysRow}>
+            {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, index) => (
+              <Text key={index} style={styles.weekDayText}>{day}</Text>
+            ))}
+          </View>
 
-            <Text style={styles.eventTitle}>{item.title}</Text>
+          {/* Jours du mois */}
+          <View style={styles.daysGrid}>
+            {daysInMonth.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayEvents = eventsByDate[dateKey] || [];
+              const isToday = isSameDay(day, new Date());
+              const isSelected = isSameDay(day, selectedDate);
 
-            {item.customerName && (
-              <Text style={styles.eventCustomer}>Client: {item.customerName}</Text>
-            )}
+              return (
+                <TouchableOpacity
+                  key={dateKey}
+                  style={[
+                    styles.dayCell,
+                    isToday && styles.todayCell,
+                    isSelected && styles.selectedCell,
+                  ]}
+                  onPress={() => {
+                    setSelectedDate(day);
+                    setViewMode('day');
+                  }}
+                >
+                  <Text style={[styles.dayNumber, isToday && styles.todayNumber]}>
+                    {format(day, 'd')}
+                  </Text>
+                  {dayEvents.length > 0 && (
+                    <View style={styles.eventDots}>
+                      {dayEvents.slice(0, 3).map((event, idx) => (
+                        <View
+                          key={idx}
+                          style={[styles.eventDot, { backgroundColor: getStatusColor(event.status) }]}
+                        />
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <Text style={styles.moreDots}>+{dayEvents.length - 3}</Text>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-            {item.city && (
-              <Text style={styles.eventAddress} numberOfLines={1}>
-                📍 {item.city}
-              </Text>
-            )}
-
-            <Chip
-              mode="flat"
-              style={styles.eventStatusChip}
-              textStyle={styles.eventStatusText}
-            >
-              {item.statusLabel}
-            </Chip>
-          </Card.Content>
-        </Card>
-      </TouchableOpacity>
+        {/* Liste événements du jour sélectionné */}
+        <View style={styles.eventsSection}>
+          <Text variant="titleMedium" style={styles.sectionTitle}>
+            {format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })}
+          </Text>
+          {events
+            .filter(event => isSameDay(new Date(event.scheduledDate), selectedDate))
+            .map(event => renderEvent(event))}
+          {events.filter(event => isSameDay(new Date(event.scheduledDate), selectedDate)).length === 0 && (
+            <Text style={styles.noEvents}>Aucun événement ce jour</Text>
+          )}
+        </View>
+      </View>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Calendrier */}
-      <Calendar
-        current={format(currentMonth, 'yyyy-MM-dd')}
-        onDayPress={onDayPress}
-        onMonthChange={onMonthChange}
-        markedDates={markedDates}
-        markingType="multi-dot"
-        theme={{
-          todayTextColor: '#2196F3',
-          selectedDayBackgroundColor: '#2196F3',
-          selectedDayTextColor: '#ffffff',
-          arrowColor: '#2196F3',
-          monthTextColor: '#212121',
-          textMonthFontWeight: 'bold',
-          textMonthFontSize: 18,
-        }}
-        firstDay={1} // Lundi comme premier jour
-      />
+  // VUE HEBDOMADAIRE
+  const renderWeekView = () => {
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    const eventsByDate = CalendarService.groupEventsByDate(events);
 
-      {/* Liste événements du jour */}
-      <View style={styles.dayEventsContainer}>
-        <Text style={styles.dayEventsTitle}>
-          {format(new Date(selectedDate), 'EEEE d MMMM yyyy', { locale: fr })}
+    return (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.weekScroll}>
+        {weekDays.map((day) => {
+          const dateKey = format(day, 'yyyy-MM-dd');
+          const dayEvents = eventsByDate[dateKey] || [];
+          const isToday = isSameDay(day, new Date());
+
+          return (
+            <View key={dateKey} style={styles.weekDayColumn}>
+              <View style={[styles.weekDayHeader, isToday && styles.todayHeader]}>
+                <Text variant="labelSmall">{format(day, 'EEE', { locale: fr })}</Text>
+                <Text variant="titleMedium" style={isToday && styles.todayNumber}>
+                  {format(day, 'd')}
+                </Text>
+              </View>
+              <ScrollView style={styles.weekDayEvents}>
+                {dayEvents.map(event => renderEvent(event, true))}
+                {dayEvents.length === 0 && (
+                  <Text style={styles.noEventsCompact}>-</Text>
+                )}
+              </ScrollView>
+            </View>
+          );
+        })}
+      </ScrollView>
+    );
+  };
+
+  // VUE QUOTIDIENNE
+  const renderDayView = () => {
+    const dayEvents = events.filter(event =>
+      isSameDay(new Date(event.scheduledDate), selectedDate)
+    ).sort((a, b) =>
+      new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+    );
+
+    return (
+      <View style={styles.dayView}>
+        <Text variant="titleLarge" style={styles.dayViewTitle}>
+          {format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })}
         </Text>
-
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2196F3" />
-          </View>
-        ) : dayInterventions.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aucune intervention ce jour</Text>
-          </View>
+        {dayEvents.length > 0 ? (
+          dayEvents.map(event => renderEvent(event))
         ) : (
-          <FlatList
-            data={dayInterventions}
-            renderItem={renderEventItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.eventsList}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          />
+          <View style={styles.noEventsContainer}>
+            <Text style={styles.noEvents}>Aucun événement aujourd'hui</Text>
+          </View>
         )}
       </View>
+    );
+  };
 
-      {/* Modal détails événement */}
-      <Portal>
-        <Modal
-          visible={modalVisible}
-          onDismiss={closeModal}
-          contentContainerStyle={styles.modalContainer}
-        >
-          {selectedIntervention && (
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{selectedIntervention.title}</Text>
+  // Modal détails événement
+  const renderEventModal = () => (
+    <Portal>
+      <Modal
+        visible={showEventModal}
+        onDismiss={() => setShowEventModal(false)}
+        contentContainerStyle={styles.modal}
+      >
+        {selectedEvent && (
+          <View>
+            <Text variant="titleLarge" style={styles.modalTitle}>
+              {selectedEvent.title}
+            </Text>
+            <Chip style={[styles.modalChip, { backgroundColor: getStatusColor(selectedEvent.status) }]}>
+              {selectedEvent.statusLabel}
+            </Chip>
 
-              <View style={styles.modalRow}>
-                <Text style={styles.modalLabel}>Type:</Text>
-                <Chip
-                  mode="outlined"
-                  style={[
-                    styles.modalChip,
-                    { borderColor: STATUS_COLORS[selectedIntervention.status] },
-                  ]}
-                >
-                  {selectedIntervention.typeLabel}
-                </Chip>
+            {selectedEvent.description && (
+              <Text variant="bodyMedium" style={styles.modalSection}>
+                {selectedEvent.description}
+              </Text>
+            )}
+
+            <View style={styles.modalInfo}>
+              <Text variant="labelSmall">📅 Date</Text>
+              <Text variant="bodyMedium">
+                {format(new Date(selectedEvent.scheduledDate), 'PPPp', { locale: fr })}
+              </Text>
+            </View>
+
+            {selectedEvent.customerName && (
+              <View style={styles.modalInfo}>
+                <Text variant="labelSmall">👤 Client</Text>
+                <Text variant="bodyMedium">{selectedEvent.customerName}</Text>
               </View>
+            )}
 
-              <View style={styles.modalRow}>
-                <Text style={styles.modalLabel}>Statut:</Text>
-                <Text style={styles.modalValue}>
-                  {selectedIntervention.statusLabel}
-                </Text>
+            {selectedEvent.address && (
+              <View style={styles.modalInfo}>
+                <Text variant="labelSmall">📍 Adresse</Text>
+                <Text variant="bodyMedium">{selectedEvent.address}</Text>
               </View>
+            )}
 
-              <View style={styles.modalRow}>
-                <Text style={styles.modalLabel}>Début:</Text>
-                <Text style={styles.modalValue}>
-                  {format(new Date(selectedIntervention.scheduledDate), 'dd/MM/yyyy HH:mm')}
-                </Text>
-              </View>
-
-              {selectedIntervention.scheduledEndDate && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Fin:</Text>
-                  <Text style={styles.modalValue}>
-                    {format(new Date(selectedIntervention.scheduledEndDate), 'dd/MM/yyyy HH:mm')}
-                  </Text>
-                </View>
-              )}
-
-              {selectedIntervention.customerName && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Client:</Text>
-                  <Text style={styles.modalValue}>{selectedIntervention.customerName}</Text>
-                </View>
-              )}
-
-              {selectedIntervention.city && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Ville:</Text>
-                  <Text style={styles.modalValue}>{selectedIntervention.city}</Text>
-                </View>
-              )}
-
-              {selectedIntervention.description && (
-                <View style={styles.modalRow}>
-                  <Text style={styles.modalLabel}>Description:</Text>
-                  <Text style={styles.modalValue}>{selectedIntervention.description}</Text>
-                </View>
-              )}
-
-              <Button mode="contained" onPress={closeModal} style={styles.modalButton}>
+            <View style={styles.modalActions}>
+              <Button mode="outlined" onPress={() => setShowEventModal(false)}>
                 Fermer
               </Button>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  setShowEventModal(false);
+                  navigation.navigate('InterventionDetails', { interventionId: selectedEvent.id });
+                }}
+              >
+                Voir détails
+              </Button>
             </View>
-          )}
-        </Modal>
-      </Portal>
+          </View>
+        )}
+      </Modal>
+    </Portal>
+  );
 
-      {/* FAB pour synchroniser */}
+  return (
+    <View style={styles.container}>
+      {/* Header avec navigation */}
+      <View style={styles.header}>
+        <IconButton icon="chevron-left" onPress={goToPrevious} />
+        <TouchableOpacity onPress={goToToday}>
+          <Text variant="titleLarge">
+            {viewMode === 'month' && format(selectedDate, 'MMMM yyyy', { locale: fr })}
+            {viewMode === 'week' && `Semaine du ${format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'd MMM', { locale: fr })}`}
+            {viewMode === 'day' && format(selectedDate, 'd MMMM yyyy', { locale: fr })}
+          </Text>
+        </TouchableOpacity>
+        <IconButton icon="chevron-right" onPress={goToNext} />
+      </View>
+
+      {/* Sélecteur de vue */}
+      <SegmentedButtons
+        value={viewMode}
+        onValueChange={handleViewModeChange}
+        buttons={[
+          { value: 'month', label: 'Mois', icon: 'calendar-month' },
+          { value: 'week', label: 'Semaine', icon: 'calendar-week' },
+          { value: 'day', label: 'Jour', icon: 'calendar-today' },
+        ]}
+        style={styles.segmentedButtons}
+      />
+
+      {/* Contenu selon la vue */}
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {viewMode === 'month' && renderMonthView()}
+        {viewMode === 'week' && renderWeekView()}
+        {viewMode === 'day' && renderDayView()}
+      </ScrollView>
+
+      {/* Modal */}
+      {renderEventModal()}
+
+      {/* FAB Aujourd'hui */}
       <FAB
-        icon="sync"
+        icon="calendar-today"
         style={styles.fab}
-        onPress={onRefresh}
-        label="Sync"
+        onPress={goToToday}
+        label="Aujourd'hui"
       />
     </View>
   );
@@ -353,127 +420,200 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
   },
-  dayEventsContainer: {
-    flex: 1,
-    paddingTop: 16,
-  },
-  dayEventsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    color: '#212121',
-    textTransform: 'capitalize',
-  },
-  eventsList: {
-    paddingHorizontal: 16,
-    paddingBottom: 80,
-  },
-  eventCard: {
-    marginBottom: 12,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    backgroundColor: '#FFF',
     elevation: 2,
   },
-  eventHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  segmentedButtons: {
+    margin: 16,
   },
-  eventTimeContainer: {
+  content: {
+    flex: 1,
+  },
+
+  // Vue mensuelle
+  monthGrid: {
+    backgroundColor: '#FFF',
+    padding: 8,
+    margin: 16,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  weekDaysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  weekDayText: {
+    width: (width - 64) / 7,
+    textAlign: 'center',
+    fontWeight: '600',
+    color: '#666',
+  },
+  daysGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: (width - 64) / 7,
+    aspectRatio: 1,
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  todayCell: {
+    backgroundColor: '#E3F2FD',
+  },
+  selectedCell: {
+    backgroundColor: '#BBDEFB',
+  },
+  dayNumber: {
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  todayNumber: {
+    fontWeight: 'bold',
+    color: '#1976D2',
+  },
+  eventDots: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+    marginTop: 2,
+  },
+  eventDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  moreDots: {
+    fontSize: 8,
+    color: '#666',
+  },
+
+  // Vue hebdomadaire
+  weekScroll: {
+    padding: 8,
+  },
+  weekDayColumn: {
+    width: width * 0.25,
+    marginRight: 8,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 2,
+  },
+  weekDayHeader: {
+    padding: 8,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  todayHeader: {
+    backgroundColor: '#E3F2FD',
+  },
+  weekDayEvents: {
+    maxHeight: 400,
+  },
+  noEventsCompact: {
+    textAlign: 'center',
+    padding: 8,
+    color: '#999',
+  },
+
+  // Vue quotidienne
+  dayView: {
+    padding: 16,
+  },
+  dayViewTitle: {
+    marginBottom: 16,
+    textTransform: 'capitalize',
+  },
+  noEventsContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  noEvents: {
+    color: '#999',
+    fontStyle: 'italic',
+  },
+
+  // Événements
+  eventsSection: {
+    padding: 16,
+  },
+  sectionTitle: {
+    marginBottom: 12,
+    textTransform: 'capitalize',
+  },
+  eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    elevation: 1,
+  },
+  eventIndicator: {
+    width: 4,
+    height: '100%',
+    borderRadius: 2,
+    marginRight: 12,
+  },
+  eventContent: {
+    flex: 1,
   },
   eventTime: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2196F3',
-    marginRight: 4,
-  },
-  eventTypeChip: {
-    height: 28,
-  },
-  eventTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: '#212121',
-  },
-  eventCustomer: {
-    fontSize: 14,
     color: '#666',
-    marginBottom: 4,
+    marginTop: 2,
   },
-  eventAddress: {
-    fontSize: 12,
-    color: '#999',
+  statusChip: {
+    marginLeft: 8,
+  },
+
+  // Modal
+  modal: {
+    backgroundColor: '#FFF',
+    margin: 20,
+    padding: 20,
+    borderRadius: 12,
+  },
+  modalTitle: {
     marginBottom: 8,
   },
-  eventStatusChip: {
+  modalChip: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e3f2fd',
+    marginBottom: 16,
   },
-  eventStatusText: {
-    fontSize: 12,
-    color: '#2196F3',
+  modalSection: {
+    marginBottom: 16,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  modalInfo: {
+    marginBottom: 12,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    marginTop: 16,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-  },
+
+  // FAB
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#2196F3',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-  },
-  modalContent: {
-    gap: 12,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#212121',
-  },
-  modalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  modalLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666',
-    width: 100,
-  },
-  modalValue: {
-    fontSize: 14,
-    color: '#212121',
-    flex: 1,
-  },
-  modalChip: {
-    height: 28,
-  },
-  modalButton: {
-    marginTop: 16,
   },
 });

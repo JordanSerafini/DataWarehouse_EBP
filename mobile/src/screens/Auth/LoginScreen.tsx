@@ -21,13 +21,16 @@ import {
   ActivityIndicator,
 } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { showToast } from '../../utils/toast';
 import { apiService } from '../../services/api.service';
+import { BiometricService } from '../../services/biometric.service';
+import { BiometricPrompt } from '../../components/BiometricPrompt';
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Pré-remplir avec Jordan pour les tests (DEV uniquement)
+  const [email, setEmail] = useState(__DEV__ ? 'jordan@solution-logique.fr' : '');
+  const [password, setPassword] = useState(__DEV__ ? 'pass123' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
@@ -35,13 +38,22 @@ const LoginScreen = () => {
   const [usersList, setUsersList] = useState<Array<{ email: string; full_name: string; role: string }>>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
-  const { login } = useAuthStore();
+  // Biométrie
+  const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
+  const [loginCredentials, setLoginCredentials] = useState({ email: '', password: '' });
+
+  const { login, loginWithBiometric, checkBiometricCapabilities } = useAuthStore();
+  const canUseBiometric = useAuthStore(authSelectors.canUseBiometric);
+  const biometricEnabled = useAuthStore(authSelectors.biometricEnabled);
+  const biometricCapabilities = useAuthStore(authSelectors.biometricCapabilities);
 
   /**
    * Récupérer la liste des utilisateurs depuis l'API
+   * et vérifier les capacités biométriques
    */
   useEffect(() => {
     loadUsers();
+    checkBiometricCapabilities();
   }, []);
 
   const loadUsers = async () => {
@@ -132,6 +144,12 @@ const LoginScreen = () => {
     try {
       await login(email, password);
       showToast('Connexion réussie', 'success');
+
+      // Proposer d'activer la biométrie si disponible et pas déjà activée
+      if (canUseBiometric && !biometricEnabled) {
+        setLoginCredentials({ email, password });
+        setShowBiometricPrompt(true);
+      }
     } catch (error: any) {
       console.error('Login error:', error);
 
@@ -142,6 +160,23 @@ const LoginScreen = () => {
       } else {
         showToast('Erreur de connexion', 'error');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Connexion avec biométrie
+   */
+  const handleBiometricLogin = async () => {
+    setLoading(true);
+
+    try {
+      await loginWithBiometric();
+      showToast('Connexion biométrique réussie', 'success');
+    } catch (error: any) {
+      console.error('Biometric login error:', error);
+      showToast(error.message || 'Erreur de connexion biométrique', 'error');
     } finally {
       setLoading(false);
     }
@@ -192,6 +227,35 @@ const LoginScreen = () => {
               Connectez-vous pour continuer
             </Text>
           </View>
+
+          {/* Bouton biométrie (si activée) */}
+          {biometricEnabled && canUseBiometric && (
+            <TouchableOpacity
+              style={styles.biometricButton}
+              onPress={handleBiometricLogin}
+              disabled={loading}
+            >
+              <View style={styles.biometricIcon}>
+                <Ionicons name="finger-print" size={32} color="#6200ee" />
+              </View>
+              <Text variant="labelLarge" style={styles.biometricText}>
+                Connexion {BiometricService.getBiometricTypeName(
+                  biometricCapabilities?.supportedTypes[0] || 'NONE'
+                )}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Séparateur (si biométrie active) */}
+          {biometricEnabled && canUseBiometric && (
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text variant="bodySmall" style={styles.dividerText}>
+                ou
+              </Text>
+              <View style={styles.dividerLine} />
+            </View>
+          )}
 
           {/* Formulaire */}
           <Card style={styles.card}>
@@ -325,6 +389,14 @@ const LoginScreen = () => {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Modal pour activer la biométrie */}
+      <BiometricPrompt
+        visible={showBiometricPrompt}
+        email={loginCredentials.email}
+        password={loginCredentials.password}
+        onClose={() => setShowBiometricPrompt(false)}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -439,6 +511,49 @@ const styles = StyleSheet.create({
   footer: {
     textAlign: 'center',
     marginTop: 32,
+    color: '#9e9e9e',
+  },
+  // Styles biométrie
+  biometricButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#6200ee',
+    shadowColor: '#6200ee',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  biometricIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#f3e5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  biometricText: {
+    color: '#6200ee',
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  dividerText: {
+    marginHorizontal: 16,
     color: '#9e9e9e',
   },
 });

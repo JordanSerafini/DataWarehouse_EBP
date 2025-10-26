@@ -4,7 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { API_CONFIG } from '../config/api.config';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore.v2';
 import {
   LoginCredentials,
   LoginResponse,
@@ -35,6 +35,7 @@ class ApiService {
       timeout: API_CONFIG.TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning in free tier
       },
     });
 
@@ -64,10 +65,10 @@ class ApiService {
             const { tokens } = useAuthStore.getState();
             if (tokens?.refreshToken) {
               const response = await this.refreshToken(tokens.refreshToken);
-              const { login } = useAuthStore.getState();
+              const { loginWithData } = useAuthStore.getState();
 
-              // Mettre à jour les tokens
-              await login(response.user, {
+              // Mettre à jour les tokens avec loginWithData (v2)
+              loginWithData(response.user, {
                 accessToken: response.accessToken,
                 refreshToken: response.refreshToken,
                 expiresIn: response.expiresIn,
@@ -88,6 +89,28 @@ class ApiService {
         return Promise.reject(error);
       }
     );
+  }
+
+  // ==================== GENERIC HTTP METHODS ====================
+
+  async get<T = any>(url: string, config?: any): Promise<{ data: T }> {
+    return this.client.get<T>(url, config);
+  }
+
+  async post<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.post<T>(url, data, config);
+  }
+
+  async put<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.put<T>(url, data, config);
+  }
+
+  async delete<T = any>(url: string, config?: any): Promise<{ data: T }> {
+    return this.client.delete<T>(url, config);
+  }
+
+  async patch<T = any>(url: string, data?: any, config?: any): Promise<{ data: T }> {
+    return this.client.patch<T>(url, data, config);
   }
 
   // ==================== AUTHENTICATION ====================
