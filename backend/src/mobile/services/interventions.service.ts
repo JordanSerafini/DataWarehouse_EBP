@@ -59,11 +59,46 @@ export class InterventionsService {
       se."Address_Latitude" as latitude,
       se."Address_Longitude" as longitude,
       se."sysCreatedDate" as "createdAt",
-      se."sysModifiedDate" as "updatedAt"
+      se."sysModifiedDate" as "updatedAt",
+      'schedule_event' as source_type
     FROM public."ScheduleEvent" se
     LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
     LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
     LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+
+    UNION ALL
+
+    SELECT
+      i."Id"::text as id,
+      i."Id" as reference,
+      COALESCE(i."Caption", '') as title,
+      COALESCE(
+        NULLIF(i."DescriptionClear", ''),
+        NULLIF(i."Description", '')
+      ) as description,
+      NULL as report,
+      i."DescriptionClear" as notes,
+      i."StartDate" as "scheduledDate",
+      i."EndDate" as "scheduledEndDate",
+      i."Status" as "eventState",
+      NULL as "eventType",
+      i."PredictedDuration" as "estimatedDurationHours",
+      i."AccomplishedDuration" as "achievedDurationHours",
+      i."CustomerId" as "customerId",
+      i."CustomerName" as "customerName",
+      NULL as "contactPhone",
+      i."CreatorColleagueId" as "technicianId",
+      col2."Contact_Name" as "technicianName",
+      NULL as address,
+      NULL as city,
+      NULL as "postalCode",
+      NULL as latitude,
+      NULL as longitude,
+      i."sysCreatedDate" as "createdAt",
+      i."sysModifiedDate" as "updatedAt",
+      'incident' as source_type
+    FROM public."Incident" i
+    LEFT JOIN public."Colleague" col2 ON col2."Id" = i."CreatorColleagueId"
   `;
 
   constructor(private readonly databaseService: DatabaseService) {}
@@ -88,11 +123,13 @@ export class InterventionsService {
 
     try {
       const sql = `
-        ${InterventionsService.INTERVENTION_BASE_QUERY}
-        WHERE se."ColleagueId" = $1
-          AND se."StartDateTime" >= $2
-          AND se."StartDateTime" <= $3
-        ORDER BY se."StartDateTime" ASC
+        SELECT * FROM (
+          ${InterventionsService.INTERVENTION_BASE_QUERY}
+        ) AS interventions
+        WHERE "technicianId" = $1
+          AND "scheduledDate" >= $2
+          AND "scheduledDate" <= $3
+        ORDER BY "scheduledDate" ASC
       `;
 
       const result = await this.databaseService.query(sql, [technicianId, dateFrom, dateTo]);
@@ -126,8 +163,10 @@ export class InterventionsService {
 
     try {
       const sql = `
-        ${InterventionsService.INTERVENTION_BASE_QUERY}
-        WHERE se."Id" = $1
+        SELECT * FROM (
+          ${InterventionsService.INTERVENTION_BASE_QUERY}
+        ) AS interventions
+        WHERE id = $1
         LIMIT 1
       `;
 

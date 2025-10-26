@@ -35,6 +35,7 @@ import { useAuthStore, authSelectors } from '../stores/authStore.v2';
 
 // Navigation types
 export type RootStackParamList = {
+  Loading: undefined;
   Login: undefined;
   MainTabs: undefined;
   InterventionDetails: { interventionId: string };
@@ -57,6 +58,16 @@ export type BottomTabParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+/**
+ * Loading Screen - Pendant la vérification de l'auth
+ */
+const LoadingScreen = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
+    <ActivityIndicator size="large" color="#6200ee" />
+    <Text style={{ marginTop: 16, color: '#757575' }}>Chargement...</Text>
+  </View>
+);
 
 /**
  * Bottom Tabs Navigator
@@ -230,15 +241,5 @@ const AppNavigator = () => {
     </NavigationContainer>
   );
 };
-
-/**
- * Loading Screen - Pendant la vérification de l'auth
- */
-const LoadingScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-    <ActivityIndicator size="large" color="#6200ee" />
-    <Text style={{ marginTop: 16, color: '#757575' }}>Chargement...</Text>
-  </View>
-);
 
 export default AppNavigator;

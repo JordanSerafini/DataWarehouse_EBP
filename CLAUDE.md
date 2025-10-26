@@ -577,6 +577,26 @@ The `./migrate.sh` script:
 5. **Database schema**: All NinjaOne data is in `ninjaone` schema (separate from `public` and `mobile`)
 6. **Key tables**: `fact_tickets`, `dim_organizations`, `dim_technicians`, `dim_devices`, `dim_time`
 
+### When Developing Mobile Features
+
+1. **Start backend first**: `cd backend && npm run start:dev`
+2. **Check API docs**: http://localhost:3000/api/docs
+3. **Add service methods** in `mobile/src/services/` (use axios)
+4. **Create/update screens** in `mobile/src/screens/`
+5. **Use Zustand stores** for global state (auth, sync)
+6. **Test in Expo Go** for rapid development
+7. **Build dev build** when testing WatermelonDB or native modules
+8. **Follow Material Design 3** for consistent UI
+9. **Handle loading/error states** in all screens
+10. **Add pull-to-refresh** for data fetching
+
+**Important Notes:**
+- WatermelonDB only works in development builds, not Expo Go
+- Use `__DEV__` flag to detect development mode
+- GPS features require physical device or simulator location
+- Biometric features require physical device (iOS Simulator supports Face ID)
+- Always check `mobile/notes/` for latest development documentation
+
 ## Testing
 
 ### Backend Tests
@@ -685,25 +705,34 @@ Use `./migrate.sh` in the root directory:
 
 ## Project Status & Roadmap
 
-### Current Status (Phase 0.5 - Backend Development Complete)
+### Current Status (Phases 1-4 Complete - Mobile App Production-Ready)
 - ✅ Database audit complete (319 tables analyzed)
 - ✅ TypeScript interfaces generated for all EBP tables
 - ✅ Mobile schema migrations created (10 migrations ready)
 - ✅ EBP sync application functional (Electron GUI)
 - ✅ NinjaOne integration functional (965 tickets, 114 orgs)
-- ✅ Backend API with authentication functional
-- ✅ **NEW**: Mobile sync API implemented (670K → 50K rows)
-- ✅ **NEW**: Customers API with search
-- ✅ **NEW**: Interventions API with file uploads
-- ✅ **NEW**: File management service
+- ✅ Backend API complete (23 endpoints: interventions + customers + sync)
+- ✅ **Mobile App Phases 1-4 Complete**:
+  - Phase 1: Planning & Tasks screens
+  - Phase 2: Biometric authentication (Face ID/Touch ID)
+  - Phase 3: Intervention workflow (start/complete + photos + signature)
+  - Phase 4: Customer search + 360° view
+- ✅ Mobile features: GPS maps, TimeSheet, photo gallery, offline-ready
 
-### Next Steps
-1. **Deploy migrations** to production PostgreSQL
-2. **Test mobile sync** with real devices
-3. **Develop mobile app** (React Native planned)
-4. **Implement offline sync** (WatermelonDB planned)
-5. Build data warehouse Bronze/Silver/Gold layers
-6. Deploy ML models
+### Next Steps (Short-Term)
+1. **Test mobile app** on physical devices (Android + iOS)
+2. **Phase 5 - Calendar**: Monthly/weekly view + rescheduling
+3. **Phase 6 - Dashboard**: Technician KPIs + performance charts
+4. **Deploy migrations** to production PostgreSQL
+5. **Build production APK/IPA** for field testing
+6. **Implement WatermelonDB** in development build for true offline mode
+
+### Long-Term Roadmap
+1. Build data warehouse Bronze/Silver/Gold layers
+2. Deploy ML models for predictive analytics
+3. Multi-language support (FR/EN)
+4. Push notifications
+5. Advanced reporting & exports
 
 **Total Project Timeline**: 12 months
 **Budget**: 231k€
@@ -719,3 +748,10 @@ Use `./migrate.sh` in the root directory:
 - User roles determine access levels in the mobile API
 - Column names in EBP preserve original casing (mixed case) - respect this
 - The project has extensive documentation - read relevant docs before making changes
+- **Mobile app specifics**:
+  - The mobile app uses **API-first architecture** during development (Expo Go)
+  - WatermelonDB requires development build - don't expect it to work in Expo Go
+  - Always test mobile features on physical device before production
+  - Mobile app is in active development - check `Audits&Notes/26-10-25/` and `mobile/notes/` for latest status
+  - Backend must be running on localhost:3000 for mobile development
+  - Use Material Design 3 components from react-native-paper for consistency
