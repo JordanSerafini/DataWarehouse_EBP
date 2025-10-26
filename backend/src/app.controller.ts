@@ -10,7 +10,7 @@ export class AppController {
   @Get()
   @ApiOperation({
     summary: 'Health check',
-    description: 'Vérifie que l\'API est en ligne',
+    description: "Vérifie que l'API est en ligne",
   })
   @ApiResponse({
     status: 200,
@@ -19,7 +19,10 @@ export class AppController {
       type: 'object',
       properties: {
         status: { type: 'string', example: 'ok' },
-        message: { type: 'string', example: 'API EBP Mobile - Backend opérationnel' },
+        message: {
+          type: 'string',
+          example: 'API EBP Mobile - Backend opérationnel',
+        },
         version: { type: 'string', example: '1.0.0' },
       },
     },
