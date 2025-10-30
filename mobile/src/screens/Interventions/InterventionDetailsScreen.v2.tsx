@@ -34,6 +34,7 @@ import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
 import { SignaturePad } from '../../components/SignaturePad';
 import { TimeSheet } from '../../components/TimeSheet';
+import { hapticService } from '../../services/haptic.service';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -68,8 +69,12 @@ const InterventionDetailsScreenV2 = () => {
    */
   const handleRefresh = async () => {
     setRefreshing(true);
+    // Haptic feedback moyen pour refresh
+    await hapticService.medium();
     await loadIntervention();
     setRefreshing(false);
+    // Haptic feedback léger à la fin du refresh
+    await hapticService.light();
   };
 
   useEffect(() => {
@@ -80,24 +85,39 @@ const InterventionDetailsScreenV2 = () => {
    * Démarrer l'intervention (PENDING → IN_PROGRESS)
    */
   const handleStartIntervention = () => {
+    // Haptic feedback léger sur ouverture du modal
+    hapticService.light();
+
     Alert.alert(
       'Démarrer l\'intervention',
       'Voulez-vous démarrer cette intervention maintenant ?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Annuler',
+          style: 'cancel',
+          onPress: () => hapticService.light()
+        },
         {
           text: 'Démarrer',
           onPress: async () => {
             try {
+              // Haptic feedback moyen au début de l'action
+              await hapticService.medium();
+
               setActionLoading(true);
               await InterventionService.startIntervention(interventionId, {
                 startedAt: new Date().toISOString(),
                 notes: 'Intervention démarrée depuis l\'app mobile',
               });
+
+              // Haptic feedback succès après succès
+              await hapticService.success();
               showToast('Intervention démarrée !', 'success');
               await loadIntervention(); // Recharger pour avoir le nouveau statut
             } catch (error: any) {
               console.error('Error starting intervention:', error);
+              // Haptic feedback erreur en cas d'échec
+              await hapticService.error();
               showToast('Erreur lors du démarrage', 'error');
             } finally {
               setActionLoading(false);
@@ -112,30 +132,46 @@ const InterventionDetailsScreenV2 = () => {
    * Clôturer l'intervention (IN_PROGRESS → COMPLETED)
    */
   const handleCompleteIntervention = () => {
+    // Haptic feedback moyen sur ouverture du modal (action importante)
+    hapticService.medium();
+
     Alert.prompt(
       'Clôturer l\'intervention',
       'Veuillez saisir votre rapport d\'intervention :',
       [
-        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Annuler',
+          style: 'cancel',
+          onPress: () => hapticService.light()
+        },
         {
           text: 'Clôturer',
           onPress: async (report) => {
             if (!report || report.trim().length === 0) {
+              await hapticService.warning();
               showToast('Le rapport est obligatoire', 'error');
               return;
             }
 
             try {
+              // Haptic feedback lourd pour action critique
+              await hapticService.heavy();
+
               setActionLoading(true);
               await InterventionService.completeIntervention(interventionId, {
                 completedAt: new Date().toISOString(),
                 report: report.trim(),
                 recommendations: '',
               });
+
+              // Haptic feedback succès renforcé (triple tap) pour grande réussite
+              await hapticService.successEnhanced();
               showToast('Intervention clôturée !', 'success');
               await loadIntervention();
             } catch (error: any) {
               console.error('Error completing intervention:', error);
+              // Haptic feedback erreur
+              await hapticService.error();
               showToast('Erreur lors de la clôture', 'error');
             } finally {
               setActionLoading(false);
@@ -150,11 +186,15 @@ const InterventionDetailsScreenV2 = () => {
   /**
    * Ouvrir l'adresse dans Maps
    */
-  const handleOpenMaps = () => {
+  const handleOpenMaps = async () => {
     if (!intervention?.address) {
+      await hapticService.error();
       showToast('Adresse non disponible', 'error');
       return;
     }
+
+    // Haptic feedback léger pour navigation
+    await hapticService.light();
 
     const address = encodeURIComponent(intervention.address);
     const url = Platform.select({
@@ -163,7 +203,8 @@ const InterventionDetailsScreenV2 = () => {
     });
 
     if (url) {
-      Linking.openURL(url).catch(() => {
+      Linking.openURL(url).catch(async () => {
+        await hapticService.error();
         showToast('Impossible d\'ouvrir Maps', 'error');
       });
     }

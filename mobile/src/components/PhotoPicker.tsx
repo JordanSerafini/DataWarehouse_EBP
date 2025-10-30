@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { InterventionService } from '../services/intervention.service';
 import { showToast } from '../utils/toast';
+import { hapticService } from '../services/haptic.service';
 
 interface Photo {
   uri: string;
@@ -73,8 +74,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
    * Prendre une photo avec la caméra
    */
   const handleTakePhoto = async () => {
+    // Haptic feedback léger à l'ouverture de la caméra
+    await hapticService.light();
+
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      await hapticService.error();
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -84,6 +91,9 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
+      // Haptic feedback moyen lors de la sélection de la photo
+      await hapticService.medium();
+
       const newPhoto: Photo = {
         uri: result.assets[0].uri,
         uploading: false,
@@ -98,8 +108,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
    * Sélectionner une photo depuis la galerie
    */
   const handlePickImage = async () => {
+    // Haptic feedback léger à l'ouverture de la galerie
+    await hapticService.light();
+
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      await hapticService.error();
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -109,6 +125,9 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
+      // Haptic feedback moyen lors de la sélection de la photo
+      await hapticService.medium();
+
       const newPhoto: Photo = {
         uri: result.assets[0].uri,
         uploading: false,
@@ -156,10 +175,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
         )
       );
 
+      // Haptic feedback succès après upload réussi
+      await hapticService.success();
       showToast('Photo uploadée avec succès', 'success');
       onPhotosChanged?.(photos.filter((p) => p.uploaded).length + 1);
     } catch (error: any) {
       console.error('Error uploading photo:', error);
+      // Haptic feedback erreur en cas d'échec
+      await hapticService.error();
       showToast('Erreur lors de l\'upload de la photo', 'error');
 
       // Retirer la photo en cas d'erreur
