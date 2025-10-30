@@ -36,6 +36,7 @@ import { SignaturePad } from '../../components/SignaturePad';
 import { TimeSheet } from '../../components/TimeSheet';
 import { hapticService } from '../../services/haptic.service';
 import { SkeletonInterventionDetails } from '../../components/ui/SkeletonLoaders';
+import { AnimatedButton, AnimatedFadeIn, AnimatedCheckmark } from '../../components/ui/AnimatedComponents';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -48,6 +49,7 @@ const InterventionDetailsScreenV2 = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showSuccessCheckmark, setShowSuccessCheckmark] = useState(false);
 
   /**
    * Charger l'intervention depuis l'API
