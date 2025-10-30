@@ -162,16 +162,9 @@ const CustomerDetailsScreen = () => {
     }).format(amount);
   };
 
-  // Loading
+  // Loading with Skeleton
   if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text variant="bodyMedium" style={styles.loadingText}>
-          Chargement du client...
-        </Text>
-      </View>
-    );
+    return <SkeletonCustomerDetails />;
   }
 
   // Error
