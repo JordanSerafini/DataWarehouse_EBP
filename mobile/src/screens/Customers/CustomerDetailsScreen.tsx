@@ -40,6 +40,7 @@ import { showToast } from '../../utils/toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { hapticService } from '../../services/haptic.service';
+import { SkeletonCustomerDetails } from '../../components/ui/SkeletonLoaders';
 
 type CustomerDetailsScreenRouteProp = RouteProp<
   RootStackParamList,

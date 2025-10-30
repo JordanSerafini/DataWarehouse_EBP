@@ -35,6 +35,7 @@ import { PhotoGallery } from '../../components/PhotoGallery';
 import { SignaturePad } from '../../components/SignaturePad';
 import { TimeSheet } from '../../components/TimeSheet';
 import { hapticService } from '../../services/haptic.service';
+import { SkeletonInterventionDetails } from '../../components/ui/SkeletonLoaders';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -250,14 +251,9 @@ const InterventionDetailsScreenV2 = () => {
     }
   };
 
-  // Loading state
+  // Loading state with Skeleton
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
-    );
+    return <SkeletonInterventionDetails />;
   }
 
   // Not found
