@@ -119,48 +119,48 @@ export class ActivityController {
   }
 
   /**
-   * Récupère une activité par ID
-   * GET /api/v1/activity/:id
+   * Récupère les activités récentes (toutes entités confondues)
+   * GET /api/v1/activity/recent?limit=20
+   * IMPORTANT: Cette route doit être AVANT @Get(':id') pour éviter que "recent" soit interprété comme un ID
    */
-  @Get(':id')
+  @Get('recent')
   @Roles(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
     UserRole.PATRON,
     UserRole.COMMERCIAL,
-    UserRole.CHEF_CHANTIER,
-    UserRole.TECHNICIEN,
   )
   @ApiOperation({
-    summary: 'Récupère les détails d\'une activité',
-    description: 'Retourne toutes les informations d\'une activité spécifique',
+    summary: 'Récupère les activités récentes',
+    description: 'Retourne les dernières activités toutes entités confondues (pour tableau de bord)',
   })
-  @ApiParam({
-    name: 'id',
-    description: 'ID de l\'activité (UUID)',
-    type: String,
+  @ApiQuery({
+    name: 'limit',
+    description: 'Nombre maximum de résultats',
+    required: false,
+    type: Number,
+    example: 20,
   })
   @ApiResponse({
     status: 200,
-    description: 'Activité récupérée avec succès',
-    type: ActivityDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Activité non trouvée',
+    description: 'Liste des activités récentes récupérée avec succès',
+    type: [ActivityDto],
   })
   @ApiResponse({
     status: 401,
     description: 'Non authentifié',
   })
-  async getActivityById(@Param('id') id: string): Promise<ActivityDto> {
-    this.logger.log(`Getting activity: ${id}`);
-    return this.activityService.getActivityById(id);
+  async getRecentActivities(
+    @Query('limit') limit?: number,
+  ): Promise<ActivityDto[]> {
+    this.logger.log(`Getting ${limit || 20} recent activities`);
+    return this.activityService.getRecentActivities(limit);
   }
 
   /**
    * Récupère les statistiques d'activités pour une entité
    * GET /api/v1/activity/stats/:entityType/:entityId
+   * IMPORTANT: Cette route doit être AVANT @Get(':id') pour éviter conflit de routing
    */
   @Get('stats/:entityType/:entityId')
   @Roles(
@@ -207,40 +207,43 @@ export class ActivityController {
   }
 
   /**
-   * Récupère les activités récentes (toutes entités confondues)
-   * GET /api/v1/activity/recent?limit=20
+   * Récupère une activité par ID
+   * GET /api/v1/activity/:id
+   * IMPORTANT: Cette route doit être EN DERNIER pour ne pas intercepter les routes spécifiques ci-dessus
    */
-  @Get('recent')
+  @Get(':id')
   @Roles(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
     UserRole.PATRON,
     UserRole.COMMERCIAL,
+    UserRole.CHEF_CHANTIER,
+    UserRole.TECHNICIEN,
   )
   @ApiOperation({
-    summary: 'Récupère les activités récentes',
-    description: 'Retourne les dernières activités toutes entités confondues (pour tableau de bord)',
+    summary: 'Récupère les détails d\'une activité',
+    description: 'Retourne toutes les informations d\'une activité spécifique',
   })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Nombre maximum de résultats',
-    required: false,
-    type: Number,
-    example: 20,
+  @ApiParam({
+    name: 'id',
+    description: 'ID de l\'activité (UUID)',
+    type: String,
   })
   @ApiResponse({
     status: 200,
-    description: 'Liste des activités récentes récupérée avec succès',
-    type: [ActivityDto],
+    description: 'Activité récupérée avec succès',
+    type: ActivityDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Activité non trouvée',
   })
   @ApiResponse({
     status: 401,
     description: 'Non authentifié',
   })
-  async getRecentActivities(
-    @Query('limit') limit?: number,
-  ): Promise<ActivityDto[]> {
-    this.logger.log(`Getting ${limit || 20} recent activities`);
-    return this.activityService.getRecentActivities(limit);
+  async getActivityById(@Param('id') id: string): Promise<ActivityDto> {
+    this.logger.log(`Getting activity: ${id}`);
+    return this.activityService.getActivityById(id);
   }
 }

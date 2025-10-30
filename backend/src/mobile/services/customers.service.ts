@@ -14,6 +14,40 @@ import {
 } from '../dto/customers/query-customers.dto';
 import { UpdateCustomerGpsDto } from '../dto/customers/update-customer-gps.dto';
 
+/**
+ * Interface pour les lignes brutes de la base de données Customer
+ */
+interface CustomerRow {
+  customerId: string;
+  name: string;
+  contactName: string;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  deliveryAddress: string | null;
+  deliveryCity: string | null;
+  deliveryPostalCode: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  gpsProvider: string | null;
+  gpsQuality: number | null;
+  createdAt: Date;
+  modifiedAt: Date;
+}
+
+/**
+ * Interface pour le nombre d'interventions
+ */
+interface InterventionCountRow {
+  count: number;
+}
+
+/**
+ * Interface pour le total des revenus
+ */
+interface TotalRevenueRow {
+  total: number;
+}
+
 @Injectable()
 export class CustomersService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -49,23 +83,23 @@ export class CustomersService {
    * Récupère le détail complet d'un client par son ID
    */
   async getCustomerById(customerId: string): Promise<CustomerDto> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<CustomerRow>(
       `SELECT
         c."Id" AS "customerId",
-        c."caption" AS "name",
-        c."ContactName_Value" AS "contactName",
-        c."ContactPhone_Value" AS "contactPhone",
-        c."ContactEmail_Value" AS "contactEmail",
-        c."DeliveryAddress_Address1" AS "deliveryAddress",
-        c."DeliveryAddress_City" AS "deliveryCity",
-        c."DeliveryAddress_ZipCode" AS "deliveryPostalCode",
-        c."Address_Latitude" AS "latitude",
-        c."Address_Longitude" AS "longitude",
+        c."Name" AS "name",
+        CONCAT(c."MainDeliveryContact_FirstName", ' ', c."MainDeliveryContact_Name") AS "contactName",
+        c."MainDeliveryContact_Phone" AS "contactPhone",
+        c."MainDeliveryContact_Email" AS "contactEmail",
+        c."MainDeliveryAddress_Address1" AS "deliveryAddress",
+        c."MainDeliveryAddress_City" AS "deliveryCity",
+        c."MainDeliveryAddress_ZipCode" AS "deliveryPostalCode",
+        c."MainDeliveryAddress_Latitude" AS "latitude",
+        c."MainDeliveryAddress_Longitude" AS "longitude",
         mg."gps_provider" AS "gpsProvider",
         mg."gps_quality" AS "gpsQuality",
         c."sysCreatedDate" AS "createdAt",
         c."sysModifiedDate" AS "modifiedAt"
-       FROM public."customer" c
+       FROM public."Customer" c
        LEFT JOIN mobile.customer_gps mg ON mg.customer_id = c."Id"
        WHERE c."Id" = $1`,
       [customerId],
@@ -87,7 +121,7 @@ export class CustomersService {
   ): Promise<CustomerHistoryItemDto[]> {
     const limit = query.limit || 50;
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<CustomerHistoryItemDto>(
       `SELECT
         intervention_id AS "interventionId",
         title,
@@ -110,7 +144,7 @@ export class CustomersService {
   async getCustomerDocumentStats(
     customerId: string,
   ): Promise<CustomerDocumentStatsDto[]> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<CustomerDocumentStatsDto>(
       `SELECT
         document_type_label AS "documentTypeLabel",
         document_count AS "documentCount",
@@ -138,9 +172,7 @@ export class CustomersService {
     const documentStats = await this.getCustomerDocumentStats(customerId);
 
     // Calcule le total des interventions
-    const totalInterventionsResult = await this.databaseService.query<{
-      count: number;
-    }>(
+    const totalInterventionsResult = await this.databaseService.query<InterventionCountRow>(
       `SELECT COUNT(*)::int AS count
        FROM public."ScheduleEvent"
        WHERE "customer" = $1`,
@@ -148,9 +180,7 @@ export class CustomersService {
     );
 
     // Calcule le montant total facturé
-    const totalRevenueResult = await this.databaseService.query<{
-      total: number;
-    }>(
+    const totalRevenueResult = await this.databaseService.query<TotalRevenueRow>(
       `SELECT COALESCE(SUM("TotalTaxIncludedDiscounted_Value"), 0)::numeric AS total
        FROM public."saledocument"
        WHERE "customer" = $1
@@ -176,25 +206,25 @@ export class CustomersService {
 
     // Construction de la clause WHERE dynamique
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: (string | number)[] = [];
     let paramIndex = 1;
 
     if (query.query) {
       conditions.push(
-        `(c."caption" ILIKE $${paramIndex} OR c."DeliveryAddress_Address1" ILIKE $${paramIndex})`,
+        `(c."Name" ILIKE $${paramIndex} OR c."MainDeliveryAddress_Address1" ILIKE $${paramIndex})`,
       );
       params.push(`%${query.query}%`);
       paramIndex++;
     }
 
     if (query.city) {
-      conditions.push(`c."DeliveryAddress_City" ILIKE $${paramIndex}`);
+      conditions.push(`c."MainDeliveryAddress_City" ILIKE $${paramIndex}`);
       params.push(`%${query.city}%`);
       paramIndex++;
     }
 
     if (query.postalCode) {
-      conditions.push(`c."DeliveryAddress_ZipCode" ILIKE $${paramIndex}`);
+      conditions.push(`c."MainDeliveryAddress_ZipCode" ILIKE $${paramIndex}`);
       params.push(`%${query.postalCode}%`);
       paramIndex++;
     }
@@ -207,23 +237,23 @@ export class CustomersService {
     const result = await this.databaseService.query<CustomerDto>(
       `SELECT
         c."Id" AS "customerId",
-        c."caption" AS "name",
-        c."ContactName_Value" AS "contactName",
-        c."ContactPhone_Value" AS "contactPhone",
-        c."ContactEmail_Value" AS "contactEmail",
-        c."DeliveryAddress_Address1" AS "deliveryAddress",
-        c."DeliveryAddress_City" AS "deliveryCity",
-        c."DeliveryAddress_ZipCode" AS "deliveryPostalCode",
-        c."Address_Latitude" AS "latitude",
-        c."Address_Longitude" AS "longitude",
+        c."Name" AS "name",
+        CONCAT(c."MainDeliveryContact_FirstName", ' ', c."MainDeliveryContact_Name") AS "contactName",
+        c."MainDeliveryContact_Phone" AS "contactPhone",
+        c."MainDeliveryContact_Email" AS "contactEmail",
+        c."MainDeliveryAddress_Address1" AS "deliveryAddress",
+        c."MainDeliveryAddress_City" AS "deliveryCity",
+        c."MainDeliveryAddress_ZipCode" AS "deliveryPostalCode",
+        c."MainDeliveryAddress_Latitude" AS "latitude",
+        c."MainDeliveryAddress_Longitude" AS "longitude",
         mg."gps_provider" AS "gpsProvider",
         mg."gps_quality" AS "gpsQuality",
         c."sysCreatedDate" AS "createdAt",
         c."sysModifiedDate" AS "modifiedAt"
-       FROM public."customer" c
+       FROM public."Customer" c
        LEFT JOIN mobile.customer_gps mg ON mg.customer_id = c."Id"
        ${whereClause}
-       ORDER BY c."caption"
+       ORDER BY c."Name"
        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
       params,
     );

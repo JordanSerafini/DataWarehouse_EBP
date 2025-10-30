@@ -3,6 +3,20 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../services/auth.service';
+import { UserRole } from '../enums/user-role.enum';
+
+/**
+ * Interface pour le payload JWT
+ */
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: UserRole;
+  colleagueId: string | null;
+  jti: string;
+  iat?: number;
+  exp?: number;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload) {
     // Vérifier que le token n'est pas révoqué
     const isValid = await this.authService.validateToken(payload.jti);
 

@@ -9,6 +9,17 @@ import {
   EventStatus,
 } from '../dto/calendar/calendar-event.dto';
 
+/**
+ * Interface pour les statistiques brutes depuis la base de données
+ */
+interface CalendarStatsRow {
+  totalEvents: string;
+  plannedEvents: string;
+  inProgressEvents: string;
+  completedEvents: string;
+  totalPlannedHours: string;
+}
+
 @Injectable()
 export class CalendarService {
   private readonly logger = new Logger(CalendarService.name);
@@ -68,7 +79,7 @@ export class CalendarService {
           AND se."StartDateTime" <= $3
       `;
 
-      const params: any[] = [technicianId, query.startDate, query.endDate];
+      const params: (string | Date | number)[] = [technicianId, query.startDate, query.endDate];
       let paramIndex = 4;
 
       // Filtre optionnel par type
@@ -274,7 +285,7 @@ export class CalendarService {
           AND se."StartDateTime" <= $3
       `;
 
-      const result = await this.databaseService.query<any>(sqlQuery, [
+      const result = await this.databaseService.query<CalendarStatsRow>(sqlQuery, [
         technicianId,
         startDate,
         endDate,
@@ -283,10 +294,10 @@ export class CalendarService {
       const stats = result.rows[0];
 
       return {
-        totalEvents: parseInt(stats.totalEvents) || 0,
-        plannedEvents: parseInt(stats.plannedEvents) || 0,
-        inProgressEvents: parseInt(stats.inProgressEvents) || 0,
-        completedEvents: parseInt(stats.completedEvents) || 0,
+        totalEvents: parseInt(stats.totalEvents, 10) || 0,
+        plannedEvents: parseInt(stats.plannedEvents, 10) || 0,
+        inProgressEvents: parseInt(stats.inProgressEvents, 10) || 0,
+        completedEvents: parseInt(stats.completedEvents, 10) || 0,
         cancelledEvents: 0, // À implémenter avec un champ dédié si disponible
         totalPlannedHours: parseFloat(stats.totalPlannedHours) || 0,
       };

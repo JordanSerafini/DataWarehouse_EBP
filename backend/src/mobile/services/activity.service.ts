@@ -8,6 +8,41 @@ import {
   ACTIVITY_STATE_LABELS,
 } from '../dto/activity/activity.dto';
 
+/**
+ * Interface pour les lignes d'activités depuis la base de données
+ */
+interface ActivityRow {
+  id: string;
+  caption: string;
+  activityCategory: number;
+  eventState: number | null;
+  startDateTime: Date;
+  endDateTime: Date | null;
+  customerId: string | null;
+  customerName: string | null;
+  contactId: string | null;
+  contactName: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  colleagueId: string | null;
+  creatorColleagueId: string | null;
+  saleDocumentId: string | null;
+  scheduleEventId: string | null;
+  dealId: string | null;
+  notesClear: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+}
+
+/**
+ * Interface pour les statistiques brutes
+ */
+interface ActivityStatsRow {
+  totalActivities: string;
+  byCategory: Record<string, number> | null;
+  lastActivityDate: Date | null;
+}
+
 @Injectable()
 export class ActivityService {
   private readonly logger = new Logger(ActivityService.name);
@@ -26,7 +61,7 @@ export class ActivityService {
       const entityType = query.entityType || 'customer';
 
       let whereClause = '';
-      const params: any[] = [];
+      const params: (string | number)[] = [];
       let paramIndex = 1;
 
       // Filtrage par type d'entité
@@ -92,7 +127,7 @@ export class ActivityService {
 
       params.push(limit, offset);
 
-      const result = await this.databaseService.query<any>(sqlQuery, params);
+      const result = await this.databaseService.query<ActivityRow>(sqlQuery, params);
 
       // Enrichir avec les labels
       const activities: ActivityDto[] = result.rows.map((row) => ({
@@ -142,7 +177,7 @@ export class ActivityService {
         WHERE a."Id" = $1
       `;
 
-      const result = await this.databaseService.query<any>(sqlQuery, [activityId]);
+      const result = await this.databaseService.query<ActivityRow>(sqlQuery, [activityId]);
 
       if (result.rows.length === 0) {
         throw new NotFoundException(`Activité ${activityId} introuvable`);
@@ -207,7 +242,7 @@ export class ActivityService {
         ) sub
       `;
 
-      const result = await this.databaseService.query<any>(sqlQuery, [entityId]);
+      const result = await this.databaseService.query<ActivityStatsRow>(sqlQuery, [entityId]);
 
       if (result.rows.length === 0) {
         return {
@@ -222,8 +257,8 @@ export class ActivityService {
 
       // Convertir les catégories numériques en labels
       if (row.byCategory) {
-        Object.entries(row.byCategory as Record<string, number>).forEach(([cat, count]) => {
-          const label = ACTIVITY_CATEGORY_LABELS[parseInt(cat)] || 'Autre';
+        Object.entries(row.byCategory).forEach(([cat, count]) => {
+          const label = ACTIVITY_CATEGORY_LABELS[parseInt(cat, 10)] || 'Autre';
           byCategory[label] = count as number;
         });
       }
@@ -239,7 +274,7 @@ export class ActivityService {
       });
 
       return {
-        totalActivities: parseInt(row.totalActivities) || 0,
+        totalActivities: parseInt(row.totalActivities, 10) || 0,
         byCategory,
         lastActivityDate: row.lastActivityDate ? new Date(row.lastActivityDate) : undefined,
         mostFrequentType: mostFrequent,
@@ -284,7 +319,7 @@ export class ActivityService {
         LIMIT $1
       `;
 
-      const result = await this.databaseService.query<any>(sqlQuery, [limit]);
+      const result = await this.databaseService.query<ActivityRow>(sqlQuery, [limit]);
 
       const activities: ActivityDto[] = result.rows.map((row) => ({
         ...row,

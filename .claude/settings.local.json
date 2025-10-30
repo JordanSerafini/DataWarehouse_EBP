@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(ipconfig:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(psql:*)",
+      "Bash(dir /b \"c:\\Users\\Administrateur\\Desktop\\Code\\DataWarehouse_EBP\\backend\\src\\mobile\")",
+      "Bash(dir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -11,6 +11,78 @@ import {
   QueryNearbyProjectsDto,
 } from '../dto/projects/query-projects.dto';
 
+/**
+ * Interface pour les lignes de projet depuis mobile.get_projects_for_manager
+ */
+interface ProjectManagerRow {
+  id: number;
+  name: string;
+  reference: string;
+  customerName: string;
+  state: ProjectState;
+  startDate: Date;
+  endDate: Date;
+  city: string;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+/**
+ * Interface pour les lignes de projet détaillées depuis Deal
+ */
+interface ProjectDetailRow {
+  id: number;
+  name: string;
+  reference: string;
+  customerId: string;
+  customerName: string;
+  state: ProjectState;
+  startDate: Date;
+  endDate: Date;
+  actualEndDate: Date | null;
+  city: string;
+  latitude: string | null;
+  longitude: string | null;
+  managerId: string;
+  managerName: string;
+  createdAt: Date;
+  modifiedAt: Date;
+}
+
+/**
+ * Interface pour les lignes de projet de base
+ */
+interface ProjectBaseRow {
+  id: number;
+  name: string;
+  reference: string;
+  customerId: string;
+  customerName: string;
+  state: ProjectState;
+  startDate: Date;
+  endDate: Date;
+  city: string;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+/**
+ * Interface pour les projets avec distance GPS
+ */
+interface ProjectWithDistanceRow extends ProjectBaseRow {
+  distanceKm: number;
+}
+
+/**
+ * Interface pour les statistiques de projets
+ */
+interface ProjectStatsRow {
+  totalProjects: number;
+  activeProjects: number;
+  wonProjects: number;
+  lostProjects: number;
+}
+
 @Injectable()
 export class ProjectsService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -19,7 +91,7 @@ export class ProjectsService {
    * Récupère les projets d'un responsable
    */
   async getProjectsForManager(managerId: string): Promise<ProjectDto[]> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<ProjectManagerRow>(
       `SELECT
         id,
         name,
@@ -54,7 +126,7 @@ export class ProjectsService {
    * Récupère un projet par son ID
    */
   async getProjectById(projectId: number): Promise<ProjectDto> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<ProjectDetailRow>(
       `SELECT
         d."Id" AS "id",
         d."caption" AS "name",
@@ -73,8 +145,8 @@ export class ProjectsService {
         d."sysCreatedDate" AS "createdAt",
         d."sysModifiedDate" AS "modifiedAt"
        FROM public."Deal" d
-       LEFT JOIN public."customer" c ON c."Id" = d."customer"
-       LEFT JOIN public."colleague" col ON col."Id" = d."manager"
+       LEFT JOIN public."Customer" c ON c."Id" = d."customer"
+       LEFT JOIN public."Colleague" col ON col."Id" = d."manager"
        WHERE d."Id" = $1`,
       [projectId],
     );
@@ -114,7 +186,7 @@ export class ProjectsService {
 
     // Construction de la clause WHERE dynamique
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: (string | number | Date | number[])[] = [];
     let paramIndex = 1;
 
     if (query.managerId) {
@@ -152,7 +224,7 @@ export class ProjectsService {
 
     params.push(limit, offset);
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<ProjectBaseRow>(
       `SELECT
         d."Id" AS "id",
         d."caption" AS "name",
@@ -166,7 +238,7 @@ export class ProjectsService {
         d."xx_Latitude" AS "latitude",
         d."xx_Longitude" AS "longitude"
        FROM public."Deal" d
-       LEFT JOIN public."customer" c ON c."Id" = d."customer"
+       LEFT JOIN public."Customer" c ON c."Id" = d."customer"
        ${whereClause}
        ORDER BY d."xx_DateDebut" DESC
        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
@@ -210,7 +282,7 @@ export class ProjectsService {
 
     const paramLimit = states ? '$5' : '$4';
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<ProjectWithDistanceRow>(
       `SELECT
         d."Id" AS "id",
         d."caption" AS "name",
@@ -232,7 +304,7 @@ export class ProjectsService {
           )
         ) AS "distanceKm"
        FROM public."Deal" d
-       LEFT JOIN public."customer" c ON c."Id" = d."customer"
+       LEFT JOIN public."Customer" c ON c."Id" = d."customer"
        WHERE d."xx_Latitude" IS NOT NULL
          AND d."xx_Longitude" IS NOT NULL
          AND (
@@ -270,7 +342,7 @@ export class ProjectsService {
    * Récupère les statistiques globales des projets
    */
   async getProjectsStats(): Promise<ProjectStatsDto> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<ProjectStatsRow>(
       `SELECT
         COUNT(*)::int AS "totalProjects",
         COUNT(*) FILTER (WHERE "DealState" = 1)::int AS "activeProjects",

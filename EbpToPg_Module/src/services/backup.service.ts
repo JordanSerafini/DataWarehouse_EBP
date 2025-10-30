@@ -65,7 +65,7 @@ class BackupService {
    */
   private generateBackupFileName(format: string, tables?: string[]): string {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const dbName = process.env.PG_DATABASE || 'ebp_db';
+    const dbName = process.env.PG_DATABASE || 'sli_db';
 
     let fileName = `${dbName}_${timestamp}`;
 
@@ -111,7 +111,7 @@ class BackupService {
     const host = process.env.PG_HOST || 'localhost';
     const port = process.env.PG_PORT || '5432';
     const user = process.env.PG_USER || 'postgres';
-    const database = process.env.PG_DATABASE || 'ebp_db';
+    const database = process.env.PG_DATABASE || 'sli_db';
     const password = process.env.PG_PASSWORD || 'postgres';
 
     // Détecter le système d'exploitation

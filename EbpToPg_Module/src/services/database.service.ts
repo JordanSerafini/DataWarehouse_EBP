@@ -78,7 +78,7 @@ class DatabaseService {
    * @param createIfNotExists Si true, crée la base de données si elle n'existe pas
    */
   async initializePool(createIfNotExists: boolean = true): Promise<Pool> {
-    const dbName = process.env.PG_DATABASE || 'ebp_db';
+    const dbName = process.env.PG_DATABASE || 'sli_db';
 
     if (createIfNotExists) {
       await this.createDatabaseIfNotExists(dbName);

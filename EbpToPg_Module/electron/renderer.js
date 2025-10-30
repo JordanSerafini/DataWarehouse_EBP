@@ -59,7 +59,7 @@ async function loadConfig() {
 
         document.getElementById('pgHost').value = config.pgHost || 'localhost';
         document.getElementById('pgPort').value = config.pgPort || 5432;
-        document.getElementById('pgDatabase').value = config.pgDatabase || 'ebp_db';
+        document.getElementById('pgDatabase').value = config.pgDatabase || 'sli_db';
         document.getElementById('pgUser').value = config.pgUser || 'postgres';
         document.getElementById('pgPassword').value = config.pgPassword || 'postgres';
     } catch (error) {

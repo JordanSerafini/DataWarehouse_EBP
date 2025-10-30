@@ -14,6 +14,77 @@ import {
   SearchDocumentsDto,
 } from '../dto/sales/query-documents.dto';
 
+/**
+ * Interface pour les documents récents depuis mobile.get_recent_documents
+ */
+interface RecentDocumentRow {
+  id: string;
+  documentNumber: string;
+  documentTypeLabel: string;
+  documentDate: Date;
+  customerName: string;
+  amountExclTax: string;
+  documentState: number;
+}
+
+/**
+ * Interface pour les devis d'un commercial depuis mobile.get_quotes_for_salesperson
+ */
+interface QuoteForSalespersonRow {
+  id: number;
+  quoteNumber: string;
+  quoteDate: Date;
+  customerName: string;
+  totalInclTax: string;
+  state: number;
+  wonProbability: number | null;
+}
+
+/**
+ * Interface pour les stats des lignes de devis depuis mobile.get_quote_lines_stats
+ */
+interface QuoteLinesStatsRow {
+  quoteId: string;
+  quoteNumber: string;
+  customerName: string;
+  totalExclTax: string;
+  linesCount: number;
+  hasLines: boolean;
+}
+
+/**
+ * Interface pour les documents depuis SaleDocument
+ */
+interface SaleDocumentRow {
+  id: string;
+  documentNumber: string;
+  documentType: SaleDocumentType;
+  documentDate: Date;
+  customerId: string;
+  customerName: string;
+  amountExclTax: string;
+  amountInclTax: string;
+  documentState: number;
+  createdAt: Date;
+  modifiedAt?: Date;
+}
+
+/**
+ * Interface pour les lignes de documents depuis SaleDocumentLine
+ */
+interface SaleDocumentLineRow {
+  id: string;
+  documentId: string;
+  lineNumber: number;
+  description: string;
+  quantity: string;
+  unitPriceExclTax: string;
+  totalExclTax: string;
+  vatRate: string | null;
+  productId: string | null;
+  productReference: string | null;
+}
+
 @Injectable()
 export class SalesService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -27,7 +98,7 @@ export class SalesService {
     const limit = query.limit || 50;
     const documentTypes = query.documentTypes || null;
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<RecentDocumentRow>(
       `SELECT
         id,
         document_number AS "documentNumber",
@@ -61,7 +132,7 @@ export class SalesService {
   ): Promise<QuoteDto[]> {
     const daysBack = query.daysBack || 180;
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<QuoteForSalespersonRow>(
       `SELECT
         id,
         quote_number AS "quoteNumber",
@@ -92,7 +163,7 @@ export class SalesService {
    * Récupère les statistiques des lignes de devis
    */
   async getQuoteLinesStats(): Promise<QuoteLinesStatsDto[]> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<QuoteLinesStatsRow>(
       `SELECT
         quote_id AS "quoteId",
         quote_number AS "quoteNumber",
@@ -117,7 +188,7 @@ export class SalesService {
    * Récupère un document par son ID
    */
   async getDocumentById(documentId: string): Promise<SaleDocumentDto> {
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<SaleDocumentRow>(
       `SELECT
         sd."Id" AS "id",
         sd."DocumentNumber" AS "documentNumber",
@@ -166,7 +237,7 @@ export class SalesService {
     const document = await this.getDocumentById(documentId);
 
     // Récupère les lignes
-    const linesResult = await this.databaseService.query<any>(
+    const linesResult = await this.databaseService.query<SaleDocumentLineRow>(
       `SELECT
         "Id" AS "id",
         "DocumentId" AS "documentId",
@@ -213,7 +284,7 @@ export class SalesService {
 
     // Construction de la clause WHERE dynamique
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: (string | number | Date)[] = [];
     let paramIndex = 1;
 
     if (query.documentType !== undefined) {
@@ -251,7 +322,7 @@ export class SalesService {
 
     params.push(limit, offset);
 
-    const result = await this.databaseService.query<any>(
+    const result = await this.databaseService.query<SaleDocumentRow>(
       `SELECT
         sd."Id" AS "id",
         sd."DocumentNumber" AS "documentNumber",

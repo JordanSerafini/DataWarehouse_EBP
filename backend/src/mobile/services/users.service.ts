@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from './database.service';
+import { UserRole } from '../enums/user-role.enum';
+import { CreateUserDto, UpdateUserDto } from '../dto/users/user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -50,7 +52,7 @@ export class UsersService {
     const offset = (page - 1) * limit;
 
     let whereClause = 'WHERE 1=1';
-    const queryParams: any[] = [];
+    const queryParams: (string | UserRole)[] = [];
     let paramIndex = 1;
 
     if (search) {
@@ -137,7 +139,7 @@ export class UsersService {
   /**
    * Créer un utilisateur
    */
-  async createUser(createUserDto: any, createdBy: string) {
+  async createUser(createUserDto: CreateUserDto, createdBy: string) {
     const passwordHash = await bcrypt.hash(
       createUserDto.password || 'pass123',
       10,
@@ -170,9 +172,9 @@ export class UsersService {
   /**
    * Mettre à jour un utilisateur
    */
-  async updateUser(id: string, updateUserDto: any, updatedBy: string) {
+  async updateUser(id: string, updateUserDto: UpdateUserDto, updatedBy: string) {
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | UserRole | boolean)[] = [];
     let paramIndex = 1;
 
     if (updateUserDto.email !== undefined) {

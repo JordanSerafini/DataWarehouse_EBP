@@ -22,7 +22,7 @@ NC='\033[0m' # No Color
 # Configuration BDD
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${DB_NAME:-ebp_db}"
+DB_NAME="${DB_NAME:-sli_db}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
 
@@ -331,7 +331,7 @@ ${YELLOW}Options:${NC}
 ${YELLOW}Variables d'environnement:${NC}
     DB_HOST              Host PostgreSQL (défaut: localhost)
     DB_PORT              Port PostgreSQL (défaut: 5432)
-    DB_NAME              Nom de la base (défaut: ebp_db)
+    DB_NAME              Nom de la base (défaut: sli_db)
     DB_USER              Utilisateur (défaut: postgres)
     DB_PASSWORD          Mot de passe (défaut: postgres)
 

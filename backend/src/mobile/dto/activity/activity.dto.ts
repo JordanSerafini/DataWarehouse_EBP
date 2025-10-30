@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDate, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsDate, IsNumber, IsInt, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -254,6 +254,7 @@ export class QueryActivityHistoryDto {
   @ApiProperty({
     description: 'ID de l\'entité (client, projet, etc.)',
     example: 'C001234',
+    required: true,
   })
   @IsString()
   entityId: string;
@@ -274,8 +275,9 @@ export class QueryActivityHistoryDto {
     enum: ActivityCategory,
     required: false,
   })
-  @IsNumber()
+  @IsInt()
   @IsOptional()
+  @Type(() => Number)
   category?: number;
 
   @ApiProperty({
@@ -284,8 +286,9 @@ export class QueryActivityHistoryDto {
     required: false,
     default: 50,
   })
-  @IsNumber()
+  @IsInt()
   @IsOptional()
+  @Type(() => Number)
   limit?: number;
 
   @ApiProperty({
@@ -294,8 +297,9 @@ export class QueryActivityHistoryDto {
     required: false,
     default: 0,
   })
-  @IsNumber()
+  @IsInt()
   @IsOptional()
+  @Type(() => Number)
   offset?: number;
 }
 
