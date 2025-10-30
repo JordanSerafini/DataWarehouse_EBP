@@ -18,7 +18,7 @@ const store = new Store({
     ebpPassword: process.env.EBP_PASSWORD || '',
     pgHost: process.env.PG_HOST || 'localhost',
     pgPort: parseInt(process.env.PG_PORT || '5432'),
-    pgDatabase: process.env.PG_DATABASE || 'ebp_db',
+    pgDatabase: process.env.PG_DATABASE || 'sli_db',
     pgUser: process.env.PG_USER || 'postgres',
     pgPassword: process.env.PG_PASSWORD || 'postgres',
     port: parseInt(process.env.PORT || '3000'),

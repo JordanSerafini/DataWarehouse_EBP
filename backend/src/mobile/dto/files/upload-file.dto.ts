@@ -44,7 +44,7 @@ export class UploadPhotoDto {
     format: 'binary',
     description: 'Fichier photo (JPEG, PNG, WebP)',
   })
-  file: any;
+  file: Express.Multer.File;
 }
 
 /**
@@ -81,7 +81,7 @@ export class UploadSignatureDto {
     format: 'binary',
     description: 'Fichier signature (PNG, SVG)',
   })
-  file: any;
+  file: Express.Multer.File;
 }
 
 /**

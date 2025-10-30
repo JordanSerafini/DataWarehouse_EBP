@@ -24,6 +24,7 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { UserRole } from '../enums/user-role.enum';
 import { UsersService } from '../services/users.service';
+import { CreateUserDto, UpdateUserDto } from '../dto/users/user.dto';
 
 @ApiTags('Users')
 @Controller('api/v1/users')
@@ -109,7 +110,7 @@ export class UsersController {
     status: 201,
     description: 'Utilisateur créé',
   })
-  async createUser(@Body() createUserDto: any, @Request() req) {
+  async createUser(@Body() createUserDto: CreateUserDto, @Request() req) {
     return this.usersService.createUser(createUserDto, req.user.sub);
   }
 
@@ -130,7 +131,7 @@ export class UsersController {
   })
   async updateUser(
     @Param('id') id: string,
-    @Body() updateUserDto: any,
+    @Body() updateUserDto: UpdateUserDto,
     @Request() req,
   ) {
     return this.usersService.updateUser(id, updateUserDto, req.user.sub);

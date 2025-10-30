@@ -217,17 +217,19 @@ export class CalendarController {
   )
   @ApiOperation({
     summary: 'Récupérer statistiques calendrier',
-    description: 'Retourne les statistiques des événements pour une période donnée',
+    description: 'Retourne les statistiques des événements pour une période donnée (par défaut: mois en cours)',
   })
   @ApiQuery({
     name: 'startDate',
-    description: 'Date de début (ISO 8601)',
+    description: 'Date de début (ISO 8601) - Optionnel, par défaut: début du mois en cours',
     example: '2025-10-01T00:00:00Z',
+    required: false,
   })
   @ApiQuery({
     name: 'endDate',
-    description: 'Date de fin (ISO 8601)',
+    description: 'Date de fin (ISO 8601) - Optionnel, par défaut: fin du mois en cours',
     example: '2025-10-31T23:59:59Z',
+    required: false,
   })
   @ApiResponse({
     status: 200,
@@ -236,14 +238,20 @@ export class CalendarController {
   })
   async getCalendarStats(
     @Request() req,
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<CalendarStatsDto> {
     const technicianId = req.user.colleagueId;
+
+    // Valeurs par défaut: début et fin du mois en cours
+    const now = new Date();
+    const defaultStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const defaultEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
     return this.calendarService.getCalendarStats(
       technicianId,
-      new Date(startDate),
-      new Date(endDate),
+      startDate ? new Date(startDate) : defaultStartDate,
+      endDate ? new Date(endDate) : defaultEndDate,
     );
   }
 

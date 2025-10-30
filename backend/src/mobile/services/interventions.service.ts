@@ -20,6 +20,45 @@ import {
   QueryNearbyInterventionsDto,
 } from '../dto/interventions/query-interventions.dto';
 
+/**
+ * Interface pour les lignes d'interventions depuis la requête UNION (ScheduleEvent + Incident)
+ */
+interface InterventionRow {
+  id: string;
+  reference: string;
+  title: string;
+  description: string | null;
+  report: string | null;
+  notes: string | null;
+  scheduledDate: Date;
+  scheduledEndDate: Date | null;
+  eventState: number;
+  eventType: number | null;
+  estimatedDurationHours: number | null;
+  achievedDurationHours: number | null;
+  customerId: string | null;
+  customerName: string | null;
+  contactPhone: string | null;
+  technicianId: string | null;
+  technicianName: string | null;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  source_type: 'schedule_event' | 'incident';
+}
+
+/**
+ * Interface pour vérifier si une intervention est en cours
+ */
+interface InProgressCheckRow {
+  id: string;
+  reference: string;
+}
+
 @Injectable()
 export class InterventionsService {
   private readonly logger = new Logger(InterventionsService.name);
@@ -132,7 +171,7 @@ export class InterventionsService {
         ORDER BY "scheduledDate" ASC
       `;
 
-      const result = await this.databaseService.query(sql, [technicianId, dateFrom, dateTo]);
+      const result = await this.databaseService.query<InterventionRow>(sql, [technicianId, dateFrom, dateTo]);
       const mapped = result.rows.map(row => this.buildInterventionDto(row));
 
       let filtered = mapped;
@@ -170,7 +209,7 @@ export class InterventionsService {
         LIMIT 1
       `;
 
-      const result = await this.databaseService.query(sql, [interventionId]);
+      const result = await this.databaseService.query<InterventionRow>(sql, [interventionId]);
 
       if (result.rows.length === 0) {
         throw new NotFoundException(`Intervention ${interventionId} non trouvée`);
@@ -269,13 +308,13 @@ export class InterventionsService {
 
       // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
       // EventState = 1 dans EBP signifie IN_PROGRESS
-      const inProgressCheck = await this.databaseService.query(
+      const inProgressCheck = await this.databaseService.query<InProgressCheckRow>(
         `
         SELECT "Id"::text as id, "ScheduleEventNumber" as reference
         FROM public."ScheduleEvent"
         WHERE "ColleagueId" = $1
           AND "EventState" = 1
-          AND "Id" != $3
+          AND "Id" != $2
         LIMIT 1
         `,
         [technicianId, interventionId],
@@ -383,7 +422,7 @@ export class InterventionsService {
 
       // Construire la requête UPDATE dynamiquement
       const updates: string[] = [];
-      const values: any[] = [];
+      const values: (number | string | Date)[] = [];
       let paramIndex = 1;
 
       if (dto.status !== undefined) {
@@ -540,11 +579,11 @@ export class InterventionsService {
   /**
    * Construit un DTO d'intervention à partir d'une ligne de base de données
    */
-  private buildInterventionDto(row: any): InterventionDto {
+  private buildInterventionDto(row: InterventionRow): InterventionDto {
     const status = this.mapEventStateToStatusDto(row.eventState);
-    const estimatedMinutes = parseFloat(row.estimatedDurationHours) * 60 || undefined;
-    const actualMinutes = parseFloat(row.achievedDurationHours) * 60 || undefined;
-    const timeSpentSeconds = parseFloat(row.achievedDurationHours) * 3600 || undefined;
+    const estimatedMinutes = row.estimatedDurationHours ? row.estimatedDurationHours * 60 : undefined;
+    const actualMinutes = row.achievedDurationHours ? row.achievedDurationHours * 60 : undefined;
+    const timeSpentSeconds = row.achievedDurationHours ? row.achievedDurationHours * 3600 : undefined;
 
     return {
       id: row.id,
@@ -570,8 +609,8 @@ export class InterventionsService {
       address: row.address || undefined,
       city: row.city || undefined,
       postalCode: row.postalCode || undefined,
-      latitude: row.latitude ? parseFloat(row.latitude) : undefined,
-      longitude: row.longitude ? parseFloat(row.longitude) : undefined,
+      latitude: row.latitude ? Number(row.latitude) : undefined,
+      longitude: row.longitude ? Number(row.longitude) : undefined,
       estimatedDuration: estimatedMinutes,
       actualDuration: actualMinutes,
       timeSpentSeconds: timeSpentSeconds,
