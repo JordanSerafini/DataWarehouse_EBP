@@ -35,6 +35,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { CustomerService, Customer } from '../../services/customer.service';
 import { showToast } from '../../utils/toast';
+import { SkeletonCustomerList } from '../../components/ui/SkeletonLoaders';
 
 type CustomersScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -188,14 +189,7 @@ const CustomersScreen = () => {
    */
   const renderEmpty = () => {
     if (loading && !refreshing) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#6200ee" />
-          <Text variant="bodyMedium" style={styles.emptyText}>
-            Chargement des clients...
-          </Text>
-        </View>
-      );
+      return <SkeletonCustomerList count={8} />;
     }
 
     return (
