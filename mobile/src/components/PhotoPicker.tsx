@@ -196,23 +196,39 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
   const handleDeletePhoto = async (photo: Photo) => {
     if (!photo.id) {
       // Pas encore uploadée, simplement retirer localement
+      await hapticService.light();
       setPhotos((prev) => prev.filter((p) => p.uri !== photo.uri));
       return;
     }
 
+    // Haptic feedback warning pour action destructive
+    await hapticService.warning();
+
     Alert.alert('Supprimer la photo', 'Voulez-vous vraiment supprimer cette photo ?', [
-      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Annuler',
+        style: 'cancel',
+        onPress: () => hapticService.light()
+      },
       {
         text: 'Supprimer',
         style: 'destructive',
         onPress: async () => {
           try {
+            // Haptic feedback moyen avant suppression
+            await hapticService.medium();
+
             await InterventionService.deleteFile(photo.id!);
             setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+
+            // Haptic feedback léger après suppression
+            await hapticService.light();
             showToast('Photo supprimée', 'info');
             onPhotosChanged?.(photos.filter((p) => p.uploaded && p.id !== photo.id).length);
           } catch (error) {
             console.error('Error deleting photo:', error);
+            // Haptic feedback erreur
+            await hapticService.error();
             showToast('Erreur lors de la suppression', 'error');
           }
         },
