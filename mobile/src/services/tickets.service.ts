@@ -4,9 +4,11 @@
  */
 
 import { apiService } from './api.service';
+import { API_CONFIG } from '../config/api.config';
 
 // Configuration de l'API NinjaOne
-const NINJAONE_API_BASE = 'http://localhost:3001/api';
+const NINJAONE_API_BASE = `${API_CONFIG.NINJAONE_BASE_URL}/api`;
+console.log('[TicketsService] API NinjaOne configurée:', NINJAONE_API_BASE);
 
 /**
  * Types pour les tickets NinjaOne

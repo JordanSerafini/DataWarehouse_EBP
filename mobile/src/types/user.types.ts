@@ -42,3 +42,25 @@ export interface LoginResponse {
   refreshToken: string;
   expiresIn: number;
 }
+
+/**
+ * Mapper pour convertir les rôles du backend (snake_case) vers le frontend (SCREAMING_SNAKE_CASE)
+ */
+export const mapBackendRole = (backendRole: string): UserRole => {
+  const roleMap: Record<string, UserRole> = {
+    'super_admin': UserRole.SUPER_ADMIN,
+    'admin': UserRole.ADMIN,
+    'patron': UserRole.PATRON,
+    'chef_chantier': UserRole.CHEF_CHANTIER,
+    'commercial': UserRole.COMMERCIAL,
+    'technicien': UserRole.TECHNICIEN,
+  };
+
+  const mapped = roleMap[backendRole];
+  if (!mapped) {
+    console.warn(`[UserTypes] Rôle backend inconnu: "${backendRole}", utilisation de TECHNICIEN par défaut`);
+    return UserRole.TECHNICIEN;
+  }
+
+  return mapped;
+};

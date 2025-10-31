@@ -264,6 +264,10 @@ export const hasPermission = (
   permission: Permission
 ): boolean => {
   const rolePermissions = ROLE_PERMISSIONS[userRole];
+  if (!rolePermissions) {
+    console.warn(`[Permissions] Rôle inconnu: "${userRole}"`);
+    return false;
+  }
   return rolePermissions.includes(permission);
 };
 
