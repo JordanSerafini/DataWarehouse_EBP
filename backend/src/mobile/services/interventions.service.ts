@@ -579,7 +579,7 @@ export class InterventionsService {
           UPDATE public."ScheduleEvent"
           SET
             "EventState" = 1,
-            "ActualStartDate" = $1,
+            "StartDateTime" = $1,
             "sysModifiedDate" = NOW()
           WHERE "Id" = $2
           `,

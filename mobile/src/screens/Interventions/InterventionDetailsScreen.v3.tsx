@@ -56,6 +56,7 @@ const InterventionDetailsScreenV3 = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [trackedSeconds, setTrackedSeconds] = useState<number>(0);
+  const [existingSignatureId, setExistingSignatureId] = useState<string | undefined>(undefined);
 
   // Permissions
   const canEdit = user?.role === UserRole.SUPER_ADMIN ||
@@ -85,6 +86,15 @@ const InterventionDetailsScreenV3 = () => {
       const data = await InterventionService.getInterventionById(interventionId);
       setIntervention(data);
       setTrackedSeconds(data.timeSpentSeconds || 0);
+
+      // Charger l'état des fichiers pour savoir si une signature existe
+      try {
+        const files = await InterventionService.getInterventionFiles(interventionId);
+        setExistingSignatureId(files.signature?.id);
+      } catch (e) {
+        // silencieux si endpoint indisponible
+        setExistingSignatureId(undefined);
+      }
     } catch (error: any) {
       console.error('[InterventionDetails] Erreur chargement:', error);
       showToast('Erreur lors du chargement', 'error');
@@ -682,6 +692,7 @@ const InterventionDetailsScreenV3 = () => {
             {canAddMedia ? (
               <SignaturePad
                 interventionId={interventionId}
+                existingSignatureId={existingSignatureId}
                 onSignatureSaved={() => loadIntervention()}
               />
             ) : (

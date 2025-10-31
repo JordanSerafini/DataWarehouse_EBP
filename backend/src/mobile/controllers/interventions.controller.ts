@@ -258,9 +258,7 @@ export class InterventionsController {
   @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
   async getInterventionFiles(@Param('id') interventionId: string): Promise<InterventionFilesDto> {
     const photos = await this.fileService.getInterventionPhotos(interventionId);
-
-    // TODO: Récupérer la signature si elle existe
-    // const signature = await this.fileService.getInterventionSignature(interventionId);
+    const signature = await this.fileService.getInterventionSignature(interventionId);
 
     return {
       photos: photos.map((p) => ({
@@ -271,9 +269,19 @@ export class InterventionsController {
         size: p.size,
         uploadedAt: p.uploadedAt,
       })),
-      signature: undefined, // TODO
-      totalFiles: photos.length,
-      totalSize: photos.reduce((sum, p) => sum + p.size, 0),
+      signature: signature
+        ? {
+            id: signature.id,
+            filename: signature.filename,
+            url: signature.url,
+            mimeType: signature.mimeType,
+            size: signature.size,
+            uploadedAt: signature.uploadedAt,
+          }
+        : undefined,
+      totalFiles: photos.length + (signature ? 1 : 0),
+      totalSize:
+        photos.reduce((sum, p) => sum + p.size, 0) + (signature ? signature.size : 0),
     };
   }
 
