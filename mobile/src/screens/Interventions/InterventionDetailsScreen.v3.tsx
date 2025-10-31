@@ -55,6 +55,8 @@ const InterventionDetailsScreenV3 = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [trackedSeconds, setTrackedSeconds] = useState<number>(0);
+  const [existingSignatureId, setExistingSignatureId] = useState<string | undefined>(undefined);
 
   // Permissions
   const canEdit = user?.role === UserRole.SUPER_ADMIN ||
@@ -71,6 +73,10 @@ const InterventionDetailsScreenV3 = () => {
                          user?.role === UserRole.CHEF_CHANTIER ||
                          user?.role === UserRole.COMMERCIAL;
 
+  // Média (photos/signature) autorisés si intervention en cours ou terminée
+  // Autoriser médias (photos/signature) quel que soit le statut
+  const canAddMedia = true;
+
   /**
    * Charger l'intervention
    */
@@ -79,6 +85,16 @@ const InterventionDetailsScreenV3 = () => {
       setLoading(true);
       const data = await InterventionService.getInterventionById(interventionId);
       setIntervention(data);
+      setTrackedSeconds(data.timeSpentSeconds || 0);
+
+      // Charger l'état des fichiers pour savoir si une signature existe
+      try {
+        const files = await InterventionService.getInterventionFiles(interventionId);
+        setExistingSignatureId(files.signature?.id);
+      } catch (e) {
+        // silencieux si endpoint indisponible
+        setExistingSignatureId(undefined);
+      }
     } catch (error: any) {
       console.error('[InterventionDetails] Erreur chargement:', error);
       showToast('Erreur lors du chargement', 'error');
@@ -118,8 +134,7 @@ const InterventionDetailsScreenV3 = () => {
             try {
               setActionLoading(true);
               await InterventionService.startIntervention(interventionId, {
-                startedAt: new Date().toISOString(),
-                notes: 'Démarrée depuis l\'app mobile',
+                notes: "Démarrée depuis l'app mobile",
               });
               await hapticService.success();
               showToast('Intervention démarrée !', 'success');
@@ -152,9 +167,10 @@ const InterventionDetailsScreenV3 = () => {
           onPress: async (report) => {
             try {
               setActionLoading(true);
+              const hours = Math.max(trackedSeconds, 0) / 3600; // convertir secondes → heures
               await InterventionService.completeIntervention(interventionId, {
-                completedAt: new Date().toISOString(),
-                report: report || 'Intervention terminée',
+                report: (report && report.trim()) || 'Intervention terminée',
+                timeSpentHours: hours > 0 ? hours : 0.01,
               });
               await hapticService.successEnhanced();
               showToast('Intervention terminée !', 'success');
@@ -199,22 +215,23 @@ const InterventionDetailsScreenV3 = () => {
    */
   const getStatusColor = (status: InterventionStatus): string => {
     switch (status) {
-      case 'IN_PROGRESS': return '#ff9800'; // Orange
-      case 'COMPLETED': return '#4caf50'; // Vert
-      case 'INVOICED': return '#2196f3'; // Bleu
-      case 'PENDING': return '#f44336'; // Rouge
+      case InterventionStatus.IN_PROGRESS: return '#ff9800'; // Orange
+      case InterventionStatus.COMPLETED: return '#4caf50'; // Vert
+      case InterventionStatus.CANCELLED: return '#f44336'; // Rouge
+      case InterventionStatus.PENDING: return '#9c27b0'; // Violet
+      case InterventionStatus.SCHEDULED: return '#2196f3'; // Bleu
       default: return '#9e9e9e'; // Gris
     }
   };
 
   const getStatusLabel = (status: InterventionStatus): string => {
     switch (status) {
-      case 'SCHEDULED': return 'Planifiée';
-      case 'IN_PROGRESS': return 'En cours';
-      case 'COMPLETED': return 'Terminée';
-      case 'INVOICED': return 'Facturée';
-      case 'PENDING': return 'En attente';
-      default: return status;
+      case InterventionStatus.SCHEDULED: return 'Planifiée';
+      case InterventionStatus.IN_PROGRESS: return 'En cours';
+      case InterventionStatus.COMPLETED: return 'Terminée';
+      case InterventionStatus.CANCELLED: return 'Annulée';
+      case InterventionStatus.PENDING: return 'En attente';
+      default: return 'Inconnu';
     }
   };
 
@@ -393,7 +410,9 @@ const InterventionDetailsScreenV3 = () => {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Temps passé</Text>
               <Text style={[styles.infoValue, styles.timeValue]}>
-                {formatDuration(intervention.achievedDurationHours)}
+                {formatDuration(
+                  intervention.timeSpentSeconds ? intervention.timeSpentSeconds / 3600 : undefined,
+                )}
               </Text>
             </View>
 
@@ -630,47 +649,76 @@ const InterventionDetailsScreenV3 = () => {
           </Card>
         )}
 
-        {/* ========== SECTION 12: Photos et Signature ========== */}
+        {/* ========== SECTION 12: Photos ========== */}
         <Card style={styles.card}>
           <Card.Content>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-              📷 Photos et Signature
-            </Text>
-
-            {intervention.status === 'IN_PROGRESS' && (
-              <>
-                <PhotoPicker interventionId={interventionId} />
-                <Divider style={styles.divider} />
-                <SignaturePad
-                  interventionId={interventionId}
-                  onSignatureSaved={() => loadIntervention()}
-                />
-              </>
-            )}
-
-            {intervention.status !== 'IN_PROGRESS' && (
-              <Text style={styles.infoText}>
-                {intervention.hasAssociatedFiles
-                  ? 'Photos et signature enregistrées'
-                  : 'Aucune photo ou signature'}
+            <View style={styles.sectionHeaderRow}>
+              <Ionicons name="camera" size={20} color="#6200ee" />
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Photos
               </Text>
+            </View>
+
+            {/* Galerie des photos existantes */}
+            <PhotoGallery
+              interventionId={interventionId}
+              onPhotoDeleted={loadIntervention}
+            />
+
+            <Divider style={styles.divider} />
+
+            {/* Ajouter de nouvelles photos si autorisé */}
+            {canAddMedia ? (
+              <PhotoPicker
+                interventionId={interventionId}
+                onPhotosChanged={() => loadIntervention()}
+              />
+            ) : (
+              <Text style={styles.infoText}>Ajout de photos désactivé pour ce statut</Text>
             )}
           </Card.Content>
         </Card>
 
-        {/* ========== SECTION 13: TimeSheet (si en cours) ========== */}
-        {intervention.status === 'IN_PROGRESS' && (
+        {/* ========== SECTION 13: Signature client ========== */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <View style={styles.sectionHeaderRow}>
+              <Ionicons name="create" size={20} color="#6200ee" />
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Signature client
+              </Text>
+            </View>
+
+            {canAddMedia ? (
+              <SignaturePad
+                interventionId={interventionId}
+                existingSignatureId={existingSignatureId}
+                onSignatureSaved={() => loadIntervention()}
+              />
+            ) : (
+              <Text style={styles.infoText}>Capture de signature désactivée pour ce statut</Text>
+            )}
+          </Card.Content>
+        </Card>
+
+        {/* ========== SECTION 14: TimeSheet (si en cours) ========== */}
+        {intervention.status === InterventionStatus.IN_PROGRESS && (
           <Card style={styles.card}>
             <Card.Content>
               <Text variant="titleMedium" style={styles.sectionTitle}>
                 ⏲️ Pointage
               </Text>
-              <TimeSheet interventionId={interventionId} />
+              <TimeSheet
+                interventionId={interventionId}
+                initialTime={trackedSeconds}
+                onTimeSaved={(s) => setTrackedSeconds(s)}
+                disabled={false}
+              />
             </Card.Content>
           </Card>
         )}
 
-        {/* ========== SECTION 14: Actions ========== */}
+        {/* ========== SECTION 15: Actions ========== */}
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -679,7 +727,7 @@ const InterventionDetailsScreenV3 = () => {
 
             <View style={styles.actionsContainer}>
               {/* Bouton Démarrer (si SCHEDULED ou PENDING) */}
-              {(intervention.status === 'SCHEDULED' || intervention.status === 'PENDING') && (
+              {(intervention.status === InterventionStatus.SCHEDULED || intervention.status === InterventionStatus.PENDING) && (
                 <Button
                   mode="contained"
                   icon="play"
@@ -694,7 +742,7 @@ const InterventionDetailsScreenV3 = () => {
               )}
 
               {/* Bouton Terminer (si IN_PROGRESS) */}
-              {intervention.status === 'IN_PROGRESS' && (
+              {intervention.status === InterventionStatus.IN_PROGRESS && (
                 <Button
                   mode="contained"
                   icon="check"
@@ -709,11 +757,11 @@ const InterventionDetailsScreenV3 = () => {
               )}
 
               {/* Info si terminée ou facturée */}
-              {(intervention.status === 'COMPLETED' || intervention.status === 'INVOICED') && (
+              {intervention.status === InterventionStatus.COMPLETED && (
                 <View style={styles.completedBadge}>
                   <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
                   <Text style={styles.completedText}>
-                    {intervention.status === 'INVOICED' ? 'Facturée' : 'Terminée'}
+                    Terminée
                   </Text>
                 </View>
               )}
@@ -820,6 +868,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
   },
   description: {

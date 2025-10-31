@@ -21,18 +21,27 @@ import { base64ToFile, deleteTempFile } from '../utils/file.utils';
 interface SignaturePadProps {
   interventionId: string;
   onSignatureSaved?: (signatureId: string) => void;
+  existingSignatureId?: string; // Si déjà signée, afficher l'état signé
 }
 
 export const SignaturePad: React.FC<SignaturePadProps> = ({
   interventionId,
   onSignatureSaved,
+  existingSignatureId,
 }) => {
   const signatureRef = useRef<any>(null);
   const [visible, setVisible] = useState(false);
   const [signerName, setSignerName] = useState('');
   const [signatureData, setSignatureData] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [signatureId, setSignatureId] = useState<string | null>(null);
+  const [signatureId, setSignatureId] = useState<string | null>(existingSignatureId || null);
+
+  // Synchroniser l'état si une signature existe déjà côté serveur
+  React.useEffect(() => {
+    if (existingSignatureId) {
+      setSignatureId(existingSignatureId);
+    }
+  }, [existingSignatureId]);
 
   /**
    * Ouvrir le modal de signature

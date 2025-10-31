@@ -147,15 +147,19 @@ export class InterventionsController {
     @Request() req,
   ): Promise<InterventionDto[]> {
     // Pour les techniciens, filtrer par leur ID
-    const technicianId = req.user.role === UserRole.TECHNICIEN ? req.user.colleagueId : null;
-
-    if (technicianId) {
+    if (req.user.role === UserRole.TECHNICIEN) {
+      const technicianId = req.user.colleagueId;
       return this.interventionsService.getInterventionsForTechnician(technicianId, query);
     }
 
-    // Pour les admins: TODO - implémenter recherche globale
-    // Pour l'instant, retourne vide pour les non-techniciens
-    return [];
+    // Pour les rôles non-techniciens (admin/patron/chef/commercial):
+    // - si un technicianId est fourni, filtrer par ce technicien
+    // - sinon, faire une recherche globale dans l'intervalle de dates
+    if (query.technicianId) {
+      return this.interventionsService.getInterventionsForTechnician(query.technicianId, query);
+    }
+
+    return this.interventionsService.searchInterventions(query);
   }
 
   /**
@@ -254,9 +258,7 @@ export class InterventionsController {
   @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
   async getInterventionFiles(@Param('id') interventionId: string): Promise<InterventionFilesDto> {
     const photos = await this.fileService.getInterventionPhotos(interventionId);
-
-    // TODO: Récupérer la signature si elle existe
-    // const signature = await this.fileService.getInterventionSignature(interventionId);
+    const signature = await this.fileService.getInterventionSignature(interventionId);
 
     return {
       photos: photos.map((p) => ({
@@ -267,9 +269,19 @@ export class InterventionsController {
         size: p.size,
         uploadedAt: p.uploadedAt,
       })),
-      signature: undefined, // TODO
-      totalFiles: photos.length,
-      totalSize: photos.reduce((sum, p) => sum + p.size, 0),
+      signature: signature
+        ? {
+            id: signature.id,
+            filename: signature.filename,
+            url: signature.url,
+            mimeType: signature.mimeType,
+            size: signature.size,
+            uploadedAt: signature.uploadedAt,
+          }
+        : undefined,
+      totalFiles: photos.length + (signature ? 1 : 0),
+      totalSize:
+        photos.reduce((sum, p) => sum + p.size, 0) + (signature ? signature.size : 0),
     };
   }
 

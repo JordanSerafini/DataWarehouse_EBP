@@ -86,11 +86,13 @@ const InterventionsScreen = () => {
       // Admin/Patron: toutes les interventions via search
       // Technicien/Commercial/Chef: uniquement leurs interventions
       if (canViewAllInterventions) {
-        console.log('[InterventionsScreen] Admin/Patron - Toutes les interventions');
-        results = await InterventionService.searchInterventions({
-          // Pas de filtre technicien - on charge tout
-          // Les filtres Admin sont appliqués après en fonction des états
-        });
+        if (selectedTechnicianId) {
+          console.log('[InterventionsScreen] Admin/Patron - Interventions du technicien sélectionné', selectedTechnicianId);
+          results = await InterventionService.searchInterventions({ technicianId: selectedTechnicianId });
+        } else {
+          console.log('[InterventionsScreen] Admin/Patron - Recherche globale (date range défaut)');
+          results = await InterventionService.searchInterventions();
+        }
       } else {
         console.log('[InterventionsScreen] Technicien - Mes interventions');
         results = await InterventionService.getMyInterventions();
@@ -126,7 +128,7 @@ const InterventionsScreen = () => {
     if (user) {
       loadInterventions();
     }
-  }, [user, canViewAllInterventions]);
+  }, [user, canViewAllInterventions, selectedTechnicianId]);
 
   /**
    * Extraire les techniciens uniques (pour filtres Admin)

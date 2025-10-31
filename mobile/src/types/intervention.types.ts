@@ -114,10 +114,12 @@ export interface StartInterventionDto {
 }
 
 export interface CompleteInterventionDto {
+  report: string;
+  timeSpentHours: number;
+  travelDuration?: number;
   latitude?: number;
   longitude?: number;
-  notes?: string;
-  actualDuration?: number;
+  success?: boolean;
 }
 
 export interface NearbyIntervention extends Intervention {

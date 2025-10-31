@@ -387,6 +387,50 @@ export class FileService {
   }
 
   /**
+   * Récupère la signature d'une intervention (s'il y en a une)
+   * Supporte à la fois UUID et ScheduleEventNumber
+   */
+  async getInterventionSignature(interventionId: string): Promise<FileMetadata | null> {
+    try {
+      // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+      let actualInterventionId: string;
+      try {
+        actualInterventionId = await this.resolveInterventionId(interventionId);
+      } catch (error) {
+        this.logger.warn(`Intervention ${interventionId} not found for signature, returning null`);
+        return null;
+      }
+
+      const result = await this.databaseService.query<FileMetadata>(
+        `
+        SELECT
+          id,
+          filename,
+          original_name as "originalName",
+          mime_type as "mimeType",
+          size_bytes as size,
+          file_path as path,
+          url,
+          'signature' as "entityType",
+          intervention_id as "entityId",
+          signed_by as "uploadedBy",
+          signed_at as "uploadedAt"
+        FROM mobile.intervention_signatures
+        WHERE intervention_id = $1::uuid
+        LIMIT 1
+        `,
+        [actualInterventionId],
+      );
+
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
+    } catch (error) {
+      this.logger.error(`Error fetching signature for intervention ${interventionId}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Récupère un fichier
    */
   async getFile(fileId: string): Promise<{ buffer: Buffer; metadata: FileMetadata }> {

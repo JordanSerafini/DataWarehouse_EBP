@@ -150,6 +150,7 @@ export interface QueryInterventionsParams {
   customerId?: string;
   limit?: number;
   offset?: number;
+  technicianId?: string; // Admin: filtrer par technicien
 }
 
 export interface QueryNearbyParams {
@@ -160,15 +161,18 @@ export interface QueryNearbyParams {
 }
 
 export interface StartInterventionDto {
-  startedAt?: string; // ISO date, par défaut: now
+  latitude?: number;
+  longitude?: number;
   notes?: string;
 }
 
 export interface CompleteInterventionDto {
-  completedAt?: string; // ISO date, par défaut: now
   report: string; // Rapport d'intervention (requis)
-  recommendations?: string;
-  nextSteps?: string;
+  timeSpentHours: number; // Temps passé total en heures (requis)
+  travelDuration?: number; // Heures de trajet
+  latitude?: number;
+  longitude?: number;
+  success?: boolean;
 }
 
 export interface CreateTimesheetDto {
@@ -194,8 +198,15 @@ export class InterventionService {
    * Récupère les interventions du technicien connecté
    */
   static async getMyInterventions(params?: QueryInterventionsParams): Promise<Intervention[]> {
-    const response = await apiService.get('/api/v1/interventions/my-interventions', { params });
-    return response.data;
+    try {
+      console.log('[InterventionService] Appel getMyInterventions avec params:', params);
+      const response = await apiService.get('/api/v1/interventions/my-interventions', { params });
+      console.log('[InterventionService] Réponse getMyInterventions:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[InterventionService] Erreur getMyInterventions:', error);
+      throw error;
+    }
   }
 
   /**
@@ -210,8 +221,15 @@ export class InterventionService {
    * Recherche d'interventions (avec filtres)
    */
   static async searchInterventions(params?: QueryInterventionsParams): Promise<Intervention[]> {
-    const response = await apiService.get('/api/v1/interventions/search', { params });
-    return response.data;
+    try {
+      console.log('[InterventionService] Appel searchInterventions avec params:', params);
+      const response = await apiService.get('/api/v1/interventions/search', { params });
+      console.log('[InterventionService] Réponse searchInterventions:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[InterventionService] Erreur searchInterventions:', error);
+      throw error;
+    }
   }
 
   /**
