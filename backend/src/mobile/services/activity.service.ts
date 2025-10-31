@@ -114,6 +114,7 @@ export class ActivityService {
           a."Contact_Phone" as "contactPhone",
           a."ColleagueId" as "colleagueId",
           a."CreatorColleagueId" as "creatorColleagueId",
+          COALESCE(u.name, c."Name") as "creatorName",
           a."SaleDocumentId"::text as "saleDocumentId",
           a."ScheduleEventId"::text as "scheduleEventId",
           a."DealId" as "dealId",
@@ -121,6 +122,8 @@ export class ActivityService {
           a."sysCreatedDate" as "createdAt",
           a."sysModifiedDate" as "updatedAt"
         FROM public."Activity" a
+        LEFT JOIN mobile.users u ON a."CreatorColleagueId" = u.colleague_id
+        LEFT JOIN public."Colleague" c ON a."CreatorColleagueId" = c."Id"
         ${whereClause}
         ORDER BY a."StartDateTime" DESC
         LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
