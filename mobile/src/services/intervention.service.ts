@@ -161,15 +161,18 @@ export interface QueryNearbyParams {
 }
 
 export interface StartInterventionDto {
-  startedAt?: string; // ISO date, par défaut: now
+  latitude?: number;
+  longitude?: number;
   notes?: string;
 }
 
 export interface CompleteInterventionDto {
-  completedAt?: string; // ISO date, par défaut: now
   report: string; // Rapport d'intervention (requis)
-  recommendations?: string;
-  nextSteps?: string;
+  timeSpentHours: number; // Temps passé total en heures (requis)
+  travelDuration?: number; // Heures de trajet
+  latitude?: number;
+  longitude?: number;
+  success?: boolean;
 }
 
 export interface CreateTimesheetDto {

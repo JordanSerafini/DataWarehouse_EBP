@@ -55,6 +55,7 @@ const InterventionDetailsScreenV3 = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [trackedSeconds, setTrackedSeconds] = useState<number>(0);
 
   // Permissions
   const canEdit = user?.role === UserRole.SUPER_ADMIN ||
@@ -83,6 +84,7 @@ const InterventionDetailsScreenV3 = () => {
       setLoading(true);
       const data = await InterventionService.getInterventionById(interventionId);
       setIntervention(data);
+      setTrackedSeconds(data.timeSpentSeconds || 0);
     } catch (error: any) {
       console.error('[InterventionDetails] Erreur chargement:', error);
       showToast('Erreur lors du chargement', 'error');
@@ -122,8 +124,7 @@ const InterventionDetailsScreenV3 = () => {
             try {
               setActionLoading(true);
               await InterventionService.startIntervention(interventionId, {
-                startedAt: new Date().toISOString(),
-                notes: 'Démarrée depuis l\'app mobile',
+                notes: "Démarrée depuis l'app mobile",
               });
               await hapticService.success();
               showToast('Intervention démarrée !', 'success');
@@ -156,9 +157,10 @@ const InterventionDetailsScreenV3 = () => {
           onPress: async (report) => {
             try {
               setActionLoading(true);
+              const hours = Math.max(trackedSeconds, 0) / 3600; // convertir secondes → heures
               await InterventionService.completeIntervention(interventionId, {
-                completedAt: new Date().toISOString(),
-                report: report || 'Intervention terminée',
+                report: (report && report.trim()) || 'Intervention terminée',
+                timeSpentHours: hours > 0 ? hours : 0.01,
               });
               await hapticService.successEnhanced();
               showToast('Intervention terminée !', 'success');
@@ -695,7 +697,12 @@ const InterventionDetailsScreenV3 = () => {
               <Text variant="titleMedium" style={styles.sectionTitle}>
                 ⏲️ Pointage
               </Text>
-              <TimeSheet interventionId={interventionId} />
+              <TimeSheet
+                interventionId={interventionId}
+                initialTime={trackedSeconds}
+                onTimeSaved={(s) => setTrackedSeconds(s)}
+                disabled={false}
+              />
             </Card.Content>
           </Card>
         )}
