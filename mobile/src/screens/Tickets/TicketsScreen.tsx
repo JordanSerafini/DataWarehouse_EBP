@@ -59,13 +59,16 @@ const TicketsScreen = () => {
   const loadTickets = async () => {
     try {
       if (!user) {
-        throw new Error('Utilisateur non connecté');
+        console.log('[TicketsScreen] Utilisateur non encore chargé, attente...');
+        setLoading(false);
+        return;
       }
 
       let response;
 
       // Si technicien/commercial/chef de chantier: uniquement ses tickets
       if (!canViewAllTickets && user.ninjaOneTechnicianId) {
+        console.log(`[TicketsScreen] Chargement des tickets du technicien ${user.ninjaOneTechnicianId}`);
         response = await ticketsService.getTechnicianTickets(
           user.ninjaOneTechnicianId,
           {
@@ -76,6 +79,7 @@ const TicketsScreen = () => {
         );
       } else {
         // Admin/Patron: tous les tickets
+        console.log('[TicketsScreen] Chargement de tous les tickets (admin/patron)');
         response = await ticketsService.getTickets({
           isClosed: showClosed ? undefined : false,
           sortBy: 'createdAt',
@@ -85,8 +89,9 @@ const TicketsScreen = () => {
       }
 
       setTickets(response.data.map((item) => item.ticket));
+      console.log(`[TicketsScreen] ${response.data.length} tickets chargés`);
     } catch (error) {
-      console.error('Erreur chargement tickets:', error);
+      console.error('[TicketsScreen] Erreur chargement tickets:', error);
       showToast('Erreur lors du chargement des tickets', 'error');
     } finally {
       setLoading(false);
@@ -263,12 +268,22 @@ const TicketsScreen = () => {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (loading && user) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6200ee" />
         <Text variant="bodyLarge" style={styles.loadingText}>
           Chargement des tickets...
+        </Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text variant="bodyLarge" style={styles.loadingText}>
+          En attente de l'authentification...
         </Text>
       </View>
     );
