@@ -27,6 +27,7 @@ interface ActivityRow {
   contactPhone: string | null;
   colleagueId: string | null;
   creatorColleagueId: string | null;
+  creatorName: string | null;
   saleDocumentId: string | null;
   scheduleEventId: string | null;
   dealId: string | null;

@@ -12,6 +12,7 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import {
   Text,
@@ -49,6 +50,11 @@ const TicketsScreen = () => {
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [showClosed, setShowClosed] = useState(false);
 
+  // Nouveaux filtres
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<number | null>(null);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<number | null>(null);
+
   /**
    * Vérifier si l'utilisateur peut voir tous les tickets
    */
@@ -76,26 +82,34 @@ const TicketsScreen = () => {
       console.log('[TicketsScreen] Utilisateur disponible, chargement des tickets...');
       let response;
 
+      const filters: any = {
+        isClosed: showClosed ? undefined : false,
+        sortBy: 'createdAt',
+        sortOrder,
+        limit: 100,
+      };
+
+      // Ajouter filtres technicien et organisation (admin uniquement)
+      if (canViewAllTickets) {
+        if (selectedTechnicianId) {
+          filters.assignedTechnicianId = selectedTechnicianId;
+        }
+        if (selectedOrganizationId) {
+          filters.organizationId = selectedOrganizationId;
+        }
+      }
+
       // Si technicien/commercial/chef de chantier: uniquement ses tickets
       if (!canViewAllTickets && user.ninjaOneTechnicianId) {
         console.log(`[TicketsScreen] Chargement des tickets du technicien ${user.ninjaOneTechnicianId}`);
         response = await ticketsService.getTechnicianTickets(
           user.ninjaOneTechnicianId,
-          {
-            isClosed: showClosed ? undefined : false,
-            sortBy: 'createdAt',
-            sortOrder: 'DESC',
-          }
+          filters
         );
       } else {
         // Admin/Patron: tous les tickets
         console.log('[TicketsScreen] Chargement de tous les tickets (admin/patron)');
-        response = await ticketsService.getTickets({
-          isClosed: showClosed ? undefined : false,
-          sortBy: 'createdAt',
-          sortOrder: 'DESC',
-          limit: 100,
-        });
+        response = await ticketsService.getTickets(filters);
       }
 
       setTickets(response.data.data.map((item) => item.ticket));
@@ -129,7 +143,32 @@ const TicketsScreen = () => {
     if (user) {
       loadTickets();
     }
-  }, [user, showClosed]);
+  }, [user, showClosed, sortOrder, selectedTechnicianId, selectedOrganizationId]);
+
+  /**
+   * Extraire les techniciens et organisations uniques (pour filtres admin)
+   */
+  const availableTechnicians = useMemo(() => {
+    const map = new Map<number, string>();
+    tickets.forEach((t) => {
+      if (t.assignedTechnicianId) {
+        const techName = `Technicien ${t.assignedTechnicianId}`;
+        map.set(t.assignedTechnicianId, techName);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [tickets]);
+
+  const availableOrganizations = useMemo(() => {
+    const map = new Map<number, string>();
+    tickets.forEach((t) => {
+      if (t.organizationId) {
+        const orgName = `Organisation ${t.organizationId}`;
+        map.set(t.organizationId, orgName);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [tickets]);
 
   /**
    * Filtrer les tickets
@@ -353,6 +392,93 @@ const TicketsScreen = () => {
         </View>
       </View>
 
+      {/* Tri et filtres avancés (Admin seulement) */}
+      <View style={styles.filtersContainer}>
+        {/* Tri par date */}
+        <Text variant="labelMedium" style={styles.filtersLabel}>
+          Tri:
+        </Text>
+        <View style={styles.filtersChips}>
+          <Chip
+            selected={sortOrder === 'DESC'}
+            onPress={() => setSortOrder('DESC')}
+            style={styles.filterChip}
+            icon="sort-calendar-descending"
+          >
+            Plus récents
+          </Chip>
+          <Chip
+            selected={sortOrder === 'ASC'}
+            onPress={() => setSortOrder('ASC')}
+            style={styles.filterChip}
+            icon="sort-calendar-ascending"
+          >
+            Plus anciens
+          </Chip>
+        </View>
+      </View>
+
+      {/* Filtres technicien/organisation (Admin uniquement) */}
+      {canViewAllTickets && (
+        <>
+          {/* Filtre Technicien */}
+          {availableTechnicians.length > 0 && (
+            <View style={styles.filtersContainer}>
+              <Text variant="labelMedium" style={styles.filtersLabel}>
+                Technicien:
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersChips}>
+                <Chip
+                  selected={selectedTechnicianId === null}
+                  onPress={() => setSelectedTechnicianId(null)}
+                  style={styles.filterChip}
+                >
+                  Tous
+                </Chip>
+                {availableTechnicians.slice(0, 10).map((tech) => (
+                  <Chip
+                    key={tech.id}
+                    selected={selectedTechnicianId === tech.id}
+                    onPress={() => setSelectedTechnicianId(tech.id)}
+                    style={styles.filterChip}
+                  >
+                    #{tech.id}
+                  </Chip>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Filtre Organisation */}
+          {availableOrganizations.length > 0 && (
+            <View style={styles.filtersContainer}>
+              <Text variant="labelMedium" style={styles.filtersLabel}>
+                Client:
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersChips}>
+                <Chip
+                  selected={selectedOrganizationId === null}
+                  onPress={() => setSelectedOrganizationId(null)}
+                  style={styles.filterChip}
+                >
+                  Tous
+                </Chip>
+                {availableOrganizations.slice(0, 10).map((org) => (
+                  <Chip
+                    key={org.id}
+                    selected={selectedOrganizationId === org.id}
+                    onPress={() => setSelectedOrganizationId(org.id)}
+                    style={styles.filterChip}
+                  >
+                    Org #{org.id}
+                  </Chip>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </>
+      )}
+
       {/* Statistiques et filtres */}
       <View style={styles.statsContainer}>
         <Text variant="bodyMedium" style={styles.statsText}>
@@ -361,12 +487,17 @@ const TicketsScreen = () => {
           {!canViewAllTickets && ' (mes tickets)'}
         </Text>
         <View style={styles.controlsContainer}>
-          {selectedPriorities.length > 0 && (
+          {(selectedPriorities.length > 0 || selectedTechnicianId !== null || selectedOrganizationId !== null) && (
             <Button
               mode="text"
-              onPress={() => setSelectedPriorities([])}
+              onPress={() => {
+                setSelectedPriorities([]);
+                setSelectedTechnicianId(null);
+                setSelectedOrganizationId(null);
+              }}
               compact
               style={styles.clearButton}
+              icon="filter-off"
             >
               Réinitialiser
             </Button>

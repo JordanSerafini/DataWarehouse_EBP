@@ -53,6 +53,7 @@ export interface Activity {
   contactPhone?: string;
   colleagueId?: string;
   creatorColleagueId?: string;
+  creatorName?: string;
   saleDocumentId?: string;
   scheduleEventId?: string;
   dealId?: string;

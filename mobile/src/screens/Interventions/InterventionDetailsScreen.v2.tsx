@@ -591,11 +591,11 @@ const InterventionDetailsScreenV2 = () => {
                       <View style={styles.noteInfo}>
                         <Ionicons name="person-circle" size={20} color="#6200ee" />
                         <Text variant="labelMedium" style={styles.noteAuthor}>
-                          {note.creatorColleagueId || 'Mobile'}
+                          {note.creatorName || note.creatorColleagueId || 'Utilisateur'}
                         </Text>
                       </View>
                       <Text variant="bodySmall" style={styles.noteDate}>
-                        {format(new Date(note.createdAt), 'dd MMM yyyy HH:mm', {
+                        {format(new Date(note.createdAt), 'dd/MM/yyyy à HH:mm', {
                           locale: fr,
                         })}
                       </Text>
