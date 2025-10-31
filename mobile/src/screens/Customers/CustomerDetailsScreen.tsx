@@ -98,7 +98,13 @@ const CustomerDetailsScreen = () => {
     setRefreshing(true);
     // Haptic feedback moyen pour refresh
     await hapticService.medium();
+    // Réinitialiser les interventions chargées pour forcer un rechargement
+    setAllInterventions([]);
     await loadCustomerSummary();
+    // Si la section est dépliée, recharger les interventions
+    if (isInterventionsExpanded) {
+      await loadAllInterventions();
+    }
     // Haptic feedback léger à la fin du refresh
     await hapticService.light();
   };
