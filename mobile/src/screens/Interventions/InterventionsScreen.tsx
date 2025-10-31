@@ -223,7 +223,8 @@ const InterventionsScreen = () => {
         placeholder="Rechercher..."
         onChangeText={setSearchQuery}
         value={searchQuery}
-        style={styles.searchbar}
+        style={[styles.searchbar, { height: 42 }]}
+        inputStyle={{ height: 32 }}
       />
 
       {/* Filtres statuts */}
@@ -355,7 +356,7 @@ const InterventionsScreen = () => {
             address: i.address,
             latitude: i.latitude,
             longitude: i.longitude,
-            status: i.status || '',
+            status: i.status || InterventionStatus.PENDING,
             scheduledDate: i.scheduledDate,
           }))}
           onMarkerPress={(interventionId) => {
@@ -383,8 +384,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   searchbar: {
-    margin: 16,
-    marginBottom: 8,
+    height: 40,
+    margin: 10,
+
   },
   filterHeader: {
     flexDirection: 'row',

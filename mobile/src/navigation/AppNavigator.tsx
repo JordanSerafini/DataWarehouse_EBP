@@ -133,49 +133,49 @@ const BottomTabsNavigator = () => {
       <Tab.Screen
         name="Planning"
         component={PlanningScreen}
-        options={{ title: 'Planning' }}
+        options={{ title: 'Planning', headerShown: false  }}
       />
       <Tab.Screen
         name="Calendar"
         component={CalendarScreen}
-        options={{ title: 'Calendrier' }}
+        options={{ title: 'Calendrier', headerShown: false  }}
       />
       <Tab.Screen
         name="Tasks"
         component={TasksScreen}
-        options={{ title: 'Tâches du jour' }}
+        options={{ title: 'Tâches du jour', headerShown: false  }}
       />
       <Tab.Screen
         name="Interventions"
         component={InterventionsScreen}
-        options={{ title: 'Interventions' }}
+        options={{ title: 'Interventions', headerShown: false }}
       />
       <Tab.Screen
         name="Tickets"
         component={TicketsScreen}
-        options={{ title: 'Tickets RMM' }}
+        options={{ title: 'Tickets RMM', headerShown: false  }}
       />
       <Tab.Screen
         name="Customers"
         component={CustomersScreen}
-        options={{ title: 'Clients' }}
+        options={{ title: 'Clients', headerShown: false  }}
       />
       <Tab.Screen
         name="Projects"
         component={ProjectsScreen}
-        options={{ title: 'Projets' }}
+        options={{ title: 'Projets', headerShown: false  }}
       />
       {isAdmin && (
         <Tab.Screen
           name="Admin"
           component={AdminUsersScreen}
-          options={{ title: 'Administration' }}
+          options={{ title: 'Administration', headerShown: false  }}
         />
       )}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Profil' }}
+        options={{ title: 'Profil', headerShown: false  }}
       />
       {__DEV__ && (
         <Tab.Screen
