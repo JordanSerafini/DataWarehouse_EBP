@@ -157,24 +157,96 @@ const PlanningScreen = () => {
   /**
    * Obtenir la couleur selon le statut
    */
-  const getStatusColor = (status: InterventionStatus): string => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
-      case InterventionStatus.SCHEDULED:
+      case 'planned':
         return '#2196F3'; // Bleu
-      case InterventionStatus.IN_PROGRESS:
+      case 'in_progress':
         return '#FF9800'; // Orange
-      case InterventionStatus.COMPLETED:
+      case 'completed':
         return '#4CAF50'; // Vert
-      case InterventionStatus.CANCELLED:
+      case 'cancelled':
         return '#F44336'; // Rouge
-      case InterventionStatus.PENDING:
-        return '#9E9E9E'; // Gris
+      case 'rescheduled':
+        return '#9C27B0'; // Violet
       default:
         return '#9E9E9E';
     }
   };
 
-  const filteredInterventions = getFilteredInterventions();
+  /**
+   * Obtenir l'icône selon le type d'événement
+   */
+  const getEventIcon = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return '🔧'; // Intervention technique
+      case 'maintenance':
+        return '⚙️'; // Maintenance
+      case 'appointment':
+        return '📅'; // Rendez-vous
+      case 'meeting':
+        return '👥'; // Réunion
+      default:
+        return '📌'; // Autre
+    }
+  };
+
+  /**
+   * Obtenir le style de fond selon le type d'événement
+   */
+  const getEventBackgroundColor = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return '#E3F2FD'; // Bleu clair
+      case 'maintenance':
+        return '#FFF3E0'; // Orange clair
+      case 'appointment':
+        return '#F3E5F5'; // Violet clair
+      case 'meeting':
+        return '#E8F5E9'; // Vert clair
+      default:
+        return '#FAFAFA'; // Gris très clair
+    }
+  };
+
+  /**
+   * Obtenir le libellé du type d'événement
+   */
+  const getEventTypeLabel = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return 'Intervention';
+      case 'maintenance':
+        return 'Maintenance';
+      case 'appointment':
+        return 'Rendez-vous';
+      case 'meeting':
+        return 'Réunion';
+      default:
+        return 'Autre';
+    }
+  };
+
+  /**
+   * Obtenir le libellé du statut
+   */
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'planned':
+        return 'Planifié';
+      case 'in_progress':
+        return 'En cours';
+      case 'completed':
+        return 'Terminé';
+      case 'cancelled':
+        return 'Annulé';
+      case 'rescheduled':
+        return 'Reprogrammé';
+      default:
+        return status;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -205,60 +277,75 @@ const PlanningScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Liste des interventions */}
+      {/* Liste des événements */}
       <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing || isSyncing} onRefresh={handleRefresh} />
         }
       >
-        {filteredInterventions.length === 0 ? (
+        {events.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
-              Aucune intervention pour cette période
+              Aucun événement pour cette période
             </Text>
           </View>
         ) : (
-          filteredInterventions.map((intervention) => (
-            <Card key={intervention.id} style={styles.card}>
+          events.map((event) => (
+            <Card
+              key={event.id}
+              style={[
+                styles.card,
+                { backgroundColor: getEventBackgroundColor(event.eventType) }
+              ]}
+            >
               <Card.Content>
                 <View style={styles.cardHeader}>
                   <View
                     style={[
                       styles.statusIndicator,
-                      { backgroundColor: getStatusColor(intervention.status) },
+                      { backgroundColor: getStatusColor(event.status) },
                     ]}
                   />
-                  <Text variant="titleMedium">{intervention.title}</Text>
+                  <Text variant="titleMedium" style={styles.eventIcon}>
+                    {getEventIcon(event.eventType)}
+                  </Text>
+                  <Text variant="titleMedium" style={styles.eventTitle}>
+                    {event.title}
+                  </Text>
                 </View>
 
                 <View style={styles.cardDetails}>
                   <Text variant="bodyMedium">
-                    🕒 {format(new Date(intervention.scheduledDate), 'HH:mm')}
+                    🕒 {format(new Date(event.startDateTime), 'HH:mm')}
+                    {event.endDateTime && ` - ${format(new Date(event.endDateTime), 'HH:mm')}`}
                   </Text>
-                  {intervention.customerName && (
+                  {event.customerName && (
                     <Text variant="bodySmall">
-                      👤 {intervention.customerName}
+                      👤 {event.customerName}
                     </Text>
                   )}
-                  {intervention.city && (
+                  {event.city && (
                     <Text variant="bodySmall">
-                      📍 {intervention.city}
+                      📍 {event.city}
                     </Text>
                   )}
-                  {intervention.projectName && (
-                    <Text variant="bodySmall" style={styles.projectName}>
-                      🏗️ {intervention.projectName}
+                  {event.address && (
+                    <Text variant="bodySmall" style={styles.address}>
+                      {event.address}
                     </Text>
                   )}
                 </View>
 
                 <View style={styles.cardFooter}>
                   <Text variant="labelSmall" style={styles.statusLabel}>
-                    {intervention.statusLabel}
+                    {getStatusLabel(event.status)}
                   </Text>
-                  <Text variant="labelSmall" style={styles.typeLabel}>
-                    {intervention.typeLabel}
+                  <Text variant="labelSmall" style={[
+                    styles.typeLabel,
+                    { backgroundColor: getEventBackgroundColor(event.eventType) }
+                  ]}>
+                    {getEventTypeLabel(event.eventType)}
                   </Text>
                 </View>
               </Card.Content>
@@ -336,12 +423,20 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginRight: 8,
   },
+  eventIcon: {
+    marginRight: 8,
+    fontSize: 18,
+  },
+  eventTitle: {
+    flex: 1,
+  },
   cardDetails: {
     marginTop: 8,
     gap: 4,
   },
-  projectName: {
-    fontWeight: 'bold',
+  address: {
+    fontStyle: 'italic',
+    color: '#666',
   },
   cardFooter: {
     flexDirection: 'row',

@@ -20,7 +20,7 @@ import PlanningScreen from '../screens/Planning/PlanningScreen';
 import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
-import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
+import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v3'; // Version moderne Material Design 3
 import TicketsScreen from '../screens/Tickets/TicketsScreen';
 import TicketDetailsScreen from '../screens/Tickets/TicketDetailsScreen';
 import ConvertTicketScreen from '../screens/Tickets/ConvertTicketScreen';
@@ -43,6 +43,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   InterventionDetails: { interventionId: string };
   TicketDetails: { ticketId: number };
+  ConvertTicket: { ticketId: number; targetType: 'schedule_event' | 'incident' };
   CustomerDetails: { customerId: string };
   ProjectDetails: { projectId: number };
   UserForm: { userId?: string };
@@ -237,6 +238,11 @@ const AppNavigator = () => {
               name="TicketDetails"
               component={TicketDetailsScreen}
               options={{ title: 'Détail ticket', headerShown: false }}
+            />
+            <Stack.Screen
+              name="ConvertTicket"
+              component={ConvertTicketScreen}
+              options={{ title: 'Convertir ticket', headerShown: false }}
             />
             <Stack.Screen
               name="CustomerDetails"
