@@ -48,6 +48,7 @@ const InterventionsScreen = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<InterventionStatus[]>([]);
   const [menuVisible, setMenuVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
   /**
    * Charger les interventions depuis l'API
@@ -227,39 +228,59 @@ const InterventionsScreen = () => {
 
       {/* Filtres statuts */}
       <View style={styles.filtersContainer}>
-        <Text variant="labelMedium" style={styles.filtersLabel}>
-          Filtres:
-        </Text>
-        <View style={styles.filtersChips}>
-          <Chip
-            selected={selectedStatuses.includes(InterventionStatus.SCHEDULED)}
-            onPress={() => toggleStatusFilter(InterventionStatus.SCHEDULED)}
-            style={styles.filterChip}
-          >
-            Planifiées
-          </Chip>
-          <Chip
-            selected={selectedStatuses.includes(InterventionStatus.IN_PROGRESS)}
-            onPress={() => toggleStatusFilter(InterventionStatus.IN_PROGRESS)}
-            style={styles.filterChip}
-          >
-            En cours
-          </Chip>
-          <Chip
-            selected={selectedStatuses.includes(InterventionStatus.COMPLETED)}
-            onPress={() => toggleStatusFilter(InterventionStatus.COMPLETED)}
-            style={styles.filterChip}
-          >
-            Terminées
-          </Chip>
-          <Chip
-            selected={selectedStatuses.includes(InterventionStatus.CANCELLED)}
-            onPress={() => toggleStatusFilter(InterventionStatus.CANCELLED)}
-            style={styles.filterChip}
-          >
-            Annulées
-          </Chip>
-        </View>
+        <TouchableOpacity 
+          style={styles.filterHeader}
+          onPress={() => setIsFiltersVisible(!isFiltersVisible)}
+        >
+          <View style={styles.filterHeaderContent}>
+            <Text variant="labelMedium" style={styles.filtersLabel}>
+              Filtres:
+            </Text>
+            <Ionicons
+              name={isFiltersVisible ? "chevron-up" : "chevron-down"}
+              size={20}
+              color="#757575"
+            />
+          </View>
+          {selectedStatuses.length > 0 && (
+            <Chip compact style={styles.countChip}>
+              {selectedStatuses.length}
+            </Chip>
+          )}
+        </TouchableOpacity>
+        
+        {isFiltersVisible && (
+          <View style={styles.filtersChips}>
+            <Chip
+              selected={selectedStatuses.includes(InterventionStatus.SCHEDULED)}
+              onPress={() => toggleStatusFilter(InterventionStatus.SCHEDULED)}
+              style={styles.filterChip}
+            >
+              Planifiées
+            </Chip>
+            <Chip
+              selected={selectedStatuses.includes(InterventionStatus.IN_PROGRESS)}
+              onPress={() => toggleStatusFilter(InterventionStatus.IN_PROGRESS)}
+              style={styles.filterChip}
+            >
+              En cours
+            </Chip>
+            <Chip
+              selected={selectedStatuses.includes(InterventionStatus.COMPLETED)}
+              onPress={() => toggleStatusFilter(InterventionStatus.COMPLETED)}
+              style={styles.filterChip}
+            >
+              Terminées
+            </Chip>
+            <Chip
+              selected={selectedStatuses.includes(InterventionStatus.CANCELLED)}
+              onPress={() => toggleStatusFilter(InterventionStatus.CANCELLED)}
+              style={styles.filterChip}
+            >
+              Annulées
+            </Chip>
+          </View>
+        )}
       </View>
 
       {/* Statistiques et toggle vue */}
@@ -364,6 +385,21 @@ const styles = StyleSheet.create({
   searchbar: {
     margin: 16,
     marginBottom: 8,
+  },
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  filterHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  countChip: {
+    backgroundColor: '#6200ee',
+    height: 24,
   },
   filtersContainer: {
     paddingHorizontal: 16,
