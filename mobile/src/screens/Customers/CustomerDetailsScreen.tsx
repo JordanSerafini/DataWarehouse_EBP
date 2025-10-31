@@ -162,6 +162,43 @@ const CustomerDetailsScreen = () => {
   };
 
   /**
+   * Charger toutes les interventions (au dépliage de la section)
+   */
+  const loadAllInterventions = async () => {
+    if (allInterventions.length > 0) {
+      // Déjà chargées, pas besoin de refetch
+      return;
+    }
+
+    try {
+      setLoadingAllInterventions(true);
+      const interventions = await CustomerService.getCustomerHistory(customerId, {
+        limit: 1000, // Récupérer toutes les interventions
+      });
+      setAllInterventions(interventions);
+    } catch (error: any) {
+      console.error('Error loading all interventions:', error);
+      showToast('Erreur lors du chargement des interventions', 'error');
+    } finally {
+      setLoadingAllInterventions(false);
+    }
+  };
+
+  /**
+   * Toggle section interventions
+   */
+  const handleToggleInterventions = async () => {
+    await hapticService.light();
+
+    if (!isInterventionsExpanded) {
+      // On déplie: charger les interventions
+      await loadAllInterventions();
+    }
+
+    setIsInterventionsExpanded(!isInterventionsExpanded);
+  };
+
+  /**
    * Formater montant en euros
    */
   const formatCurrency = (amount: number): string => {
@@ -466,8 +503,99 @@ const CustomerDetailsScreen = () => {
               </TouchableOpacity>
             ))
           )}
+
+          {/* Bouton pour voir toutes les interventions */}
+          {totalInterventions > recentInterventions.length && (
+            <Button
+              mode="outlined"
+              onPress={handleToggleInterventions}
+              style={styles.viewAllButton}
+              icon={isInterventionsExpanded ? "chevron-up" : "chevron-down"}
+            >
+              {isInterventionsExpanded
+                ? "Masquer l'historique complet"
+                : `Voir toutes les interventions (${totalInterventions})`}
+            </Button>
+          )}
         </Card.Content>
       </Card>
+
+      {/* Section dépliable - Historique complet des interventions */}
+      {isInterventionsExpanded && (
+        <Card style={styles.card}>
+          <Card.Title
+            title={`Historique complet (${totalInterventions} interventions)`}
+            left={(props) => <Ionicons name="list" size={24} color="#6200ee" />}
+          />
+          <Card.Content>
+            {loadingAllInterventions ? (
+              <View style={styles.loadingInterventions}>
+                <ActivityIndicator size="large" color="#6200ee" />
+                <Text variant="bodyMedium" style={styles.loadingText}>
+                  Chargement de l'historique...
+                </Text>
+              </View>
+            ) : allInterventions.length === 0 ? (
+              <View style={styles.emptyHistory}>
+                <Text variant="bodyMedium" style={styles.emptyText}>
+                  Aucune intervention enregistrée
+                </Text>
+              </View>
+            ) : (
+              allInterventions.map((intervention, index) => (
+                <TouchableOpacity
+                  key={intervention.interventionId}
+                  onPress={() =>
+                    handleNavigateToIntervention(intervention.interventionId)
+                  }
+                  style={styles.interventionItem}
+                >
+                  <View style={styles.interventionHeader}>
+                    <Text variant="labelLarge" style={styles.interventionTitle}>
+                      {intervention.title}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color="#9e9e9e" />
+                  </View>
+
+                  {intervention.description && (
+                    <Text
+                      variant="bodySmall"
+                      style={styles.interventionDescription}
+                      numberOfLines={2}
+                    >
+                      {intervention.description}
+                    </Text>
+                  )}
+
+                  <View style={styles.interventionMeta}>
+                    <View style={styles.interventionMetaItem}>
+                      <Ionicons name="calendar-outline" size={14} color="#757575" />
+                      <Text variant="bodySmall" style={styles.interventionMetaText}>
+                        {format(new Date(intervention.startDate), 'dd MMM yyyy', {
+                          locale: fr,
+                        })}
+                      </Text>
+                    </View>
+
+                    {intervention.technicianName && (
+                      <View style={styles.interventionMetaItem}>
+                        <Ionicons name="person-outline" size={14} color="#757575" />
+                        <Text variant="bodySmall" style={styles.interventionMetaText}>
+                          {intervention.technicianName}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {index !== allInterventions.length - 1 && (
+                    <Divider style={styles.interventionDivider} />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </Card.Content>
+        </Card>
+      )}
 
         <View style={styles.footer} />
       </ScrollView>
@@ -692,6 +820,13 @@ const styles = StyleSheet.create({
   },
   interventionDivider: {
     marginTop: 12,
+  },
+  viewAllButton: {
+    marginTop: 16,
+  },
+  loadingInterventions: {
+    paddingVertical: 32,
+    alignItems: 'center',
   },
   footer: {
     height: 24,
