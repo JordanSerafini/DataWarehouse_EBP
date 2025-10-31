@@ -18,6 +18,7 @@ import { ProjectsService } from './services/projects.service';
 import { CalendarService } from './services/calendar.service';
 import { ActivityService } from './services/activity.service';
 import { UsersService } from './services/users.service';
+import { NinjaOneService } from './services/ninjaone.service';
 
 // Controllers
 import { AuthController } from './controllers/auth.controller';
@@ -29,6 +30,7 @@ import { ProjectsController } from './controllers/projects.controller';
 import { CalendarController } from './controllers/calendar.controller';
 import { ActivityController } from './controllers/activity.controller';
 import { UsersController } from './controllers/users.controller';
+import { NinjaOneController } from './controllers/ninjaone.controller';
 
 // Strategies
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -65,6 +67,7 @@ import { RolesGuard } from './guards/roles.guard';
     CalendarController,
     ActivityController,
     UsersController,
+    NinjaOneController,
   ],
   providers: [
     DatabaseService,
@@ -78,6 +81,7 @@ import { RolesGuard } from './guards/roles.guard';
     CalendarService,
     ActivityService,
     UsersService,
+    NinjaOneService,
     JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
