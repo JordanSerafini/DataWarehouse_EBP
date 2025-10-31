@@ -359,14 +359,13 @@ const ConvertTicketScreen = () => {
           </Card.Content>
         </Card>
 
-        {/* Technicien */}
-        {targetType === 'schedule_event' && (
+        {/* Technicien (désormais disponible pour intervention ET incident) */}
           <Card style={styles.card}>
             <Card.Content>
               <Text style={styles.sectionTitle}>Technicien assigné (optionnel)</Text>
 
               {preview.colleagueId && !preview.technicianMapped && (
-                <HelperText type="warning" visible>
+                <HelperText type="error" visible>
                   ⚠️ Technicien non mappé automatiquement. Utilisez la recherche ci-dessous.
                 </HelperText>
               )}
@@ -402,7 +401,7 @@ const ConvertTicketScreen = () => {
               )}
             </Card.Content>
           </Card>
-        )}
+        )
 
         {/* Dates et horaires */}
         <Card style={styles.card}>

@@ -306,6 +306,8 @@ export class NinjaOneService {
           start_date,
           customer_id,
           customer_name,
+          colleague_id,
+          colleague_name,
           address_address1,
           address_city,
           address_zipcode,
@@ -324,10 +326,11 @@ export class NinjaOneService {
           $1, $2, 'ninjaone',
           $3, $4, $5, $6,
           $7, $8,
-          $9, $10, $11, $12, $13,
-          $14, $15, $16,
-          0, $17, $18,
-          $19::uuid, 'pending'
+          $9, $10,
+          $11, $12, $13, $14, $15,
+          $16, $17, $18,
+          0, $19, $20,
+          $21::uuid, 'pending'
         ) RETURNING id, 'incident_proposed' as type
       `;
 
@@ -340,6 +343,8 @@ export class NinjaOneService {
         dto.startDateTime,
         dto.customerId,
         dto.customerName || customerCheck.rows[0].Caption,
+        dto.colleagueId || null,
+        dto.colleagueName || null,
         dto.addressLine1 || null,
         dto.city || null,
         dto.zipcode || null,
