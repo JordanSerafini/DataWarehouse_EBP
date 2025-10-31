@@ -41,6 +41,10 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { hapticService } from '../../services/haptic.service';
 import { SkeletonCustomerDetails } from '../../components/ui/SkeletonLoaders';
+import CustomerHealthScore from '../../components/customer/CustomerHealthScore';
+import FinancialHealthCard from '../../components/customer/FinancialHealthCard';
+import AIInsightsCard from '../../components/customer/AIInsightsCard';
+import { FAB } from 'react-native-paper';
 
 type CustomerDetailsScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -182,33 +186,77 @@ const CustomerDetailsScreen = () => {
     );
   }
 
-  const { customer, recentInterventions, documentStats, totalInterventions, totalRevenue } = summary;
+  const {
+    customer,
+    recentInterventions,
+    documentStats,
+    totalInterventions,
+    totalRevenue,
+    customerHealthScore,
+    lastInterventionDate,
+    daysSinceLastIntervention,
+  } = summary;
+
+  /**
+   * Naviguer vers nouvelle intervention
+   */
+  const handleNewIntervention = async () => {
+    await hapticService.medium();
+    // TODO: Navigation vers création intervention
+    showToast('Fonctionnalité à venir', 'info');
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
-    >
-      {/* En-tête client */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <View style={styles.customerHeader}>
-            <View style={styles.customerIcon}>
-              <Ionicons name="person" size={40} color="#6200ee" />
-            </View>
-            <View style={styles.customerInfo}>
-              <Text variant="headlineSmall" style={styles.customerName}>
-                {customer.name}
-              </Text>
-              {customer.contactName && (
-                <Text variant="bodyMedium" style={styles.contactName}>
-                  <Ionicons name="person-outline" size={14} /> {customer.contactName}
-                </Text>
+    <>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {/* ========================================= */}
+        {/* HERO SECTION - Header enrichi            */}
+        {/* ========================================= */}
+        <Card style={styles.heroCard}>
+          <Card.Content>
+            <View style={styles.heroHeader}>
+              {/* Avatar + Info */}
+              <View style={styles.heroLeft}>
+                <View style={styles.customerIcon}>
+                  <Ionicons name="person" size={40} color="#6200ee" />
+                </View>
+                <View style={styles.customerInfo}>
+                  <Text variant="headlineSmall" style={styles.customerName}>
+                    {customer.name}
+                  </Text>
+                  {customer.contactName && (
+                    <Text variant="bodyMedium" style={styles.contactName}>
+                      <Ionicons name="person-outline" size={14} />{' '}
+                      {customer.contactName}
+                    </Text>
+                  )}
+                  {/* Badge statut */}
+                  {customer.activeState !== 0 && (
+                    <Chip
+                      icon="alert-circle"
+                      mode="flat"
+                      compact
+                      style={styles.inactiveChip}
+                      textStyle={styles.inactiveChipText}
+                    >
+                      Inactif
+                    </Chip>
+                  )}
+                </View>
+              </View>
+
+              {/* Score de santé */}
+              {customerHealthScore !== undefined && (
+                <View style={styles.heroRight}>
+                  <CustomerHealthScore score={customerHealthScore} size={100} />
+                </View>
               )}
             </View>
-          </View>
 
           <Divider style={styles.divider} />
 
@@ -308,6 +356,21 @@ const CustomerDetailsScreen = () => {
         </Card>
       </View>
 
+      {/* ========================================= */}
+      {/* FINANCIAL HEALTH CARD (Admin/Bureau)     */}
+      {/* ========================================= */}
+      <FinancialHealthCard customer={customer} totalRevenue={totalRevenue} />
+
+      {/* ========================================= */}
+      {/* AI INSIGHTS CARD                          */}
+      {/* ========================================= */}
+      <AIInsightsCard
+        lastInterventionDate={lastInterventionDate}
+        daysSinceLastIntervention={daysSinceLastIntervention}
+        totalInterventions={totalInterventions}
+        customerHealthScore={customerHealthScore}
+      />
+
       {/* Statistiques documents */}
       {documentStats.length > 0 && (
         <Card style={styles.card}>
@@ -401,8 +464,19 @@ const CustomerDetailsScreen = () => {
         </Card.Content>
       </Card>
 
-      <View style={styles.footer} />
-    </ScrollView>
+        <View style={styles.footer} />
+      </ScrollView>
+
+      {/* ========================================= */}
+      {/* FLOATING ACTION BUTTON                    */}
+      {/* ========================================= */}
+      <FAB
+        icon="plus"
+        label="Nouvelle intervention"
+        style={styles.fab}
+        onPress={handleNewIntervention}
+      />
+    </>
   );
 };
 
@@ -410,6 +484,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  // ========================================
+  // HERO SECTION
+  // ========================================
+  heroCard: {
+    margin: 12,
+    marginBottom: 8,
+    elevation: 3,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  heroLeft: {
+    flexDirection: 'row',
+    flex: 1,
+    marginRight: 12,
+  },
+  heroRight: {
+    alignItems: 'center',
+  },
+  inactiveChip: {
+    backgroundColor: '#ffebee',
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  inactiveChipText: {
+    color: '#f44336',
+    fontSize: 11,
+  },
+  // ========================================
+  // FAB
+  // ========================================
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    backgroundColor: '#6200ee',
   },
   loadingContainer: {
     flex: 1,

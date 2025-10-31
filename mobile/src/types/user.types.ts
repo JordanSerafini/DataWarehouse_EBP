@@ -17,6 +17,7 @@ export interface User {
   fullName: string;
   role: UserRole;
   colleagueId?: string;
+  ninjaOneTechnicianId?: number; // ID du technicien dans NinjaOne RMM
   permissions: string[];
   isActive?: boolean;
   createdAt?: string;

@@ -9,7 +9,9 @@
       "Bash(curl:*)",
       "Bash(grep:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npm install:*)",
+      "Bash(node temp_hash_password.js:*)"
     ],
     "deny": [],
     "ask": []

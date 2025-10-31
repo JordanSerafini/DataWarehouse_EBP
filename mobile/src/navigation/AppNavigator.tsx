@@ -21,6 +21,7 @@ import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
 import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
+import TicketsScreen from '../screens/Tickets/TicketsScreen';
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
@@ -49,6 +50,7 @@ export type BottomTabParamList = {
   Calendar: undefined;
   Tasks: undefined;
   Interventions: undefined;
+  Tickets: undefined;
   Customers: undefined;
   Projects: undefined;
   Admin: undefined;
@@ -97,6 +99,9 @@ const BottomTabsNavigator = () => {
             case 'Interventions':
               iconName = focused ? 'construct' : 'construct-outline';
               break;
+            case 'Tickets':
+              iconName = focused ? 'ticket' : 'ticket-outline';
+              break;
             case 'Customers':
               iconName = focused ? 'people' : 'people-outline';
               break;
@@ -142,6 +147,11 @@ const BottomTabsNavigator = () => {
         name="Interventions"
         component={InterventionsScreen}
         options={{ title: 'Interventions' }}
+      />
+      <Tab.Screen
+        name="Tickets"
+        component={TicketsScreen}
+        options={{ title: 'Tickets RMM' }}
       />
       <Tab.Screen
         name="Customers"

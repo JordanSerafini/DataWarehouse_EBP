@@ -49,6 +49,13 @@ export enum Permission {
   TRIGGER_SYNC = 'TRIGGER_SYNC',
   VIEW_SYNC_STATUS = 'VIEW_SYNC_STATUS',
 
+  // Tickets RMM NinjaOne
+  VIEW_TICKETS = 'VIEW_TICKETS',
+  VIEW_MY_TICKETS = 'VIEW_MY_TICKETS',
+  VIEW_ALL_TICKETS = 'VIEW_ALL_TICKETS',
+  SYNC_TICKETS = 'SYNC_TICKETS',
+  VIEW_TICKET_STATS = 'VIEW_TICKET_STATS',
+
   // Administration
   VIEW_ALL_USERS = 'VIEW_ALL_USERS',
   CREATE_USER = 'CREATE_USER',
@@ -104,6 +111,12 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.TRIGGER_SYNC,
     Permission.VIEW_SYNC_STATUS,
 
+    // Tickets RMM (Admin voit tout)
+    Permission.VIEW_TICKETS,
+    Permission.VIEW_ALL_TICKETS,
+    Permission.SYNC_TICKETS,
+    Permission.VIEW_TICKET_STATS,
+
     // Admin
     Permission.VIEW_ALL_USERS,
     Permission.VIEW_SYSTEM_STATS,
@@ -139,6 +152,11 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // Sync
     Permission.VIEW_SYNC_STATUS,
 
+    // Tickets RMM (Patron voit tout)
+    Permission.VIEW_TICKETS,
+    Permission.VIEW_ALL_TICKETS,
+    Permission.VIEW_TICKET_STATS,
+
     // Stats
     Permission.VIEW_SYSTEM_STATS,
   ],
@@ -169,6 +187,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // Ventes
     Permission.VIEW_SALES_DOCUMENTS,
 
+    // Tickets RMM (Chef de chantier voit ses tickets)
+    Permission.VIEW_TICKETS,
+    Permission.VIEW_MY_TICKETS,
+
     // Sync
     Permission.VIEW_SYNC_STATUS,
   ],
@@ -197,6 +219,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.CREATE_QUOTE,
     Permission.EDIT_QUOTE,
 
+    // Tickets RMM (Commercial voit ses tickets)
+    Permission.VIEW_TICKETS,
+    Permission.VIEW_MY_TICKETS,
+
     // Sync
     Permission.VIEW_SYNC_STATUS,
   ],
@@ -220,6 +246,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
     // Ventes (lecture seule)
     Permission.VIEW_SALES_DOCUMENTS,
+
+    // Tickets RMM (Technicien voit ses tickets)
+    Permission.VIEW_TICKETS,
+    Permission.VIEW_MY_TICKETS,
 
     // Sync
     Permission.VIEW_SYNC_STATUS,

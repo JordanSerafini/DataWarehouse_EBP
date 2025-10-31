@@ -19,6 +19,7 @@ interface User {
   full_name: string;
   role: UserRole;
   colleague_id: string | null;
+  ninja_one_technician_id: number | null;
   is_active: boolean;
   is_verified: boolean;
   failed_login_attempts: number;
@@ -315,6 +316,7 @@ export class AuthService {
       fullName: user.full_name,
       role: user.role,
       colleagueId: user.colleague_id || undefined,
+      ninjaOneTechnicianId: user.ninja_one_technician_id || undefined,
       permissions: this.getUserPermissions(user.role),
     };
   }
