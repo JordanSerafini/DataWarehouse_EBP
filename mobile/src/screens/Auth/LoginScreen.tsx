@@ -26,6 +26,7 @@ import { showToast } from '../../utils/toast';
 import { apiService } from '../../services/api.service';
 import { BiometricService } from '../../services/biometric.service';
 import { BiometricPrompt } from '../../components/BiometricPrompt';
+import { SafeAreaScreen } from '../../components/SafeAreaScreen';
 
 const LoginScreen = () => {
   // Pré-remplir avec Jordan pour les tests (DEV uniquement)
@@ -209,15 +210,16 @@ const LoginScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaScreen extraPaddingTop={8} extraPaddingBottom={8}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
           {/* Logo/Titre */}
           <View style={styles.header}>
             <Text variant="displaySmall" style={styles.title}>
@@ -390,21 +392,21 @@ const LoginScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Modal pour activer la biométrie */}
-      <BiometricPrompt
-        visible={showBiometricPrompt}
-        email={loginCredentials.email}
-        password={loginCredentials.password}
-        onClose={() => setShowBiometricPrompt(false)}
-      />
-    </KeyboardAvoidingView>
+        {/* Modal pour activer la biométrie */}
+        <BiometricPrompt
+          visible={showBiometricPrompt}
+          email={loginCredentials.email}
+          password={loginCredentials.password}
+          onClose={() => setShowBiometricPrompt(false)}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaScreen>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     flexGrow: 1,

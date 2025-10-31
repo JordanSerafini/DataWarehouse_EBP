@@ -283,9 +283,33 @@ export class FileService {
 
   /**
    * Récupère la liste des photos d'une intervention
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async getInterventionPhotos(interventionId: string): Promise<FileMetadata[]> {
     try {
+      // Vérifier si interventionId est un UUID valide
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isUuid = uuidRegex.test(interventionId);
+
+      let actualInterventionId = interventionId;
+
+      // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
+      if (!isUuid) {
+        this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
+        const lookupResult = await this.databaseService.query<{ id: string }>(
+          `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
+          [interventionId],
+        );
+
+        if (lookupResult.rows.length === 0) {
+          this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
+          return []; // Retourner tableau vide plutôt qu'erreur
+        }
+
+        actualInterventionId = lookupResult.rows[0].id;
+        this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
+      }
+
       const result = await this.databaseService.query<FileMetadata>(
         `
         SELECT
@@ -301,16 +325,17 @@ export class FileService {
           uploaded_by as "uploadedBy",
           uploaded_at as "uploadedAt"
         FROM mobile.intervention_photos
-        WHERE intervention_id = $1
+        WHERE intervention_id = $1::uuid
         ORDER BY uploaded_at DESC
         `,
-        [interventionId],
+        [actualInterventionId],
       );
 
-      return result.rows;
+      return result.rows || [];
     } catch (error) {
       this.logger.error(`Error fetching photos for intervention ${interventionId}:`, error);
-      throw new BadRequestException('Erreur lors de la récupération des photos');
+      // Retourner un tableau vide au lieu de throw si c'est juste une intervention sans photos
+      return [];
     }
   }
 

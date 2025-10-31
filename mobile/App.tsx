@@ -15,6 +15,7 @@ import { PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import ToastManager from 'toastify-react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Navigation
 import AppNavigator from './src/navigation/AppNavigator';
@@ -73,13 +74,15 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <PaperProvider theme={theme}>
-        <ToastManager />
-        <StatusBar style={isDark ? 'light' : 'dark'} />
-        <AppNavigator />
-      </PaperProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.container}>
+        <PaperProvider theme={theme}>
+          <ToastManager />
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <AppNavigator />
+        </PaperProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 

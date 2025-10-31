@@ -2,7 +2,8 @@
  * Utilitaires de gestion de fichiers pour React Native
  */
 
-import * as FileSystem from 'expo-file-system';
+// Utiliser l'API legacy d'Expo FileSystem (SDK 54+)
+import * as FileSystem from 'expo-file-system/legacy';
 
 /**
  * Convertit une data URI base64 en fichier temporaire
@@ -36,9 +37,8 @@ export async function base64ToFile(
     const fileUri = `${FileSystem.cacheDirectory}${uniqueFilename}`;
 
     // Écrire le fichier base64 dans le cache
-    // Note: Expo FileSystem accepte 'base64' comme string
     await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: 'base64' as any,
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     return {
