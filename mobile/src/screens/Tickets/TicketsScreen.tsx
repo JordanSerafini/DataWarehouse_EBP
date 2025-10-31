@@ -28,7 +28,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { ticketsService, NinjaOneTicket } from '../../services/tickets.service';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { showToast } from '../../utils/toast';
 import { hasPermission, Permission } from '../../utils/permissions';
 
@@ -36,7 +36,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 
 const TicketsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
 
   const [tickets, setTickets] = useState<NinjaOneTicket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<NinjaOneTicket[]>([]);
@@ -60,10 +60,11 @@ const TicketsScreen = () => {
     try {
       if (!user) {
         console.log('[TicketsScreen] Utilisateur non encore chargé, attente...');
-        setLoading(false);
+        // Ne pas setLoading(false) - on attend que user soit disponible
         return;
       }
 
+      console.log('[TicketsScreen] Utilisateur disponible, chargement des tickets...');
       let response;
 
       // Si technicien/commercial/chef de chantier: uniquement ses tickets
@@ -115,7 +116,10 @@ const TicketsScreen = () => {
   };
 
   useEffect(() => {
-    loadTickets();
+    console.log('[TicketsScreen] useEffect déclenché, user:', user ? `${user.fullName} (${user.role})` : 'null');
+    if (user) {
+      loadTickets();
+    }
   }, [user, showClosed]);
 
   /**
