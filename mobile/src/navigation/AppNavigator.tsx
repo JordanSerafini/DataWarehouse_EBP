@@ -230,7 +230,7 @@ const AppNavigator = () => {
             <Stack.Screen
               name="InterventionDetails"
               component={InterventionDetailsScreen}
-              options={{ title: 'Détail intervention', headerShown: true }}
+              options={{ title: 'Détail intervention', headerShown: false }}
             />
             <Stack.Screen
               name="TicketDetails"
@@ -240,17 +240,17 @@ const AppNavigator = () => {
             <Stack.Screen
               name="CustomerDetails"
               component={CustomerDetailsScreen}
-              options={{ title: 'Détail client', headerShown: true }}
+              options={{ title: 'Détail client', headerShown: false }}
             />
             <Stack.Screen
               name="ProjectDetails"
               component={ProjectDetailsScreen}
-              options={{ title: 'Détail projet', headerShown: true }}
+              options={{ title: 'Détail projet', headerShown: false }}
             />
             <Stack.Screen
               name="UserForm"
               component={UserFormScreen}
-              options={{ title: 'Utilisateur', headerShown: true }}
+              options={{ title: 'Utilisateur', headerShown: false }}
             />
           </>
         )}
