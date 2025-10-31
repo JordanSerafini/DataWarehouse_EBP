@@ -22,6 +22,7 @@ import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
 import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
 import TicketsScreen from '../screens/Tickets/TicketsScreen';
+import TicketDetailsScreen from '../screens/Tickets/TicketDetailsScreen';
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
@@ -40,6 +41,7 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   InterventionDetails: { interventionId: string };
+  TicketDetails: { ticketId: number };
   CustomerDetails: { customerId: string };
   ProjectDetails: { projectId: number };
   UserForm: { userId?: string };
@@ -229,6 +231,11 @@ const AppNavigator = () => {
               name="InterventionDetails"
               component={InterventionDetailsScreen}
               options={{ title: 'Détail intervention', headerShown: true }}
+            />
+            <Stack.Screen
+              name="TicketDetails"
+              component={TicketDetailsScreen}
+              options={{ title: 'Détail ticket', headerShown: false }}
             />
             <Stack.Screen
               name="CustomerDetails"

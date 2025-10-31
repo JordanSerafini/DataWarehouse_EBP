@@ -231,8 +231,7 @@ const TicketsScreen = () => {
   const renderItem = ({ item }: { item: NinjaOneTicket }) => (
     <TouchableOpacity
       onPress={() => {
-        // TODO: Navigation vers détails ticket
-        console.log('Voir ticket', item.ticketId);
+        navigation.navigate('TicketDetails', { ticketId: item.ticketId });
       }}
     >
       <Card style={styles.card}>
@@ -357,8 +356,27 @@ const TicketsScreen = () => {
         style={styles.searchbar}
       />
 
-      {/* Filtres priorités */}
-      <View style={styles.filtersContainer}>
+      {/* En-tête Filtres */}
+      <TouchableOpacity
+        style={styles.filtersHeader}
+        onPress={() => setFiltersExpanded(!filtersExpanded)}
+      >
+        <Text variant="titleMedium" style={styles.filtersTitle}>
+          Filtres
+        </Text>
+        <Button
+          mode="text"
+          icon={filtersExpanded ? 'chevron-up' : 'chevron-down'}
+          compact
+        >
+          {filtersExpanded ? 'Masquer' : 'Afficher'}
+        </Button>
+      </TouchableOpacity>
+
+      {filtersExpanded && (
+        <>
+          {/* Filtres priorités */}
+          <View style={styles.filtersContainer}>
         <Text variant="labelMedium" style={styles.filtersLabel}>
           Priorités:
         </Text>
@@ -482,6 +500,8 @@ const TicketsScreen = () => {
               </ScrollView>
             </View>
           )}
+        </>
+      )}
         </>
       )}
 
