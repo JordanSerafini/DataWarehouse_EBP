@@ -98,7 +98,13 @@ export class CustomersService {
         mg."gps_provider" AS "gpsProvider",
         mg."gps_quality" AS "gpsQuality",
         c."sysCreatedDate" AS "createdAt",
-        c."sysModifiedDate" AS "modifiedAt"
+        c."sysModifiedDate" AS "modifiedAt",
+        -- Données financières
+        c."AllowedAmount" AS "allowedAmount",
+        c."CurrentAmount" AS "currentAmount",
+        c."ExceedAmount" AS "exceedAmount",
+        c."ActiveState" AS "activeState",
+        c."ColleagueId" AS "colleagueId"
        FROM public."Customer" c
        LEFT JOIN mobile.customer_gps mg ON mg.customer_id = c."Id"
        WHERE c."Id" = $1`,
@@ -188,13 +194,83 @@ export class CustomersService {
       [customerId],
     );
 
+    // Calcule la date de dernière intervention et jours écoulés
+    let lastInterventionDate: Date | undefined;
+    let daysSinceLastIntervention: number | undefined;
+
+    if (recentInterventions.length > 0) {
+      lastInterventionDate = new Date(recentInterventions[0].startDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - lastInterventionDate.getTime());
+      daysSinceLastIntervention = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Calcule le score de santé client (0-100)
+    const customerHealthScore = this.calculateCustomerHealthScore({
+      totalInterventions: totalInterventionsResult.rows[0]?.count || 0,
+      daysSinceLastIntervention,
+      currentAmount: Number(customer.currentAmount || 0),
+      allowedAmount: Number(customer.allowedAmount || 0),
+      activeState: customer.activeState || 0,
+    });
+
     return {
       customer,
       recentInterventions,
       documentStats,
       totalInterventions: totalInterventionsResult.rows[0]?.count || 0,
       totalRevenue: Number(totalRevenueResult.rows[0]?.total || 0),
+      lastInterventionDate,
+      daysSinceLastIntervention,
+      customerHealthScore,
     };
+  }
+
+  /**
+   * Calcule un score de santé client (0-100) basé sur plusieurs critères
+   */
+  private calculateCustomerHealthScore(params: {
+    totalInterventions: number;
+    daysSinceLastIntervention?: number;
+    currentAmount: number;
+    allowedAmount: number;
+    activeState: number;
+  }): number {
+    let score = 100;
+
+    // Pénalité si client inactif
+    if (params.activeState !== 0) {
+      score -= 30;
+    }
+
+    // Pénalité si dépassement d'encours
+    if (params.allowedAmount > 0 && params.currentAmount > params.allowedAmount) {
+      score -= 25;
+    }
+
+    // Pénalité si encours > 80% de la limite
+    if (params.allowedAmount > 0 && params.currentAmount > params.allowedAmount * 0.8) {
+      score -= 15;
+    }
+
+    // Pénalité si pas d'intervention depuis longtemps
+    if (params.daysSinceLastIntervention) {
+      if (params.daysSinceLastIntervention > 180) {
+        score -= 20; // > 6 mois
+      } else if (params.daysSinceLastIntervention > 90) {
+        score -= 10; // > 3 mois
+      }
+    } else if (params.totalInterventions === 0) {
+      score -= 10; // Nouveau client sans interventions
+    }
+
+    // Bonus si client actif régulier
+    if (params.totalInterventions > 10) {
+      score += 10;
+    }
+
+    // Assurer que le score reste entre 0 et 100
+    return Math.max(0, Math.min(100, score));
   }
 
   /**
