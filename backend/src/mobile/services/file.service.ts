@@ -107,6 +107,7 @@ export class FileService {
 
   /**
    * Upload une photo d'intervention
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async uploadInterventionPhoto(
     file: UploadedFile,
@@ -118,6 +119,29 @@ export class FileService {
     this.logger.log(`Uploading photo for intervention ${interventionId}`);
 
     this.validateFile(file, 'photo');
+
+    // Vérifier si interventionId est un UUID valide
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(interventionId);
+
+    let actualInterventionId = interventionId;
+
+    // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
+    if (!isUuid) {
+      this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
+      const lookupResult = await this.databaseService.query<{ id: string }>(
+        `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
+        [interventionId],
+      );
+
+      if (lookupResult.rows.length === 0) {
+        this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
+        throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
+      }
+
+      actualInterventionId = lookupResult.rows[0].id;
+      this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
+    }
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'photos', filename);
@@ -165,7 +189,7 @@ export class FileService {
           uploaded_at as "uploadedAt"
         `,
         [
-          interventionId,
+          actualInterventionId,
           filename,
           file.originalname,
           file.mimetype,
@@ -194,6 +218,7 @@ export class FileService {
 
   /**
    * Upload une signature
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async uploadSignature(
     file: UploadedFile,
@@ -204,6 +229,29 @@ export class FileService {
     this.logger.log(`Uploading signature for intervention ${interventionId}`);
 
     this.validateFile(file, 'signature');
+
+    // Vérifier si interventionId est un UUID valide
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(interventionId);
+
+    let actualInterventionId = interventionId;
+
+    // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
+    if (!isUuid) {
+      this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
+      const lookupResult = await this.databaseService.query<{ id: string }>(
+        `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
+        [interventionId],
+      );
+
+      if (lookupResult.rows.length === 0) {
+        this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
+        throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
+      }
+
+      actualInterventionId = lookupResult.rows[0].id;
+      this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
+    }
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'signatures', filename);
@@ -246,7 +294,7 @@ export class FileService {
           signed_at as "uploadedAt"
         `,
         [
-          interventionId,
+          actualInterventionId,
           filename,
           file.originalname,
           file.mimetype,
@@ -265,7 +313,7 @@ export class FileService {
         SET "HasAssociatedFiles" = TRUE
         WHERE "Id" = $1
         `,
-        [interventionId],
+        [actualInterventionId],
       );
 
       this.logger.log(`Signature uploaded successfully: ${filename}`);

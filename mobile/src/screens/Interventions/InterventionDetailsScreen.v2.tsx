@@ -371,11 +371,11 @@ const InterventionDetailsScreenV2 = () => {
   const loadTechnicians = async () => {
     try {
       setLoadingTechnicians(true);
-      const response = await apiService.getUsers({ role: 'technicien', limit: 100 });
-      console.log('Techniciens chargés:', response);
+      const techniciansData = await apiService.getTechnicians();
+      console.log('Techniciens chargés:', techniciansData);
 
-      if (response && response.data) {
-        setTechnicians(response.data);
+      if (techniciansData && techniciansData.length > 0) {
+        setTechnicians(techniciansData);
       } else {
         setTechnicians([]);
         showToast('Aucun technicien trouvé', 'info');
@@ -446,23 +446,24 @@ const InterventionDetailsScreenV2 = () => {
    * Changer la date planifiée
    */
   const handleChangeDate = async (event: any, date?: Date) => {
-    try {
-      // Sur Android, fermer immédiatement le picker
-      if (Platform.OS === 'android') {
-        setShowDatePicker(false);
-      }
+    // Sur Android, le picker se ferme automatiquement
+    // Sur iOS, le picker reste ouvert jusqu'à ce qu'on le ferme manuellement
 
-      // Vérifier si l'utilisateur a annulé (event peut être undefined sur iOS)
+    // Gérer l'annulation sur Android
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+      if (event?.type === 'dismissed' || !date) {
+        return;
+      }
+    } else {
+      // Sur iOS, vérifier si une date a été sélectionnée
       if (!date) {
         return;
       }
+    }
 
-      // Sur Android, vérifier le type d'événement si disponible
-      if (Platform.OS === 'android' && event && event.type === 'dismissed') {
-        return;
-      }
-
-      // Effectuer la mise à jour
+    // Effectuer la mise à jour
+    try {
       await hapticService.medium();
       setActionLoading(true);
 
@@ -1061,14 +1062,51 @@ const InterventionDetailsScreenV2 = () => {
       </Portal>
 
       {/* Modal DateTimePicker */}
-      {showDatePicker && (
+      {showDatePicker && Platform.OS === 'android' && (
         <DateTimePicker
           value={selectedDate}
           mode="datetime"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display="default"
           onChange={handleChangeDate}
           locale="fr-FR"
         />
+      )}
+
+      {/* Modal DateTimePicker pour iOS */}
+      {showDatePicker && Platform.OS === 'ios' && (
+        <Portal>
+          <Modal
+            visible={showDatePicker}
+            onDismiss={() => setShowDatePicker(false)}
+            contentContainerStyle={styles.modalContainer}
+          >
+            <Card>
+              <Card.Title title="Sélectionner une date" />
+              <Card.Content>
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="datetime"
+                  display="spinner"
+                  onChange={(event, date) => {
+                    if (date) {
+                      setSelectedDate(date);
+                    }
+                  }}
+                  locale="fr-FR"
+                />
+              </Card.Content>
+              <Card.Actions>
+                <Button onPress={() => setShowDatePicker(false)}>Annuler</Button>
+                <Button
+                  mode="contained"
+                  onPress={() => handleChangeDate({}, selectedDate)}
+                >
+                  Confirmer
+                </Button>
+              </Card.Actions>
+            </Card>
+          </Modal>
+        </Portal>
       )}
 
       {/* Espacement bas */}
