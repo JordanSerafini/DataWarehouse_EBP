@@ -175,15 +175,15 @@ export class CustomersService {
     const totalInterventionsResult = await this.databaseService.query<InterventionCountRow>(
       `SELECT COUNT(*)::int AS count
        FROM public."ScheduleEvent"
-       WHERE "customer" = $1`,
+       WHERE "CustomerId" = $1`,
       [customerId],
     );
 
     // Calcule le montant total facturé
     const totalRevenueResult = await this.databaseService.query<TotalRevenueRow>(
-      `SELECT COALESCE(SUM("TotalTaxIncludedDiscounted_Value"), 0)::numeric AS total
-       FROM public."saledocument"
-       WHERE "customer" = $1
+      `SELECT COALESCE(SUM("TotalDueAmount"), 0)::numeric AS total
+       FROM public."SaleDocument"
+       WHERE "CustomerId" = $1
        AND "DocumentType" = 6`, // 6 = Facture
       [customerId],
     );
