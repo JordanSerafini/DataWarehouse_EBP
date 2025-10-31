@@ -32,7 +32,7 @@ import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { InterventionService, Intervention, InterventionStatus } from '../../services/intervention.service';
 import { ActivityService, Activity, ActivityCategory } from '../../services/activity.service';
@@ -438,28 +438,40 @@ const InterventionDetailsScreenV2 = () => {
   const handleOpenDatePicker = () => {
     if (!canEdit) return;
     hapticService.light();
-    setSelectedDate(intervention?.scheduledDate ? new Date(intervention.scheduledDate) : new Date());
-    setShowDatePicker(true);
+    const dateToUse = intervention?.scheduledDate ? new Date(intervention.scheduledDate) : new Date();
+    setSelectedDate(dateToUse);
+
+    if (Platform.OS === 'android') {
+      // Sur Android, utiliser l'API impérative (recommandé par la doc)
+      // pour éviter le bug "Cannot read property 'dismiss' of undefined"
+      DateTimePickerAndroid.open({
+        value: dateToUse,
+        mode: 'datetime',
+        is24Hour: true,
+        onChange: handleChangeDate,
+      });
+    } else {
+      // Sur iOS, utiliser le composant déclaratif avec Modal
+      setShowDatePicker(true);
+    }
   };
 
   /**
    * Changer la date planifiée
    */
   const handleChangeDate = async (event: any, date?: Date) => {
-    // Sur Android, le picker se ferme automatiquement
-    // Sur iOS, le picker reste ouvert jusqu'à ce qu'on le ferme manuellement
+    // Gérer l'annulation (Android API impérative ou iOS)
+    if (event?.type === 'dismissed' || event?.type === 'neutralButtonPressed' || !date) {
+      // Fermer le modal iOS si ouvert
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
+      }
+      return;
+    }
 
-    // Gérer l'annulation sur Android
-    if (Platform.OS === 'android') {
-      setShowDatePicker(false);
-      if (event?.type === 'dismissed' || !date) {
-        return;
-      }
-    } else {
-      // Sur iOS, vérifier si une date a été sélectionnée
-      if (!date) {
-        return;
-      }
+    // Vérifier que la date est valide
+    if (!date) {
+      return;
     }
 
     // Effectuer la mise à jour
@@ -1061,18 +1073,8 @@ const InterventionDetailsScreenV2 = () => {
         </Modal>
       </Portal>
 
-      {/* Modal DateTimePicker */}
-      {showDatePicker && Platform.OS === 'android' && (
-        <DateTimePicker
-          value={selectedDate}
-          mode="datetime"
-          display="default"
-          onChange={handleChangeDate}
-          locale="fr-FR"
-        />
-      )}
-
-      {/* Modal DateTimePicker pour iOS */}
+      {/* Modal DateTimePicker pour iOS uniquement */}
+      {/* Sur Android, on utilise l'API impérative DateTimePickerAndroid.open() */}
       {showDatePicker && Platform.OS === 'ios' && (
         <Portal>
           <Modal

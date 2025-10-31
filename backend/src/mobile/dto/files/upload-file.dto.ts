@@ -1,22 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsNumber, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 /**
  * DTO pour upload d'une photo d'intervention
+ * Note: interventionId est dans l'URL, pas dans le body
  */
 export class UploadPhotoDto {
-  @ApiProperty({
-    description: 'ID de l\'intervention',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-  })
-  @IsUUID()
-  interventionId: string;
-
   @ApiProperty({
     description: 'Latitude GPS de la photo',
     example: 48.8566,
     required: false,
   })
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
   @IsNumber()
   @IsOptional()
   latitude?: number;
@@ -26,6 +22,7 @@ export class UploadPhotoDto {
     example: 2.3522,
     required: false,
   })
+  @Transform(({ value }) => value ? parseFloat(value) : undefined)
   @IsNumber()
   @IsOptional()
   longitude?: number;
@@ -49,15 +46,9 @@ export class UploadPhotoDto {
 
 /**
  * DTO pour upload d'une signature
+ * Note: interventionId est dans l'URL, pas dans le body
  */
 export class UploadSignatureDto {
-  @ApiProperty({
-    description: 'ID de l\'intervention',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-  })
-  @IsUUID()
-  interventionId: string;
-
   @ApiProperty({
     description: 'Nom du signataire (client)',
     example: 'Jean Dupont',
