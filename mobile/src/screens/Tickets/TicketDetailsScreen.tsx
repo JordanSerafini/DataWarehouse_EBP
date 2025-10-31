@@ -101,6 +101,7 @@ const TicketDetailsScreen = () => {
   const organization = ticketData.organization;
   const assignedTechnician = ticketData.assignedTechnician;
   const createdByTechnician = ticketData.createdByTechnician;
+  const device = ticketData.device;
 
   return (
     <ScrollView
@@ -331,8 +332,43 @@ const TicketDetailsScreen = () => {
               <Text variant="bodyMedium">{ticket.requesterName}</Text>
             </View>
           )}
+
+          {ticket.requesterEmail && (
+            <View style={styles.infoRow}>
+              <Text variant="labelLarge" style={styles.infoLabel}>
+                📧 Email:
+              </Text>
+              <Text variant="bodyMedium">{ticket.requesterEmail}</Text>
+            </View>
+          )}
+
+          {ticket.requesterPhone && (
+            <View style={styles.infoRow}>
+              <Text variant="labelLarge" style={styles.infoLabel}>
+                📱 Téléphone:
+              </Text>
+              <Text variant="bodyMedium">{ticket.requesterPhone}</Text>
+            </View>
+          )}
         </Card.Content>
       </Card>
+
+      {/* Appareil (Device) */}
+      {device && (
+        <Card style={styles.card}>
+          <Card.Title title="Appareil" />
+          <Card.Content>
+            <View style={styles.infoRow}>
+              <Text variant="labelLarge" style={styles.infoLabel}>
+                💻 Appareil:
+              </Text>
+              <Text variant="bodyMedium" style={styles.deviceName}>
+                {device.deviceName}
+              </Text>
+            </View>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Tags */}
       {ticket.tags && ticket.tags.length > 0 && (
@@ -492,6 +528,10 @@ const styles = StyleSheet.create({
   unassignedText: {
     color: '#ff9800',
     fontStyle: 'italic',
+  },
+  deviceName: {
+    fontWeight: 'bold',
+    color: '#9c27b0',
   },
   tagsContainer: {
     flexDirection: 'row',

@@ -480,7 +480,8 @@ export class InterventionsService {
     try {
       // Vérifier que l'intervention existe et récupérer son UUID réel
       const intervention = await this.getInterventionById(interventionId);
-      const actualInterventionId = intervention.id; // UUID réel
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
       // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
       // EventState = 1 dans EBP signifie IN_PROGRESS
@@ -504,30 +505,58 @@ export class InterventionsService {
         );
       }
 
-      // Mettre à jour le statut et la date de début
-      // EventState = 1 dans EBP signifie IN_PROGRESS
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET
-          "EventState" = 1,
-          "ActualStartDate" = $2,
-          "sysModifiedDate" = NOW()
-        WHERE "Id" = $3
-        `,
-        [new Date(), actualInterventionId],
-      );
+      if (sourceType === 'incident') {
+        // Démarrer un Incident
+        // Status = 1 pour IN_PROGRESS (à vérifier selon la convention EBP)
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET
+            "Status" = 1,
+            "StartDate" = $1,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [new Date(), actualInterventionId],
+        );
 
-      // Ajouter notes de démarrage si fournies
-      if (dto.notes) {
+        // Ajouter notes de démarrage si fournies
+        if (dto.notes) {
+          await this.databaseService.query(
+            `
+            UPDATE public."Incident"
+            SET "DescriptionClear" = COALESCE("DescriptionClear", '') || $1
+            WHERE "Id" = $2
+            `,
+            [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
+          );
+        }
+      } else {
+        // Démarrer un ScheduleEvent
+        // EventState = 1 dans EBP signifie IN_PROGRESS
         await this.databaseService.query(
           `
           UPDATE public."ScheduleEvent"
-          SET "NotesClear" = COALESCE("NotesClear", '') || $1
+          SET
+            "EventState" = 1,
+            "ActualStartDate" = $1,
+            "sysModifiedDate" = NOW()
           WHERE "Id" = $2
           `,
-          [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
+          [new Date(), actualInterventionId],
         );
+
+        // Ajouter notes de démarrage si fournies
+        if (dto.notes) {
+          await this.databaseService.query(
+            `
+            UPDATE public."ScheduleEvent"
+            SET "NotesClear" = COALESCE("NotesClear", '') || $1
+            WHERE "Id" = $2
+            `,
+            [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
+          );
+        }
       }
 
       this.logger.log(`Intervention ${actualInterventionId} started successfully`);
@@ -551,30 +580,54 @@ export class InterventionsService {
     try {
       // Vérifier que l'intervention existe et récupérer son UUID réel
       const intervention = await this.getInterventionById(interventionId);
-      const actualInterventionId = intervention.id; // UUID réel
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
-      // Mettre à jour l'intervention
-      // EventState = 2 dans EBP signifie COMPLETED
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET
-          "EventState" = 2,
-          "EndDate" = $1,
-          "AchievedDuration_DurationInHours" = $2,
-          "Maintenance_TravelDuration" = $3,
-          "Maintenance_InterventionReport" = $4,
-          "sysModifiedDate" = NOW()
-        WHERE "Id" = $5
-        `,
-        [
-          new Date(),
-          dto.timeSpentHours,
-          dto.travelDuration || 0,
-          dto.report,
-          actualInterventionId,
-        ],
-      );
+      if (sourceType === 'incident') {
+        // Clôturer un Incident
+        // Status = 2 pour COMPLETED (à vérifier selon la convention EBP)
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET
+            "Status" = 2,
+            "EndDate" = $1,
+            "AccomplishedDuration" = $2,
+            "DescriptionClear" = COALESCE("DescriptionClear", '') || $3,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $4
+          `,
+          [
+            new Date(),
+            dto.timeSpentHours,
+            `\n[${new Date().toISOString()}] Rapport: ${dto.report}`,
+            actualInterventionId,
+          ],
+        );
+      } else {
+        // Clôturer un ScheduleEvent
+        // EventState = 2 dans EBP signifie COMPLETED
+        await this.databaseService.query(
+          `
+          UPDATE public."ScheduleEvent"
+          SET
+            "EventState" = 2,
+            "EndDate" = $1,
+            "AchievedDuration_DurationInHours" = $2,
+            "Maintenance_TravelDuration" = $3,
+            "Maintenance_InterventionReport" = $4,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $5
+          `,
+          [
+            new Date(),
+            dto.timeSpentHours,
+            dto.travelDuration || 0,
+            dto.report,
+            actualInterventionId,
+          ],
+        );
+      }
 
       this.logger.log(`Intervention ${actualInterventionId} completed successfully`);
       return this.getInterventionById(actualInterventionId);
@@ -596,48 +649,85 @@ export class InterventionsService {
     try {
       // Vérifier que l'intervention existe et récupérer son UUID réel
       const intervention = await this.getInterventionById(interventionId);
-      const actualInterventionId = intervention.id; // UUID réel
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
-      // Construire la requête UPDATE dynamiquement
+      // Construire la requête UPDATE dynamiquement selon le type d'intervention
       const updates: string[] = [];
       const values: (number | string | Date)[] = [];
       let paramIndex = 1;
+      let tableName: string;
 
-      if (dto.status !== undefined) {
-        updates.push(`"EventState" = $${paramIndex++}`);
-        values.push(dto.status);
-      }
+      if (sourceType === 'incident') {
+        // Mise à jour d'un Incident
+        tableName = 'public."Incident"';
 
-      if (dto.notes !== undefined) {
-        updates.push(`"NotesClear" = $${paramIndex++}`);
-        values.push(dto.notes);
-      }
+        if (dto.status !== undefined) {
+          updates.push(`"Status" = $${paramIndex++}`);
+          values.push(dto.status);
+        }
 
-      if (dto.achievedDuration !== undefined) {
-        updates.push(`"AchievedDuration_DurationInHours" = $${paramIndex++}`);
-        values.push(dto.achievedDuration);
-      }
+        if (dto.notes !== undefined) {
+          updates.push(`"DescriptionClear" = $${paramIndex++}`);
+          values.push(dto.notes);
+        }
 
-      if (dto.actualStartDate !== undefined) {
-        updates.push(`"ActualStartDate" = $${paramIndex++}`);
-        values.push(dto.actualStartDate);
-      }
+        if (dto.achievedDuration !== undefined) {
+          updates.push(`"AccomplishedDuration" = $${paramIndex++}`);
+          values.push(dto.achievedDuration);
+        }
 
-      if (dto.actualEndDate !== undefined) {
-        updates.push(`"EndDate" = $${paramIndex++}`);
-        values.push(dto.actualEndDate);
-      }
+        if (dto.scheduledDate !== undefined) {
+          updates.push(`"StartDate" = $${paramIndex++}`);
+          values.push(dto.scheduledDate);
+        }
 
-      // Nouveau : Support de scheduledDate
-      if (dto.scheduledDate !== undefined) {
-        updates.push(`"StartDateTime" = $${paramIndex++}`);
-        values.push(dto.scheduledDate);
-      }
+        if (dto.actualEndDate !== undefined) {
+          updates.push(`"EndDate" = $${paramIndex++}`);
+          values.push(dto.actualEndDate);
+        }
 
-      // Nouveau : Support de technicianId
-      if (dto.technicianId !== undefined) {
-        updates.push(`"ColleagueId" = $${paramIndex++}`);
-        values.push(dto.technicianId);
+        // Les Incidents n'ont pas de technicianId assignable directement
+        // Ils ont CreatorColleagueId, mais on ne le modifie pas
+
+      } else {
+        // Mise à jour d'un ScheduleEvent
+        tableName = 'public."ScheduleEvent"';
+
+        if (dto.status !== undefined) {
+          updates.push(`"EventState" = $${paramIndex++}`);
+          values.push(dto.status);
+        }
+
+        if (dto.notes !== undefined) {
+          updates.push(`"NotesClear" = $${paramIndex++}`);
+          values.push(dto.notes);
+        }
+
+        if (dto.achievedDuration !== undefined) {
+          updates.push(`"AchievedDuration_DurationInHours" = $${paramIndex++}`);
+          values.push(dto.achievedDuration);
+        }
+
+        if (dto.actualStartDate !== undefined) {
+          updates.push(`"ActualStartDate" = $${paramIndex++}`);
+          values.push(dto.actualStartDate);
+        }
+
+        if (dto.actualEndDate !== undefined) {
+          updates.push(`"EndDate" = $${paramIndex++}`);
+          values.push(dto.actualEndDate);
+        }
+
+        if (dto.scheduledDate !== undefined) {
+          updates.push(`"StartDateTime" = $${paramIndex++}`);
+          values.push(dto.scheduledDate);
+        }
+
+        if (dto.technicianId !== undefined) {
+          updates.push(`"ColleagueId" = $${paramIndex++}`);
+          values.push(dto.technicianId);
+        }
       }
 
       if (updates.length === 0) {
@@ -646,9 +736,9 @@ export class InterventionsService {
       }
 
       updates.push(`"sysModifiedDate" = NOW()`);
-      values.push(actualInterventionId); // Utiliser l'UUID réel
+      values.push(actualInterventionId); // Utiliser l'ID réel (UUID ou code)
 
-      const updateQuery = `UPDATE public."ScheduleEvent" SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`;
+      const updateQuery = `UPDATE ${tableName} SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`;
       this.logger.log(`Executing update query: ${updateQuery}`, values);
 
       await this.databaseService.query(updateQuery, values);
@@ -673,21 +763,35 @@ export class InterventionsService {
     try {
       // Vérifier que l'intervention existe et récupérer son UUID réel
       const intervention = await this.getInterventionById(interventionId);
-      const actualInterventionId = intervention.id; // UUID réel
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
       // Convertir les secondes en heures (format EBP)
       const timeSpentHours = timeSpentSeconds / 3600;
 
-      // Mettre à jour le champ AchievedDuration_DurationInHours
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET "AchievedDuration_DurationInHours" = $1,
-            "sysModifiedDate" = NOW()
-        WHERE "Id" = $2
-        `,
-        [timeSpentHours, actualInterventionId],
-      );
+      if (sourceType === 'incident') {
+        // Mettre à jour le champ AccomplishedDuration pour Incident
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET "AccomplishedDuration" = $1,
+              "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [timeSpentHours, actualInterventionId],
+        );
+      } else {
+        // Mettre à jour le champ AchievedDuration_DurationInHours pour ScheduleEvent
+        await this.databaseService.query(
+          `
+          UPDATE public."ScheduleEvent"
+          SET "AchievedDuration_DurationInHours" = $1,
+              "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [timeSpentHours, actualInterventionId],
+        );
+      }
 
       this.logger.log(`Time spent updated successfully for intervention ${actualInterventionId}`);
       return this.getInterventionById(actualInterventionId);
@@ -866,6 +970,8 @@ export class InterventionsService {
       subContractorName: row.subContractorName?.trim() || undefined,
       creatorColleagueId: row.creatorColleagueId?.trim() || undefined,
       creatorName: row.creatorName?.trim() || undefined,
+      // Type de source
+      sourceType: row.source_type,
     };
   }
 

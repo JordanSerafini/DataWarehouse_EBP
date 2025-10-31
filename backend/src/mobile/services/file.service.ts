@@ -74,6 +74,51 @@ export class FileService {
   }
 
   /**
+   * Résout l'ID d'une intervention (UUID, ScheduleEventNumber, ou code Incident)
+   * Retourne l'ID réel à utiliser pour les tables de fichiers
+   */
+  private async resolveInterventionId(interventionId: string): Promise<string> {
+    // Vérifier si c'est un UUID valide
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(interventionId);
+
+    if (isUuid) {
+      // C'est déjà un UUID, on le retourne tel quel
+      return interventionId;
+    }
+
+    // Ce n'est pas un UUID, chercher dans ScheduleEvent par ScheduleEventNumber
+    this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up in ScheduleEvent and Incident`);
+
+    const scheduleEventResult = await this.databaseService.query<{ id: string }>(
+      `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
+      [interventionId],
+    );
+
+    if (scheduleEventResult.rows.length > 0) {
+      const actualId = scheduleEventResult.rows[0].id;
+      this.logger.log(`Found UUID ${actualId} for ScheduleEventNumber ${interventionId}`);
+      return actualId;
+    }
+
+    // Pas trouvé dans ScheduleEvent, chercher dans Incident par code
+    const incidentResult = await this.databaseService.query<{ id: string }>(
+      `SELECT "Id" as id FROM public."Incident" WHERE "Id" = $1 LIMIT 1`,
+      [interventionId],
+    );
+
+    if (incidentResult.rows.length > 0) {
+      const actualId = incidentResult.rows[0].id;
+      this.logger.log(`Found Incident code ${actualId}`);
+      return actualId;
+    }
+
+    // Pas trouvé du tout
+    this.logger.warn(`No intervention found with identifier: ${interventionId}`);
+    throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
+  }
+
+  /**
    * Valide un fichier
    */
   private validateFile(file: UploadedFile, fileType: 'photo' | 'signature' | 'document') {
@@ -120,28 +165,8 @@ export class FileService {
 
     this.validateFile(file, 'photo');
 
-    // Vérifier si interventionId est un UUID valide
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isUuid = uuidRegex.test(interventionId);
-
-    let actualInterventionId = interventionId;
-
-    // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
-    if (!isUuid) {
-      this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
-      const lookupResult = await this.databaseService.query<{ id: string }>(
-        `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
-        [interventionId],
-      );
-
-      if (lookupResult.rows.length === 0) {
-        this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
-        throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
-      }
-
-      actualInterventionId = lookupResult.rows[0].id;
-      this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
-    }
+    // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+    const actualInterventionId = await this.resolveInterventionId(interventionId);
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'photos', filename);
@@ -230,28 +255,8 @@ export class FileService {
 
     this.validateFile(file, 'signature');
 
-    // Vérifier si interventionId est un UUID valide
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isUuid = uuidRegex.test(interventionId);
-
-    let actualInterventionId = interventionId;
-
-    // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
-    if (!isUuid) {
-      this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
-      const lookupResult = await this.databaseService.query<{ id: string }>(
-        `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
-        [interventionId],
-      );
-
-      if (lookupResult.rows.length === 0) {
-        this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
-        throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
-      }
-
-      actualInterventionId = lookupResult.rows[0].id;
-      this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
-    }
+    // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+    const actualInterventionId = await this.resolveInterventionId(interventionId);
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'signatures', filename);
@@ -307,14 +312,21 @@ export class FileService {
       );
 
       // Mettre à jour l'intervention pour indiquer qu'elle a une signature
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET "HasAssociatedFiles" = TRUE
-        WHERE "Id" = $1
-        `,
-        [actualInterventionId],
-      );
+      // Déterminer s'il s'agit d'un UUID (ScheduleEvent) ou d'un code (Incident)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isScheduleEvent = uuidRegex.test(actualInterventionId);
+
+      if (isScheduleEvent) {
+        await this.databaseService.query(
+          `UPDATE public."ScheduleEvent" SET "HasAssociatedFiles" = TRUE WHERE "Id" = $1`,
+          [actualInterventionId],
+        );
+      } else {
+        await this.databaseService.query(
+          `UPDATE public."Incident" SET "HasAssociatedFiles" = TRUE WHERE "Id" = $1`,
+          [actualInterventionId],
+        );
+      }
 
       this.logger.log(`Signature uploaded successfully: ${filename}`);
       return result.rows[0];
@@ -335,27 +347,14 @@ export class FileService {
    */
   async getInterventionPhotos(interventionId: string): Promise<FileMetadata[]> {
     try {
-      // Vérifier si interventionId est un UUID valide
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      const isUuid = uuidRegex.test(interventionId);
-
-      let actualInterventionId = interventionId;
-
-      // Si ce n'est pas un UUID, chercher l'UUID par le ScheduleEventNumber
-      if (!isUuid) {
-        this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up by ScheduleEventNumber`);
-        const lookupResult = await this.databaseService.query<{ id: string }>(
-          `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
-          [interventionId],
-        );
-
-        if (lookupResult.rows.length === 0) {
-          this.logger.warn(`No intervention found with ScheduleEventNumber: ${interventionId}`);
-          return []; // Retourner tableau vide plutôt qu'erreur
-        }
-
-        actualInterventionId = lookupResult.rows[0].id;
-        this.logger.log(`Found UUID ${actualInterventionId} for ScheduleEventNumber ${interventionId}`);
+      // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+      let actualInterventionId: string;
+      try {
+        actualInterventionId = await this.resolveInterventionId(interventionId);
+      } catch (error) {
+        // Si l'intervention n'est pas trouvée, retourner un tableau vide au lieu d'erreur
+        this.logger.warn(`Intervention ${interventionId} not found, returning empty array`);
+        return [];
       }
 
       const result = await this.databaseService.query<FileMetadata>(

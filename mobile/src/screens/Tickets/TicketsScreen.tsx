@@ -114,9 +114,9 @@ const TicketsScreen = () => {
         response = await ticketsService.getTickets(filters);
       }
 
-      setTicketsWithRelations(response.data.data);
-      setTickets(response.data.data.map((item) => item.ticket));
-      console.log(`[TicketsScreen] ${response.data.data.length} tickets chargés`);
+      setTicketsWithRelations(response.data);
+      setTickets(response.data.map((item) => item.ticket));
+      console.log(`[TicketsScreen] ${response.data.length} tickets chargés`);
     } catch (error) {
       console.error('[TicketsScreen] Erreur chargement tickets:', error);
       showToast('Erreur lors du chargement des tickets', 'error');

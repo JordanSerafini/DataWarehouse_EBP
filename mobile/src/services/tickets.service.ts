@@ -54,11 +54,14 @@ export interface NinjaOneTicket {
   hasComments: boolean;
   commentsCount: number;
   attachmentsCount: number;
+  activityCount?: number;
 
   // Metadata
   tags?: string[];
   source?: string;
   channel?: string;
+  category?: string;
+  ticketType?: string;
   requesterName?: string;
   requesterEmail?: string;
   requesterPhone?: string;
@@ -69,12 +72,23 @@ export interface TicketWithRelations {
   organization?: {
     organizationId: number;
     organizationName: string;
+    city?: string;
   };
-  technician?: {
+  assignedTechnician?: {
     technicianId: number;
     firstName: string;
     lastName: string;
     email: string;
+  };
+  createdByTechnician?: {
+    technicianId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  device?: {
+    deviceId: number;
+    deviceName: string;
   };
 }
 
@@ -163,7 +177,7 @@ class TicketsService {
       const url = `${NINJAONE_API_BASE}/tickets${queryString ? `?${queryString}` : ''}`;
 
       const response = await apiService.get<PaginatedTicketsResponse>(url);
-      return response;
+      return response.data;
     } catch (error) {
       console.error('[TicketsService] Error fetching tickets:', error);
       throw error;
@@ -178,7 +192,7 @@ class TicketsService {
       const response = await apiService.get<TicketWithRelations>(
         `${NINJAONE_API_BASE}/tickets/${ticketId}`
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error(`[TicketsService] Error fetching ticket ${ticketId}:`, error);
       throw error;
@@ -204,7 +218,7 @@ class TicketsService {
       const url = `${NINJAONE_API_BASE}/tickets/stats${queryString ? `?${queryString}` : ''}`;
 
       const response = await apiService.get<TicketStats>(url);
-      return response;
+      return response.data;
     } catch (error) {
       console.error('[TicketsService] Error fetching ticket stats:', error);
       throw error;
@@ -233,7 +247,7 @@ class TicketsService {
       const url = `${NINJAONE_API_BASE}/organizations/${organizationId}/tickets${queryString ? `?${queryString}` : ''}`;
 
       const response = await apiService.get<PaginatedTicketsResponse>(url);
-      return response;
+      return response.data;
     } catch (error) {
       console.error(`[TicketsService] Error fetching organization ${organizationId} tickets:`, error);
       throw error;
@@ -263,7 +277,7 @@ class TicketsService {
       const url = `${NINJAONE_API_BASE}/technicians/${technicianId}/tickets${queryString ? `?${queryString}` : ''}`;
 
       const response = await apiService.get<PaginatedTicketsResponse>(url);
-      return response;
+      return response.data;
     } catch (error) {
       console.error(`[TicketsService] Error fetching technician ${technicianId} tickets:`, error);
       throw error;
@@ -278,7 +292,7 @@ class TicketsService {
       const response = await apiService.get<TicketStats>(
         `${NINJAONE_API_BASE}/technicians/${technicianId}/tickets/stats`
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error(`[TicketsService] Error fetching technician ${technicianId} stats:`, error);
       throw error;
@@ -294,7 +308,7 @@ class TicketsService {
         `${NINJAONE_API_BASE}/tickets/sync`,
         {}
       );
-      return response;
+      return response.data;
     } catch (error) {
       console.error('[TicketsService] Error syncing tickets:', error);
       throw error;
