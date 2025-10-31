@@ -93,13 +93,17 @@ export const useAuthStore = create<AuthState>()(
 
       // Login - Appel API puis sauvegarde automatique par persist
       login: async (email, password, rememberMe = false) => {
+        console.log('📱 AuthStore.login called with:', { email, passwordLength: password?.length });
+
         set((state) => {
           state.isLoading = true;
           state.error = null;
         });
 
         try {
+          console.log('📡 Calling apiService.login...');
           const response = await apiService.login({ email, password });
+          console.log('✅ apiService.login success');
 
           const user: User = {
             id: response.user.id,
@@ -132,6 +136,13 @@ export const useAuthStore = create<AuthState>()(
             state.error = null;
           });
         } catch (error: any) {
+          console.error('❌ Login error in authStore:', {
+            name: error?.name,
+            message: error?.message,
+            response: error?.response,
+            stack: error?.stack,
+          });
+
           set((state) => {
             state.isLoading = false;
             state.error = error?.message || 'Erreur de connexion';

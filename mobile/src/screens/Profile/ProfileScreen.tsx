@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
-import { Text, Card, Button, Avatar, ActivityIndicator } from 'react-native-paper';
+import { Text, Card, Button, Avatar, ActivityIndicator, SegmentedButtons } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { useSyncStore } from '../../stores/syncStore';
+import { useTheme } from '../../stores/themeStore';
+import { ThemeMode } from '../../config/theme.config';
 import { showToast } from '../../utils/toast';
 import { apiService } from '../../services/api.service';
 import { BiometricService } from '../../services/biometric.service';
@@ -17,6 +19,10 @@ const ProfileScreen = () => {
   const biometricCapabilities = useAuthStore(authSelectors.biometricCapabilities);
   const { logout, login, enableBiometric, disableBiometric, checkBiometricCapabilities } = useAuthStore();
   const { lastSyncDate } = useSyncStore();
+
+  // Theme
+  const { mode, isDark, theme, setMode } = useTheme();
+
   const [switching, setSwitching] = useState(false);
   const [togglingBiometric, setTogglingBiometric] = useState(false);
   const [usersList, setUsersList] = useState<Array<{ email: string; full_name: string; role: string }>>([]);
@@ -126,6 +132,19 @@ const ProfileScreen = () => {
     }
   };
 
+  /**
+   * Changer le mode de thème
+   */
+  const handleThemeModeChange = (newMode: string) => {
+    setMode(newMode as ThemeMode);
+    const modeLabels = {
+      light: 'Mode clair',
+      dark: 'Mode sombre',
+      auto: 'Automatique (système)',
+    };
+    showToast(`Thème: ${modeLabels[newMode as ThemeMode]}`, 'success');
+  };
+
   // Obtenir les initiales pour l'avatar
   const getInitials = () => {
     if (!user?.fullName) return '??';
@@ -137,7 +156,7 @@ const ProfileScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* En-tête profil */}
       <Card style={styles.profileCard}>
         <Card.Content style={styles.profileContent}>
@@ -207,6 +226,87 @@ const ProfileScreen = () => {
           ) : (
             <Text variant="bodyMedium">Aucune synchronisation effectuée</Text>
           )}
+        </Card.Content>
+      </Card>
+
+      {/* Apparence - Dark Mode (Phase 2 - 2025 UI/UX Trend) */}
+      <Card style={styles.infoCard}>
+        <Card.Title
+          title="Apparence"
+          left={(props) => <Ionicons name={isDark ? 'moon' : 'sunny'} size={24} color="#6200ee" style={{ marginLeft: 16 }} />}
+        />
+        <Card.Content>
+          <Text variant="labelMedium" style={styles.themeSectionTitle}>
+            Thème de l'application
+          </Text>
+          <Text variant="bodySmall" style={styles.themeSectionSubtitle}>
+            Choisissez votre mode d'affichage préféré
+          </Text>
+
+          <SegmentedButtons
+            value={mode}
+            onValueChange={handleThemeModeChange}
+            buttons={[
+              {
+                value: 'light',
+                label: 'Clair',
+                icon: 'white-balance-sunny',
+                style: mode === 'light' ? styles.segmentActive : undefined,
+              },
+              {
+                value: 'auto',
+                label: 'Auto',
+                icon: 'cellphone',
+                style: mode === 'auto' ? styles.segmentActive : undefined,
+              },
+              {
+                value: 'dark',
+                label: 'Sombre',
+                icon: 'moon-waning-crescent',
+                style: mode === 'dark' ? styles.segmentActive : undefined,
+              },
+            ]}
+            style={styles.segmentedButtons}
+          />
+
+          {mode === 'auto' && (
+            <View style={styles.themeInfo}>
+              <Ionicons name="information-circle" size={16} color="#6200ee" />
+              <Text variant="bodySmall" style={styles.themeInfoText}>
+                Le thème suit automatiquement les réglages de votre appareil
+              </Text>
+            </View>
+          )}
+
+          {/* Indicateur thème actif */}
+          <View style={[styles.themePreview, { backgroundColor: isDark ? '#1e1e1e' : '#ffffff' }]}>
+            <View style={styles.themePreviewContent}>
+              <Text variant="labelSmall" style={{ color: isDark ? '#e0e0e0' : '#000000' }}>
+                Aperçu du thème actuel
+              </Text>
+              <View style={styles.themePreviewBadge}>
+                <Ionicons name={isDark ? 'moon' : 'sunny'} size={16} color={isDark ? '#bb86fc' : '#6200ee'} />
+                <Text variant="bodySmall" style={{ color: isDark ? '#bb86fc' : '#6200ee', marginLeft: 4 }}>
+                  {isDark ? 'Mode sombre' : 'Mode clair'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.themeFeatures}>
+            <View style={styles.themeFeature}>
+              <Ionicons name="eye-outline" size={16} color="#4caf50" />
+              <Text variant="bodySmall" style={styles.themeFeatureText}>
+                -30% fatigue oculaire
+              </Text>
+            </View>
+            <View style={styles.themeFeature}>
+              <Ionicons name="battery-charging-outline" size={16} color="#4caf50" />
+              <Text variant="bodySmall" style={styles.themeFeatureText}>
+                Économie batterie (OLED)
+              </Text>
+            </View>
+          </View>
         </Card.Content>
       </Card>
 
@@ -348,7 +448,7 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    // backgroundColor géré dynamiquement par theme.colors.background
   },
   profileCard: {
     margin: 16,
@@ -512,6 +612,72 @@ const styles = StyleSheet.create({
   biometricEnabledText: {
     color: '#4caf50',
     flex: 1,
+  },
+  // Styles thème
+  themeSectionTitle: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  themeSectionSubtitle: {
+    color: '#757575',
+    marginBottom: 16,
+  },
+  segmentedButtons: {
+    marginBottom: 12,
+  },
+  segmentActive: {
+    backgroundColor: '#e3f2fd',
+  },
+  themeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: '#e3f2fd',
+    borderRadius: 8,
+  },
+  themeInfoText: {
+    color: '#1976d2',
+    flex: 1,
+  },
+  themePreview: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+  },
+  themePreviewContent: {
+    gap: 12,
+  },
+  themePreviewBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(98, 0, 238, 0.1)',
+  },
+  themeFeatures: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    gap: 16,
+  },
+  themeFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  themeFeatureText: {
+    color: '#4caf50',
+    fontSize: 11,
   },
 });
 

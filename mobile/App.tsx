@@ -1,13 +1,17 @@
 /**
  * Application principale
  * Configure les providers et la navigation
+ *
+ * Phase 2 - 2025 UI/UX Trends:
+ * - Dark Mode natif avec auto-détection système
+ * - Thèmes Material Design 3 dynamiques
  */
 
 import './global.css'; // NativeWind styles
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { PaperProvider, MD3LightTheme } from 'react-native-paper';
+import { PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import ToastManager from 'toastify-react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,25 +22,25 @@ import AppNavigator from './src/navigation/AppNavigator';
 // Stores
 import { useAuthStore, useAuthHydrated } from './src/stores/authStore.v2';
 import { useSyncStore } from './src/stores/syncStore';
-
-// Thème personnalisé
-const customTheme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: '#6200ee',
-    secondary: '#03dac6',
-    tertiary: '#018786',
-    error: '#b00020',
-    background: '#f5f5f5',
-    surface: '#ffffff',
-  },
-};
+import { useThemeStore, useThemeHydrated, initSystemThemeListener } from './src/stores/themeStore';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
-  const authHydrated = useAuthHydrated(); // authStore.v2 gère l'hydratation automatiquement
+  const authHydrated = useAuthHydrated();
+  const themeHydrated = useThemeHydrated();
   const { loadSyncStatus } = useSyncStore();
+
+  // Récupérer le thème dynamique depuis le store
+  const theme = useThemeStore((state) => state.theme);
+  const isDark = useThemeStore((state) => state.isDark);
+
+  /**
+   * Initialiser le listener de changement de thème système
+   */
+  useEffect(() => {
+    const cleanup = initSystemThemeListener();
+    return cleanup;
+  }, []);
 
   /**
    * Initialisation de l'application
@@ -44,7 +48,7 @@ export default function App() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Charger uniquement syncStatus (auth est auto-hydraté)
+        // Charger uniquement syncStatus (auth et theme sont auto-hydratés)
         await loadSyncStatus();
       } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
@@ -53,26 +57,26 @@ export default function App() {
       }
     };
 
-    // Attendre que le store auth soit hydraté
-    if (authHydrated) {
+    // Attendre que les stores soient hydratés
+    if (authHydrated && themeHydrated) {
       initialize();
     }
-  }, [authHydrated, loadSyncStatus]);
+  }, [authHydrated, themeHydrated, loadSyncStatus]);
 
   // Afficher un loader pendant l'initialisation
-  if (!isReady || !authHydrated) {
+  if (!isReady || !authHydrated || !themeHydrated) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
+      <View style={[styles.loadingContainer, { backgroundColor: isDark ? '#121212' : '#f5f5f5' }]}>
+        <ActivityIndicator size="large" color={isDark ? '#bb86fc' : '#6200ee'} />
       </View>
     );
   }
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <PaperProvider theme={customTheme}>
+      <PaperProvider theme={theme}>
         <ToastManager />
-        <StatusBar style="auto" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <AppNavigator />
       </PaperProvider>
     </GestureHandlerRootView>
@@ -87,6 +91,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    // backgroundColor est gérée dynamiquement dans le JSX
   },
 });

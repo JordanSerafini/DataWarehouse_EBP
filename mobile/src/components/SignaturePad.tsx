@@ -15,6 +15,7 @@ import SignatureCanvas from 'react-native-signature-canvas';
 import { Ionicons } from '@expo/vector-icons';
 import { InterventionService } from '../services/intervention.service';
 import { showToast } from '../utils/toast';
+import { hapticService } from '../services/haptic.service';
 
 interface SignaturePadProps {
   interventionId: string;
@@ -35,7 +36,9 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   /**
    * Ouvrir le modal de signature
    */
-  const handleOpenModal = () => {
+  const handleOpenModal = async () => {
+    // Haptic feedback léger à l'ouverture du modal
+    await hapticService.light();
     setVisible(true);
     setSignerName('');
     setSignatureData(null);
@@ -44,7 +47,9 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   /**
    * Fermer le modal
    */
-  const handleCloseModal = () => {
+  const handleCloseModal = async () => {
+    // Haptic feedback léger à la fermeture
+    await hapticService.light();
     setVisible(false);
     setSignatureData(null);
   };
@@ -52,7 +57,9 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   /**
    * Effacer la signature
    */
-  const handleClear = () => {
+  const handleClear = async () => {
+    // Haptic feedback moyen pour clear (action importante)
+    await hapticService.medium();
     signatureRef.current?.clearSignature();
     setSignatureData(null);
   };
@@ -60,14 +67,18 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   /**
    * Callback quand la signature est terminée
    */
-  const handleEnd = () => {
+  const handleEnd = async () => {
+    // Haptic feedback léger quand signature terminée
+    await hapticService.light();
     signatureRef.current?.readSignature();
   };
 
   /**
    * Callback quand la signature est capturée (base64)
    */
-  const handleOK = (signature: string) => {
+  const handleOK = async (signature: string) => {
+    // Haptic feedback succès quand signature capturée
+    await hapticService.success();
     setSignatureData(signature);
   };
 
@@ -76,16 +87,21 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
    */
   const handleUpload = async () => {
     if (!signatureData) {
+      await hapticService.warning();
       showToast('Veuillez signer d\'abord', 'error');
       return;
     }
 
     if (!signerName.trim()) {
+      await hapticService.warning();
       showToast('Veuillez saisir le nom du signataire', 'error');
       return;
     }
 
     try {
+      // Haptic feedback lourd pour action critique (enregistrement signature)
+      await hapticService.heavy();
+
       setUploading(true);
 
       // Convertir base64 en blob
@@ -109,11 +125,16 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
       );
 
       setSignatureId(result.id);
+
+      // Haptic feedback succès renforcé (triple tap) pour grande réussite
+      await hapticService.successEnhanced();
       showToast('Signature enregistrée avec succès', 'success');
       onSignatureSaved?.(result.id);
       handleCloseModal();
     } catch (error: any) {
       console.error('Error uploading signature:', error);
+      // Haptic feedback erreur
+      await hapticService.error();
       showToast('Erreur lors de l\'enregistrement de la signature', 'error');
     } finally {
       setUploading(false);

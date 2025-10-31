@@ -39,6 +39,8 @@ import {
 import { showToast } from '../../utils/toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { hapticService } from '../../services/haptic.service';
+import { SkeletonCustomerDetails } from '../../components/ui/SkeletonLoaders';
 
 type CustomerDetailsScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -83,16 +85,26 @@ const CustomerDetailsScreen = () => {
   /**
    * Pull to refresh
    */
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-    loadCustomerSummary();
+    // Haptic feedback moyen pour refresh
+    await hapticService.medium();
+    await loadCustomerSummary();
+    // Haptic feedback léger à la fin du refresh
+    await hapticService.light();
   };
 
   /**
    * Appeler le client
    */
-  const handleCallCustomer = () => {
-    if (!summary?.customer.contactPhone) return;
+  const handleCallCustomer = async () => {
+    if (!summary?.customer.contactPhone) {
+      await hapticService.error();
+      return;
+    }
+
+    // Haptic feedback medium pour action importante (appel)
+    await hapticService.medium();
 
     const phoneNumber = summary.customer.contactPhone.replace(/\s/g, '');
     Linking.openURL(`tel:${phoneNumber}`);
@@ -101,8 +113,14 @@ const CustomerDetailsScreen = () => {
   /**
    * Envoyer un email
    */
-  const handleEmailCustomer = () => {
-    if (!summary?.customer.contactEmail) return;
+  const handleEmailCustomer = async () => {
+    if (!summary?.customer.contactEmail) {
+      await hapticService.error();
+      return;
+    }
+
+    // Haptic feedback léger pour email
+    await hapticService.light();
 
     Linking.openURL(`mailto:${summary.customer.contactEmail}`);
   };
@@ -110,8 +128,14 @@ const CustomerDetailsScreen = () => {
   /**
    * Navigation GPS
    */
-  const handleNavigateGPS = () => {
-    if (!summary?.customer.latitude || !summary?.customer.longitude) return;
+  const handleNavigateGPS = async () => {
+    if (!summary?.customer.latitude || !summary?.customer.longitude) {
+      await hapticService.error();
+      return;
+    }
+
+    // Haptic feedback medium pour navigation GPS
+    await hapticService.medium();
 
     const { latitude, longitude } = summary.customer;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
@@ -122,7 +146,9 @@ const CustomerDetailsScreen = () => {
   /**
    * Naviguer vers une intervention
    */
-  const handleNavigateToIntervention = (interventionId: string) => {
+  const handleNavigateToIntervention = async (interventionId: string) => {
+    // Haptic feedback léger pour navigation
+    await hapticService.light();
     navigation.navigate('InterventionDetails', { interventionId });
   };
 
@@ -136,16 +162,9 @@ const CustomerDetailsScreen = () => {
     }).format(amount);
   };
 
-  // Loading
+  // Loading with Skeleton
   if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text variant="bodyMedium" style={styles.loadingText}>
-          Chargement du client...
-        </Text>
-      </View>
-    );
+    return <SkeletonCustomerDetails />;
   }
 
   // Error

@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { InterventionService } from '../services/intervention.service';
 import { showToast } from '../utils/toast';
+import { hapticService } from '../services/haptic.service';
 
 interface Photo {
   uri: string;
@@ -73,8 +74,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
    * Prendre une photo avec la caméra
    */
   const handleTakePhoto = async () => {
+    // Haptic feedback léger à l'ouverture de la caméra
+    await hapticService.light();
+
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      await hapticService.error();
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -84,6 +91,9 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
+      // Haptic feedback moyen lors de la sélection de la photo
+      await hapticService.medium();
+
       const newPhoto: Photo = {
         uri: result.assets[0].uri,
         uploading: false,
@@ -98,8 +108,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
    * Sélectionner une photo depuis la galerie
    */
   const handlePickImage = async () => {
+    // Haptic feedback léger à l'ouverture de la galerie
+    await hapticService.light();
+
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      await hapticService.error();
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -109,6 +125,9 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
     });
 
     if (!result.canceled && result.assets[0]) {
+      // Haptic feedback moyen lors de la sélection de la photo
+      await hapticService.medium();
+
       const newPhoto: Photo = {
         uri: result.assets[0].uri,
         uploading: false,
@@ -156,10 +175,14 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
         )
       );
 
+      // Haptic feedback succès après upload réussi
+      await hapticService.success();
       showToast('Photo uploadée avec succès', 'success');
       onPhotosChanged?.(photos.filter((p) => p.uploaded).length + 1);
     } catch (error: any) {
       console.error('Error uploading photo:', error);
+      // Haptic feedback erreur en cas d'échec
+      await hapticService.error();
       showToast('Erreur lors de l\'upload de la photo', 'error');
 
       // Retirer la photo en cas d'erreur
@@ -173,23 +196,39 @@ export const PhotoPicker: React.FC<PhotoPickerProps> = ({
   const handleDeletePhoto = async (photo: Photo) => {
     if (!photo.id) {
       // Pas encore uploadée, simplement retirer localement
+      await hapticService.light();
       setPhotos((prev) => prev.filter((p) => p.uri !== photo.uri));
       return;
     }
 
+    // Haptic feedback warning pour action destructive
+    await hapticService.warning();
+
     Alert.alert('Supprimer la photo', 'Voulez-vous vraiment supprimer cette photo ?', [
-      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Annuler',
+        style: 'cancel',
+        onPress: () => hapticService.light()
+      },
       {
         text: 'Supprimer',
         style: 'destructive',
         onPress: async () => {
           try {
+            // Haptic feedback moyen avant suppression
+            await hapticService.medium();
+
             await InterventionService.deleteFile(photo.id!);
             setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+
+            // Haptic feedback léger après suppression
+            await hapticService.light();
             showToast('Photo supprimée', 'info');
             onPhotosChanged?.(photos.filter((p) => p.uploaded && p.id !== photo.id).length);
           } catch (error) {
             console.error('Error deleting photo:', error);
+            // Haptic feedback erreur
+            await hapticService.error();
             showToast('Erreur lors de la suppression', 'error');
           }
         },

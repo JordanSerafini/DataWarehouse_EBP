@@ -35,7 +35,7 @@ class ApiService {
       timeout: API_CONFIG.TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true', // Skip ngrok browser warning in free tier
+        'ngrok-skip-browser-warning': 'true',
       },
     });
 
@@ -116,11 +116,26 @@ class ApiService {
   // ==================== AUTHENTICATION ====================
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await this.client.post<LoginResponse>(
-      API_CONFIG.ENDPOINTS.AUTH.LOGIN,
-      credentials
-    );
-    return data;
+    const url = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.LOGIN;
+    console.log('🔍 LOGIN URL:', url);
+    console.log('🔍 LOGIN DATA:', JSON.stringify(credentials, null, 2));
+
+    try {
+      const { data } = await this.client.post<LoginResponse>(
+        API_CONFIG.ENDPOINTS.AUTH.LOGIN,
+        credentials
+      );
+      console.log('✅ LOGIN SUCCESS:', data);
+      return data;
+    } catch (error: any) {
+      console.error('❌ LOGIN ERROR:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message,
+      });
+      throw error;
+    }
   }
 
   async refreshToken(refreshToken: string): Promise<LoginResponse> {

@@ -16,11 +16,21 @@
 const BACKEND_IP = '192.168.1.80'; // IP locale du serveur sur le réseau
 const BACKEND_PORT = '3000';
 
+// ⚠️ MODE TUNNEL: Utiliser URL publique même en dev
+// Si vous êtes au bureau et utilisez --tunnel, le téléphone ne peut pas accéder à 192.168.1.80
+const USE_PUBLIC_URL = true; // Mettre à false si vous êtes sur le même réseau WiFi que le serveur
+
+// ⚠️ TEMPORAIRE: Utiliser HTTP au lieu de HTTPS (certificat auto-signé rejeté par mobile)
+// TODO: Obtenir un vrai certificat Let's Encrypt pour passer en HTTPS
+const USE_HTTP = true;
+
 export const API_CONFIG = {
   // URL du backend NestJS
-  BASE_URL: __DEV__
-    ? `http://${BACKEND_IP}:${BACKEND_PORT}` // Development - IP locale pour téléphone physique via Expo Go
-    : 'https://api.votre-domaine.com', // Production
+  BASE_URL: USE_PUBLIC_URL
+    ? (USE_HTTP ? 'http://sli.mobile.back.jordan-s.org' : 'https://sli.mobile.back.jordan-s.org')
+    : __DEV__
+    ? `http://${BACKEND_IP}:${BACKEND_PORT}` // IP locale (uniquement même réseau WiFi)
+    : 'https://sli.mobile.back.jordan-s.org', // Production
 
   // Version de l'API
   API_VERSION: 'v1',

@@ -34,6 +34,9 @@ import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
 import { SignaturePad } from '../../components/SignaturePad';
 import { TimeSheet } from '../../components/TimeSheet';
+import { hapticService } from '../../services/haptic.service';
+import { SkeletonInterventionDetails } from '../../components/ui/SkeletonLoaders';
+import { AnimatedButton, AnimatedFadeIn, AnimatedCheckmark } from '../../components/ui/AnimatedComponents';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -46,6 +49,7 @@ const InterventionDetailsScreenV2 = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showSuccessCheckmark, setShowSuccessCheckmark] = useState(false);
 
   /**
    * Charger l'intervention depuis l'API
@@ -68,8 +72,12 @@ const InterventionDetailsScreenV2 = () => {
    */
   const handleRefresh = async () => {
     setRefreshing(true);
+    // Haptic feedback moyen pour refresh
+    await hapticService.medium();
     await loadIntervention();
     setRefreshing(false);
+    // Haptic feedback léger à la fin du refresh
+    await hapticService.light();
   };
 
   useEffect(() => {
@@ -80,24 +88,39 @@ const InterventionDetailsScreenV2 = () => {
    * Démarrer l'intervention (PENDING → IN_PROGRESS)
    */
   const handleStartIntervention = () => {
+    // Haptic feedback léger sur ouverture du modal
+    hapticService.light();
+
     Alert.alert(
       'Démarrer l\'intervention',
       'Voulez-vous démarrer cette intervention maintenant ?',
       [
-        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Annuler',
+          style: 'cancel',
+          onPress: () => hapticService.light()
+        },
         {
           text: 'Démarrer',
           onPress: async () => {
             try {
+              // Haptic feedback moyen au début de l'action
+              await hapticService.medium();
+
               setActionLoading(true);
               await InterventionService.startIntervention(interventionId, {
                 startedAt: new Date().toISOString(),
                 notes: 'Intervention démarrée depuis l\'app mobile',
               });
+
+              // Haptic feedback succès après succès
+              await hapticService.success();
               showToast('Intervention démarrée !', 'success');
               await loadIntervention(); // Recharger pour avoir le nouveau statut
             } catch (error: any) {
               console.error('Error starting intervention:', error);
+              // Haptic feedback erreur en cas d'échec
+              await hapticService.error();
               showToast('Erreur lors du démarrage', 'error');
             } finally {
               setActionLoading(false);
@@ -112,30 +135,50 @@ const InterventionDetailsScreenV2 = () => {
    * Clôturer l'intervention (IN_PROGRESS → COMPLETED)
    */
   const handleCompleteIntervention = () => {
+    // Haptic feedback moyen sur ouverture du modal (action importante)
+    hapticService.medium();
+
     Alert.prompt(
       'Clôturer l\'intervention',
       'Veuillez saisir votre rapport d\'intervention :',
       [
-        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Annuler',
+          style: 'cancel',
+          onPress: () => hapticService.light()
+        },
         {
           text: 'Clôturer',
           onPress: async (report) => {
             if (!report || report.trim().length === 0) {
+              await hapticService.warning();
               showToast('Le rapport est obligatoire', 'error');
               return;
             }
 
             try {
+              // Haptic feedback lourd pour action critique
+              await hapticService.heavy();
+
               setActionLoading(true);
               await InterventionService.completeIntervention(interventionId, {
                 completedAt: new Date().toISOString(),
                 report: report.trim(),
                 recommendations: '',
               });
+
+              // Haptic feedback succès renforcé (triple tap) pour grande réussite
+              await hapticService.successEnhanced();
+
+              // Afficher l'animation de succès
+              setShowSuccessCheckmark(true);
+
               showToast('Intervention clôturée !', 'success');
               await loadIntervention();
             } catch (error: any) {
               console.error('Error completing intervention:', error);
+              // Haptic feedback erreur
+              await hapticService.error();
               showToast('Erreur lors de la clôture', 'error');
             } finally {
               setActionLoading(false);
@@ -150,11 +193,15 @@ const InterventionDetailsScreenV2 = () => {
   /**
    * Ouvrir l'adresse dans Maps
    */
-  const handleOpenMaps = () => {
+  const handleOpenMaps = async () => {
     if (!intervention?.address) {
+      await hapticService.error();
       showToast('Adresse non disponible', 'error');
       return;
     }
+
+    // Haptic feedback léger pour navigation
+    await hapticService.light();
 
     const address = encodeURIComponent(intervention.address);
     const url = Platform.select({
@@ -163,7 +210,8 @@ const InterventionDetailsScreenV2 = () => {
     });
 
     if (url) {
-      Linking.openURL(url).catch(() => {
+      Linking.openURL(url).catch(async () => {
+        await hapticService.error();
         showToast('Impossible d\'ouvrir Maps', 'error');
       });
     }
@@ -209,14 +257,9 @@ const InterventionDetailsScreenV2 = () => {
     }
   };
 
-  // Loading state
+  // Loading state with Skeleton
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={styles.loadingText}>Chargement...</Text>
-      </View>
-    );
+    return <SkeletonInterventionDetails />;
   }
 
   // Not found
@@ -423,42 +466,57 @@ const InterventionDetailsScreenV2 = () => {
       )}
 
       {/* Actions */}
-      <Card style={styles.card}>
-        <Card.Content>
-          {canStart && (
-            <Button
-              mode="contained"
-              icon="play"
-              onPress={handleStartIntervention}
-              loading={actionLoading}
-              disabled={actionLoading}
-              style={styles.actionButton}
-            >
-              Démarrer l'intervention
-            </Button>
-          )}
-          {canComplete && (
-            <Button
-              mode="contained"
-              icon="check-circle"
-              onPress={handleCompleteIntervention}
-              loading={actionLoading}
-              disabled={actionLoading}
-              style={[styles.actionButton, styles.completeButton]}
-            >
-              Clôturer l'intervention
-            </Button>
-          )}
-          {intervention.status === InterventionStatus.COMPLETED && (
-            <View style={styles.completedBadge}>
-              <Ionicons name="checkmark-circle" size={48} color="#4caf50" />
-              <Text variant="titleMedium" style={styles.completedText}>
-                Intervention terminée
-              </Text>
-            </View>
-          )}
-        </Card.Content>
-      </Card>
+      <AnimatedFadeIn delay={300}>
+        <Card style={styles.card}>
+          <Card.Content>
+            {canStart && (
+              <AnimatedButton
+                mode="contained"
+                icon="play"
+                onPress={handleStartIntervention}
+                loading={actionLoading}
+                disabled={actionLoading}
+                style={styles.actionButton}
+              >
+                Démarrer l'intervention
+              </AnimatedButton>
+            )}
+            {canComplete && (
+              <AnimatedButton
+                mode="contained"
+                icon="check-circle"
+                onPress={handleCompleteIntervention}
+                loading={actionLoading}
+                disabled={actionLoading}
+                style={[styles.actionButton, styles.completeButton]}
+              >
+                Clôturer l'intervention
+              </AnimatedButton>
+            )}
+            {intervention.status === InterventionStatus.COMPLETED && (
+              <AnimatedFadeIn delay={0}>
+                <View style={styles.completedBadge}>
+                  <Ionicons name="checkmark-circle" size={48} color="#4caf50" />
+                  <Text variant="titleMedium" style={styles.completedText}>
+                    Intervention terminée
+                  </Text>
+                </View>
+              </AnimatedFadeIn>
+            )}
+          </Card.Content>
+        </Card>
+      </AnimatedFadeIn>
+
+      {/* Success Checkmark Animation */}
+      {showSuccessCheckmark && (
+        <View style={styles.checkmarkOverlay}>
+          <AnimatedCheckmark
+            visible={showSuccessCheckmark}
+            size={80}
+            onAnimationEnd={() => setShowSuccessCheckmark(false)}
+          />
+        </View>
+      )}
 
       {/* Espacement bas */}
       <View style={{ height: 32 }} />
@@ -566,6 +624,17 @@ const styles = StyleSheet.create({
   },
   photoDivider: {
     marginVertical: 16,
+  },
+  checkmarkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
   },
 });
 
