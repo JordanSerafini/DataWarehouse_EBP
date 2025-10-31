@@ -150,6 +150,7 @@ export interface QueryInterventionsParams {
   customerId?: string;
   limit?: number;
   offset?: number;
+  technicianId?: string; // Admin: filtrer par technicien
 }
 
 export interface QueryNearbyParams {

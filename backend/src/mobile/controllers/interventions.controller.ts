@@ -147,15 +147,19 @@ export class InterventionsController {
     @Request() req,
   ): Promise<InterventionDto[]> {
     // Pour les techniciens, filtrer par leur ID
-    const technicianId = req.user.role === UserRole.TECHNICIEN ? req.user.colleagueId : null;
-
-    if (technicianId) {
+    if (req.user.role === UserRole.TECHNICIEN) {
+      const technicianId = req.user.colleagueId;
       return this.interventionsService.getInterventionsForTechnician(technicianId, query);
     }
 
-    // Pour les admins: TODO - implémenter recherche globale
-    // Pour l'instant, retourne vide pour les non-techniciens
-    return [];
+    // Pour les rôles non-techniciens (admin/patron/chef/commercial):
+    // - si un technicianId est fourni, filtrer par ce technicien
+    // - sinon, faire une recherche globale dans l'intervalle de dates
+    if (query.technicianId) {
+      return this.interventionsService.getInterventionsForTechnician(query.technicianId, query);
+    }
+
+    return this.interventionsService.searchInterventions(query);
   }
 
   /**

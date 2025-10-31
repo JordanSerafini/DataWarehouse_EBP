@@ -141,7 +141,7 @@ export class InterventionsService {
       se."CustomerId" as "customerId",
       c."Name" as "customerName",
       COALESCE(cnt."ContactFields_CellPhone", cnt."ContactFields_Phone") as "contactPhone",
-      se."ColleagueId" as "technicianId",
+      se."ColleagueId"::text as "technicianId",
       col."Contact_Name" as "technicianName",
       CONCAT_WS(', ',
         NULLIF(se."Address_Address1", ''),
@@ -244,7 +244,7 @@ export class InterventionsService {
       i."CustomerId" as "customerId",
       i."CustomerName" as "customerName",
       NULL as "contactPhone",
-      i."CreatorColleagueId" as "technicianId",
+      i."CreatorColleagueId"::text as "technicianId",
       col2."Contact_Name" as "technicianName",
       NULL as address,
       NULL as city,
@@ -365,6 +365,46 @@ export class InterventionsService {
     } catch (error) {
       this.logger.error(`Error fetching interventions for technician ${technicianId}:`, error);
       throw new BadRequestException('Erreur lors de la récupération des interventions');
+    }
+  }
+
+  /**
+   * Recherche globale d'interventions (tous techniciens) pour les rôles non-techniciens
+   */
+  async searchInterventions(query: QueryInterventionsDto): Promise<InterventionDto[]> {
+    const dateFrom = this.resolveDateRangeStart(query.dateFrom);
+    const dateTo = this.resolveDateRangeEnd(query.dateTo);
+
+    try {
+      const sql = `
+        SELECT * FROM (
+          ${InterventionsService.INTERVENTION_BASE_QUERY}
+        ) AS interventions
+        WHERE "scheduledDate" >= $1
+          AND "scheduledDate" <= $2
+        ORDER BY "scheduledDate" DESC
+      `;
+
+      const result = await this.databaseService.query<InterventionRow>(sql, [dateFrom, dateTo]);
+      const mapped = result.rows.map((row) => this.buildInterventionDto(row));
+
+      let filtered = mapped;
+      if (query.status !== undefined) {
+        filtered = filtered.filter((intervention) => intervention.status === query.status);
+      }
+
+      const offset = query.offset ?? 0;
+      const limit = query.limit ?? 50;
+      const paginated = filtered.slice(offset, offset + limit);
+
+      this.logger.log(
+        `Global search returned ${paginated.length} interventions (from ${mapped.length}) between ${dateFrom.toISOString()} and ${dateTo.toISOString()}`,
+      );
+
+      return paginated;
+    } catch (error) {
+      this.logger.error('Error performing global interventions search:', error);
+      throw new BadRequestException("Erreur lors de la recherche d'interventions");
     }
   }
 
