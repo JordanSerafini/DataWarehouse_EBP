@@ -176,6 +176,25 @@ export class UsersController {
   }
 
   /**
+   * Liste des techniciens (pour assignation)
+   */
+  @Get('technicians')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.PATRON)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Liste des techniciens',
+    description: 'Retourne la liste des utilisateurs avec le rôle TECHNICIEN (pour assignation)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des techniciens',
+  })
+  async getTechnicians() {
+    return this.usersService.getTechnicians();
+  }
+
+  /**
    * Synchroniser les collègues EBP
    */
   @Post('sync/colleagues')

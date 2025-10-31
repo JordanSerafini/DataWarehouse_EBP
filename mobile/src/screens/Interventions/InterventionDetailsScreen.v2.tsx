@@ -371,11 +371,24 @@ const InterventionDetailsScreenV2 = () => {
   const loadTechnicians = async () => {
     try {
       setLoadingTechnicians(true);
-      const response = await apiService.getUsers({ role: 'technicien' });
-      setTechnicians(response.data);
+      const response = await apiService.getUsers({ role: 'technicien', limit: 100 });
+      console.log('Techniciens chargés:', response);
+
+      if (response && response.data) {
+        setTechnicians(response.data);
+      } else {
+        setTechnicians([]);
+        showToast('Aucun technicien trouvé', 'info');
+      }
     } catch (error: any) {
       console.error('Error loading technicians:', error);
-      showToast('Erreur lors du chargement des techniciens', 'error');
+      // Si erreur 403, l'utilisateur n'a pas les permissions
+      if (error?.response?.status === 403) {
+        showToast('Vous n\'avez pas les permissions pour voir les techniciens', 'error');
+      } else {
+        showToast('Erreur lors du chargement des techniciens', 'error');
+      }
+      setTechnicians([]);
     } finally {
       setLoadingTechnicians(false);
     }
@@ -433,17 +446,23 @@ const InterventionDetailsScreenV2 = () => {
    * Changer la date planifiée
    */
   const handleChangeDate = async (event: any, date?: Date) => {
-    // Fermer le picker sur Android
-    if (Platform.OS === 'android') {
-      setShowDatePicker(false);
-    }
-
-    // Vérifier que l'utilisateur a validé (pas annulé)
-    if (!date || event?.type === 'dismissed') {
-      return;
-    }
-
     try {
+      // Sur Android, fermer immédiatement le picker
+      if (Platform.OS === 'android') {
+        setShowDatePicker(false);
+      }
+
+      // Vérifier si l'utilisateur a annulé (event peut être undefined sur iOS)
+      if (!date) {
+        return;
+      }
+
+      // Sur Android, vérifier le type d'événement si disponible
+      if (Platform.OS === 'android' && event && event.type === 'dismissed') {
+        return;
+      }
+
+      // Effectuer la mise à jour
       await hapticService.medium();
       setActionLoading(true);
 
@@ -455,7 +474,7 @@ const InterventionDetailsScreenV2 = () => {
       showToast('Date modifiée !', 'success');
       await loadIntervention();
 
-      // Fermer le picker sur iOS
+      // Fermer le picker sur iOS après succès
       if (Platform.OS === 'ios') {
         setShowDatePicker(false);
       }
@@ -1011,6 +1030,13 @@ const InterventionDetailsScreenV2 = () => {
               <Card.Content>
                 {loadingTechnicians ? (
                   <ActivityIndicator size="large" color="#6200ee" style={{ marginVertical: 20 }} />
+                ) : technicians.length === 0 ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Ionicons name="people-outline" size={48} color="#bdbdbd" />
+                    <Text variant="bodyMedium" style={{ marginTop: 12, color: '#757575', textAlign: 'center' }}>
+                      Aucun technicien disponible
+                    </Text>
+                  </View>
                 ) : (
                   <ScrollView style={styles.technicianList}>
                     {technicians.map((tech) => (

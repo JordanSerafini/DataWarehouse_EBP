@@ -214,6 +214,11 @@ class ApiService {
     return data;
   }
 
+  async getTechnicians(): Promise<Array<{ id: string; email: string; full_name: string; colleague_id?: string }>> {
+    const { data } = await this.client.get('/api/v1/users/technicians');
+    return data;
+  }
+
   // ==================== INTERVENTIONS ====================
 
   async getMyInterventions(query?: QueryInterventionsDto): Promise<Intervention[]> {
