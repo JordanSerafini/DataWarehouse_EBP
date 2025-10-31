@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Query,
   Param,
   UseGuards,
@@ -23,6 +25,7 @@ import { Roles } from '../decorators/roles.decorator';
 import { UserRole } from '../enums/user-role.enum';
 import {
   ActivityDto,
+  CreateActivityDto,
   QueryActivityHistoryDto,
   ActivityStatsDto,
 } from '../dto/activity/activity.dto';
@@ -39,6 +42,48 @@ export class ActivityController {
   private readonly logger = new Logger(ActivityController.name);
 
   constructor(private readonly activityService: ActivityService) {}
+
+  /**
+   * Crée une nouvelle note/activité
+   * POST /api/v1/activity
+   */
+  @Post()
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.PATRON,
+    UserRole.COMMERCIAL,
+    UserRole.CHEF_CHANTIER,
+    UserRole.TECHNICIEN,
+  )
+  @ApiOperation({
+    summary: 'Crée une nouvelle note/activité',
+    description: 'Crée une note d\'activité liée à une intervention, un client, un projet ou une affaire',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Note créée avec succès',
+    type: ActivityDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié',
+  })
+  async createActivity(
+    @Body() dto: CreateActivityDto,
+    @Request() req: any,
+  ): Promise<ActivityDto> {
+    this.logger.log(`Creating new activity: ${dto.caption}`);
+
+    // Récupérer l'utilisateur depuis le JWT
+    const userId = req.user?.userId || req.user?.sub;
+
+    return this.activityService.createActivity(dto, userId);
+  }
 
   /**
    * Récupère l'historique d'activités pour une entité
