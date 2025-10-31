@@ -448,7 +448,7 @@ export class InterventionsController {
   async uploadPhoto(
     @Param('id') interventionId: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: UploadPhotoDto,
+    @Body() body: any,
     @Request() req,
   ): Promise<FileUploadResponseDto> {
     if (!file) {
@@ -466,12 +466,16 @@ export class InterventionsController {
       buffer: file.buffer,
     };
 
+    // Convertir les coordonnées GPS de string à number si présentes
+    const latitude = body.latitude ? parseFloat(body.latitude) : undefined;
+    const longitude = body.longitude ? parseFloat(body.longitude) : undefined;
+
     const result = await this.fileService.uploadInterventionPhoto(
       uploadedFile,
       interventionId,
       userId,
-      body.latitude,
-      body.longitude,
+      latitude,
+      longitude,
     );
 
     return {
@@ -505,7 +509,7 @@ export class InterventionsController {
   async uploadSignature(
     @Param('id') interventionId: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: UploadSignatureDto,
+    @Body() body: any,
     @Request() req,
   ): Promise<FileUploadResponseDto> {
     if (!file) {
@@ -523,11 +527,14 @@ export class InterventionsController {
       buffer: file.buffer,
     };
 
+    // Récupérer le nom du signataire (optionnel)
+    const signerName = body.signerName || 'Client';
+
     const result = await this.fileService.uploadSignature(
       uploadedFile,
       interventionId,
       userId,
-      body.signerName,
+      signerName,
     );
 
     return {

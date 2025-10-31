@@ -375,11 +375,12 @@ export class InterventionsService {
     this.logger.log(`Fetching intervention: ${interventionId}`);
 
     try {
+      // Chercher par UUID (id) OU par ScheduleEventNumber (reference)
       const sql = `
         SELECT * FROM (
           ${InterventionsService.INTERVENTION_BASE_QUERY}
         ) AS interventions
-        WHERE id = $1
+        WHERE id = $1 OR reference = $1
         LIMIT 1
       `;
 
@@ -477,8 +478,9 @@ export class InterventionsService {
     this.logger.log(`Starting intervention ${interventionId} by technician ${technicianId}`);
 
     try {
-      // Vérifier que l'intervention existe et appartient au technicien
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel
 
       // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
       // EventState = 1 dans EBP signifie IN_PROGRESS
@@ -491,7 +493,7 @@ export class InterventionsService {
           AND "Id" != $2
         LIMIT 1
         `,
-        [technicianId, interventionId],
+        [technicianId, actualInterventionId],
       );
 
       if (inProgressCheck.rows.length > 0) {
@@ -513,7 +515,7 @@ export class InterventionsService {
           "sysModifiedDate" = NOW()
         WHERE "Id" = $3
         `,
-        [new Date(), interventionId],
+        [new Date(), actualInterventionId],
       );
 
       // Ajouter notes de démarrage si fournies
@@ -524,12 +526,12 @@ export class InterventionsService {
           SET "NotesClear" = COALESCE("NotesClear", '') || $1
           WHERE "Id" = $2
           `,
-          [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, interventionId],
+          [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
         );
       }
 
-      this.logger.log(`Intervention ${interventionId} started successfully`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Intervention ${actualInterventionId} started successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error starting intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors du démarrage de l\'intervention');
@@ -547,8 +549,9 @@ export class InterventionsService {
     this.logger.log(`Completing intervention ${interventionId} by technician ${technicianId}`);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel
 
       // Mettre à jour l'intervention
       // EventState = 2 dans EBP signifie COMPLETED
@@ -569,12 +572,12 @@ export class InterventionsService {
           dto.timeSpentHours,
           dto.travelDuration || 0,
           dto.report,
-          interventionId,
+          actualInterventionId,
         ],
       );
 
-      this.logger.log(`Intervention ${interventionId} completed successfully`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Intervention ${actualInterventionId} completed successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error completing intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la clôture de l\'intervention');
@@ -588,11 +591,12 @@ export class InterventionsService {
     interventionId: string,
     dto: UpdateInterventionDto,
   ): Promise<InterventionDto> {
-    this.logger.log(`Updating intervention ${interventionId}`);
+    this.logger.log(`Updating intervention ${interventionId}`, dto);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel
 
       // Construire la requête UPDATE dynamiquement
       const updates: string[] = [];
@@ -624,20 +628,33 @@ export class InterventionsService {
         values.push(dto.actualEndDate);
       }
 
+      // Nouveau : Support de scheduledDate
+      if (dto.scheduledDate !== undefined) {
+        updates.push(`"StartDateTime" = $${paramIndex++}`);
+        values.push(dto.scheduledDate);
+      }
+
+      // Nouveau : Support de technicianId
+      if (dto.technicianId !== undefined) {
+        updates.push(`"ColleagueId" = $${paramIndex++}`);
+        values.push(dto.technicianId);
+      }
+
       if (updates.length === 0) {
-        return this.getInterventionById(interventionId);
+        this.logger.log(`No updates to perform for intervention ${interventionId}`);
+        return intervention;
       }
 
       updates.push(`"sysModifiedDate" = NOW()`);
-      values.push(interventionId);
+      values.push(actualInterventionId); // Utiliser l'UUID réel
 
-      await this.databaseService.query(
-        `UPDATE public."ScheduleEvent" SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`,
-        values,
-      );
+      const updateQuery = `UPDATE public."ScheduleEvent" SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`;
+      this.logger.log(`Executing update query: ${updateQuery}`, values);
 
-      this.logger.log(`Intervention ${interventionId} updated successfully`);
-      return this.getInterventionById(interventionId);
+      await this.databaseService.query(updateQuery, values);
+
+      this.logger.log(`Intervention ${actualInterventionId} updated successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error updating intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la mise à jour de l\'intervention');
@@ -654,8 +671,9 @@ export class InterventionsService {
     this.logger.log(`Updating time spent for intervention ${interventionId}: ${timeSpentSeconds}s`);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel
 
       // Convertir les secondes en heures (format EBP)
       const timeSpentHours = timeSpentSeconds / 3600;
@@ -668,11 +686,11 @@ export class InterventionsService {
             "sysModifiedDate" = NOW()
         WHERE "Id" = $2
         `,
-        [timeSpentHours, interventionId],
+        [timeSpentHours, actualInterventionId],
       );
 
-      this.logger.log(`Time spent updated successfully for intervention ${interventionId}`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Time spent updated successfully for intervention ${actualInterventionId}`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error updating time spent for intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la mise à jour du temps passé');

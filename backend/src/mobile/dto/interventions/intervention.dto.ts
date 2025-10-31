@@ -738,6 +738,13 @@ export class InterventionDto {
   @IsString()
   @IsOptional()
   creatorName?: string;
+
+  @ApiProperty({
+    description: 'Type de source (schedule_event ou incident)',
+    example: 'schedule_event',
+  })
+  @IsString()
+  sourceType: 'schedule_event' | 'incident';
 }
 
 /**

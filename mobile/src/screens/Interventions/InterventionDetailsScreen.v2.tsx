@@ -81,7 +81,7 @@ const InterventionDetailsScreenV2 = () => {
   const [isCustomFieldsExpanded, setIsCustomFieldsExpanded] = useState(false);
 
   // États pour l'édition (Admin/Patron/Super Admin)
-  const [technicians, setTechnicians] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
+  const [technicians, setTechnicians] = useState<Array<{ id: string; full_name: string; email: string; colleague_id?: string }>>([]);
   const [showTechnicianPicker, setShowTechnicianPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -409,14 +409,20 @@ const InterventionDetailsScreenV2 = () => {
   /**
    * Changer le technicien assigné
    */
-  const handleChangeTechnician = async (technicianId: string, technicianName: string) => {
+  const handleChangeTechnician = async (colleagueId: string | undefined, technicianName: string) => {
+    if (!colleagueId) {
+      await hapticService.error();
+      showToast('Ce technicien n\'a pas de colleague_id EBP', 'error');
+      return;
+    }
+
     try {
       await hapticService.medium();
       setShowTechnicianPicker(false);
       setActionLoading(true);
 
       await InterventionService.updateIntervention(interventionId, {
-        technicianId,
+        technicianId: colleagueId,
         technicianName,
       });
 
@@ -433,7 +439,7 @@ const InterventionDetailsScreenV2 = () => {
   };
 
   /**
-   * Ouvrir le sélecteur de date
+   * Ouvrir le sélecteur de date (Android: date puis heure, iOS: datetime)
    */
   const handleOpenDatePicker = () => {
     if (!canEdit) return;
@@ -442,13 +448,27 @@ const InterventionDetailsScreenV2 = () => {
     setSelectedDate(dateToUse);
 
     if (Platform.OS === 'android') {
-      // Sur Android, utiliser l'API impérative (recommandé par la doc)
-      // pour éviter le bug "Cannot read property 'dismiss' of undefined"
+      // Sur Android, ouvrir d'abord le sélecteur de DATE
       DateTimePickerAndroid.open({
         value: dateToUse,
-        mode: 'datetime',
+        mode: 'date',
         is24Hour: true,
-        onChange: handleChangeDate,
+        onChange: (event, selectedDate) => {
+          if (event.type === 'set' && selectedDate) {
+            // Date sélectionnée, maintenant ouvrir le sélecteur d'HEURE
+            DateTimePickerAndroid.open({
+              value: selectedDate,
+              mode: 'time',
+              is24Hour: true,
+              onChange: (timeEvent, selectedTime) => {
+                if (timeEvent.type === 'set' && selectedTime) {
+                  // Date + Heure sélectionnées, mettre à jour
+                  handleChangeDate(timeEvent, selectedTime);
+                }
+              },
+            });
+          }
+        },
       });
     } else {
       // Sur iOS, utiliser le composant déclaratif avec Modal
@@ -1056,10 +1076,11 @@ const InterventionDetailsScreenV2 = () => {
                       <List.Item
                         key={tech.id}
                         title={tech.full_name}
-                        description={tech.email}
+                        description={tech.colleague_id ? tech.email : `${tech.email} (pas de colleague_id)`}
                         left={(props) => <List.Icon {...props} icon="account" />}
-                        onPress={() => handleChangeTechnician(tech.id, tech.full_name)}
+                        onPress={() => handleChangeTechnician(tech.colleague_id, tech.full_name)}
                         style={styles.technicianItem}
+                        disabled={!tech.colleague_id}
                       />
                     ))}
                   </ScrollView>
