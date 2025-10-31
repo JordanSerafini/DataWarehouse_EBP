@@ -12,33 +12,85 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Text, Card, SegmentedButtons, FAB } from 'react-native-paper';
-import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths } from 'date-fns';
+import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useAuthStore } from '../../stores/authStore';
-import { Intervention, InterventionStatus } from '../../types/intervention.types';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
 import { showToast } from '../../utils/toast';
 
 type ViewMode = 'day' | 'week' | 'month';
 
+/**
+ * Type pour les événements calendrier (ScheduleEvent + Incident)
+ */
+interface CalendarEvent {
+  id: string;
+  title: string;
+  startDateTime: string;
+  endDateTime?: string;
+  eventType: 'intervention' | 'appointment' | 'maintenance' | 'meeting' | 'other';
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled';
+  colleagueId?: string;
+  colleagueName?: string;
+  customerId?: string;
+  customerName?: string;
+  address?: string;
+  city?: string;
+  zipcode?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 const PlanningScreen = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('day');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
   const { isSyncing } = useSyncStore();
 
   /**
-   * Charger les interventions depuis l'API
+   * Charger les événements depuis l'API
    */
-  const loadInterventions = async () => {
+  const loadEvents = async () => {
     try {
-      const results = await apiService.getMyInterventions();
-      setInterventions(results);
+      // Calculer la plage de dates pour la vue actuelle
+      let startDate: Date;
+      let endDate: Date;
+
+      switch (viewMode) {
+        case 'day':
+          startDate = new Date(currentDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = endOfDay(currentDate);
+          break;
+
+        case 'week': {
+          const weekStart = startOfWeek(currentDate, { locale: fr });
+          startDate = weekStart;
+          endDate = addDays(weekStart, 7);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        }
+
+        case 'month': {
+          const monthStart = startOfMonth(currentDate);
+          startDate = monthStart;
+          endDate = addMonths(monthStart, 1);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        }
+
+        default:
+          startDate = new Date();
+          endDate = new Date();
+      }
+
+      const results = await apiService.getAllCalendarEvents(startDate, endDate);
+      setEvents(results);
     } catch (error) {
-      console.error('Erreur lors du chargement des interventions:', error);
+      console.error('Erreur lors du chargement des événements:', error);
       showToast('Erreur lors du chargement du planning', 'error');
     }
   };
@@ -49,7 +101,7 @@ const PlanningScreen = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await loadInterventions();
+      await loadEvents();
       showToast('Planning actualisé', 'success');
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
@@ -60,42 +112,11 @@ const PlanningScreen = () => {
   };
 
   /**
-   * Charger les interventions au montage
+   * Charger les événements au montage et quand la vue change
    */
   useEffect(() => {
-    loadInterventions();
-  }, [user]);
-
-  /**
-   * Filtrer les interventions par date selon la vue
-   */
-  const getFilteredInterventions = (): Intervention[] => {
-    const now = currentDate;
-
-    return interventions.filter((intervention) => {
-      const date = new Date(intervention.scheduledDate);
-
-      switch (viewMode) {
-        case 'day':
-          return format(date, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
-
-        case 'week': {
-          const weekStart = startOfWeek(now, { locale: fr });
-          const weekEnd = addDays(weekStart, 6);
-          return date >= weekStart && date <= weekEnd;
-        }
-
-        case 'month': {
-          const monthStart = startOfMonth(now);
-          const monthEnd = addMonths(monthStart, 1);
-          return date >= monthStart && date < monthEnd;
-        }
-
-        default:
-          return false;
-      }
-    });
-  };
+    loadEvents();
+  }, [user, viewMode, currentDate]);
 
   /**
    * Naviguer dans le temps
@@ -136,24 +157,96 @@ const PlanningScreen = () => {
   /**
    * Obtenir la couleur selon le statut
    */
-  const getStatusColor = (status: InterventionStatus): string => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
-      case InterventionStatus.SCHEDULED:
+      case 'planned':
         return '#2196F3'; // Bleu
-      case InterventionStatus.IN_PROGRESS:
+      case 'in_progress':
         return '#FF9800'; // Orange
-      case InterventionStatus.COMPLETED:
+      case 'completed':
         return '#4CAF50'; // Vert
-      case InterventionStatus.CANCELLED:
+      case 'cancelled':
         return '#F44336'; // Rouge
-      case InterventionStatus.PENDING:
-        return '#9E9E9E'; // Gris
+      case 'rescheduled':
+        return '#9C27B0'; // Violet
       default:
         return '#9E9E9E';
     }
   };
 
-  const filteredInterventions = getFilteredInterventions();
+  /**
+   * Obtenir l'icône selon le type d'événement
+   */
+  const getEventIcon = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return '🔧'; // Intervention technique
+      case 'maintenance':
+        return '⚙️'; // Maintenance
+      case 'appointment':
+        return '📅'; // Rendez-vous
+      case 'meeting':
+        return '👥'; // Réunion
+      default:
+        return '📌'; // Autre
+    }
+  };
+
+  /**
+   * Obtenir le style de fond selon le type d'événement
+   */
+  const getEventBackgroundColor = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return '#E3F2FD'; // Bleu clair
+      case 'maintenance':
+        return '#FFF3E0'; // Orange clair
+      case 'appointment':
+        return '#F3E5F5'; // Violet clair
+      case 'meeting':
+        return '#E8F5E9'; // Vert clair
+      default:
+        return '#FAFAFA'; // Gris très clair
+    }
+  };
+
+  /**
+   * Obtenir le libellé du type d'événement
+   */
+  const getEventTypeLabel = (eventType: string): string => {
+    switch (eventType) {
+      case 'intervention':
+        return 'Intervention';
+      case 'maintenance':
+        return 'Maintenance';
+      case 'appointment':
+        return 'Rendez-vous';
+      case 'meeting':
+        return 'Réunion';
+      default:
+        return 'Autre';
+    }
+  };
+
+  /**
+   * Obtenir le libellé du statut
+   */
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'planned':
+        return 'Planifié';
+      case 'in_progress':
+        return 'En cours';
+      case 'completed':
+        return 'Terminé';
+      case 'cancelled':
+        return 'Annulé';
+      case 'rescheduled':
+        return 'Reprogrammé';
+      default:
+        return status;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -184,60 +277,75 @@ const PlanningScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Liste des interventions */}
+      {/* Liste des événements */}
       <ScrollView
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing || isSyncing} onRefresh={handleRefresh} />
         }
       >
-        {filteredInterventions.length === 0 ? (
+        {events.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
-              Aucune intervention pour cette période
+              Aucun événement pour cette période
             </Text>
           </View>
         ) : (
-          filteredInterventions.map((intervention) => (
-            <Card key={intervention.id} style={styles.card}>
+          events.map((event) => (
+            <Card
+              key={event.id}
+              style={[
+                styles.card,
+                { backgroundColor: getEventBackgroundColor(event.eventType) }
+              ]}
+            >
               <Card.Content>
                 <View style={styles.cardHeader}>
                   <View
                     style={[
                       styles.statusIndicator,
-                      { backgroundColor: getStatusColor(intervention.status) },
+                      { backgroundColor: getStatusColor(event.status) },
                     ]}
                   />
-                  <Text variant="titleMedium">{intervention.title}</Text>
+                  <Text variant="titleMedium" style={styles.eventIcon}>
+                    {getEventIcon(event.eventType)}
+                  </Text>
+                  <Text variant="titleMedium" style={styles.eventTitle}>
+                    {event.title}
+                  </Text>
                 </View>
 
                 <View style={styles.cardDetails}>
                   <Text variant="bodyMedium">
-                    🕒 {format(new Date(intervention.scheduledDate), 'HH:mm')}
+                    🕒 {format(new Date(event.startDateTime), 'HH:mm')}
+                    {event.endDateTime && ` - ${format(new Date(event.endDateTime), 'HH:mm')}`}
                   </Text>
-                  {intervention.customerName && (
+                  {event.customerName && (
                     <Text variant="bodySmall">
-                      👤 {intervention.customerName}
+                      👤 {event.customerName}
                     </Text>
                   )}
-                  {intervention.city && (
+                  {event.city && (
                     <Text variant="bodySmall">
-                      📍 {intervention.city}
+                      📍 {event.city}
                     </Text>
                   )}
-                  {intervention.projectName && (
-                    <Text variant="bodySmall" style={styles.projectName}>
-                      🏗️ {intervention.projectName}
+                  {event.address && (
+                    <Text variant="bodySmall" style={styles.address}>
+                      {event.address}
                     </Text>
                   )}
                 </View>
 
                 <View style={styles.cardFooter}>
                   <Text variant="labelSmall" style={styles.statusLabel}>
-                    {intervention.statusLabel}
+                    {getStatusLabel(event.status)}
                   </Text>
-                  <Text variant="labelSmall" style={styles.typeLabel}>
-                    {intervention.typeLabel}
+                  <Text variant="labelSmall" style={[
+                    styles.typeLabel,
+                    { backgroundColor: getEventBackgroundColor(event.eventType) }
+                  ]}>
+                    {getEventTypeLabel(event.eventType)}
                   </Text>
                 </View>
               </Card.Content>
@@ -315,12 +423,20 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginRight: 8,
   },
+  eventIcon: {
+    marginRight: 8,
+    fontSize: 18,
+  },
+  eventTitle: {
+    flex: 1,
+  },
   cardDetails: {
     marginTop: 8,
     gap: 4,
   },
-  projectName: {
-    fontWeight: 'bold',
+  address: {
+    fontStyle: 'italic',
+    color: '#666',
   },
   cardFooter: {
     flexDirection: 'row',

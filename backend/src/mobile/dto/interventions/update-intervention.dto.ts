@@ -41,6 +41,21 @@ export class UpdateInterventionDto {
   @IsNumber()
   @IsOptional()
   achievedDuration?: number;
+
+  @ApiProperty({ description: 'Date planifiée (ISO 8601)', required: false })
+  @IsString()
+  @IsOptional()
+  scheduledDate?: string;
+
+  @ApiProperty({ description: 'ID technicien assigné', required: false })
+  @IsString()
+  @IsOptional()
+  technicianId?: string;
+
+  @ApiProperty({ description: 'Nom technicien assigné', required: false })
+  @IsString()
+  @IsOptional()
+  technicianName?: string;
 }
 
 /**

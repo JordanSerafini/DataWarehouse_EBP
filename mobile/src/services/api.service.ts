@@ -214,6 +214,11 @@ class ApiService {
     return data;
   }
 
+  async getTechnicians(): Promise<Array<{ id: string; email: string; full_name: string; colleague_id?: string }>> {
+    const { data } = await this.client.get('/api/v1/users/technicians');
+    return data;
+  }
+
   // ==================== INTERVENTIONS ====================
 
   async getMyInterventions(query?: QueryInterventionsDto): Promise<Intervention[]> {
@@ -369,6 +374,21 @@ class ApiService {
     const { data } = await this.client.get<Project>(
       API_CONFIG.ENDPOINTS.PROJECTS.BY_ID(id.toString())
     );
+    return data;
+  }
+
+  // ==================== CALENDAR ====================
+
+  /**
+   * Récupère tous les événements pour le planning (ScheduleEvent + Incident)
+   */
+  async getAllCalendarEvents(startDate: Date, endDate: Date): Promise<any[]> {
+    const { data } = await this.client.get('/api/v1/calendar/all-events', {
+      params: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      },
+    });
     return data;
   }
 

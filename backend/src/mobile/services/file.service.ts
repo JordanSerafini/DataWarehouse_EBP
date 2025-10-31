@@ -74,6 +74,51 @@ export class FileService {
   }
 
   /**
+   * Résout l'ID d'une intervention (UUID, ScheduleEventNumber, ou code Incident)
+   * Retourne l'ID réel à utiliser pour les tables de fichiers
+   */
+  private async resolveInterventionId(interventionId: string): Promise<string> {
+    // Vérifier si c'est un UUID valide
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(interventionId);
+
+    if (isUuid) {
+      // C'est déjà un UUID, on le retourne tel quel
+      return interventionId;
+    }
+
+    // Ce n'est pas un UUID, chercher dans ScheduleEvent par ScheduleEventNumber
+    this.logger.log(`Intervention ID ${interventionId} is not a UUID, looking up in ScheduleEvent and Incident`);
+
+    const scheduleEventResult = await this.databaseService.query<{ id: string }>(
+      `SELECT "Id"::text as id FROM public."ScheduleEvent" WHERE "ScheduleEventNumber" = $1 LIMIT 1`,
+      [interventionId],
+    );
+
+    if (scheduleEventResult.rows.length > 0) {
+      const actualId = scheduleEventResult.rows[0].id;
+      this.logger.log(`Found UUID ${actualId} for ScheduleEventNumber ${interventionId}`);
+      return actualId;
+    }
+
+    // Pas trouvé dans ScheduleEvent, chercher dans Incident par code
+    const incidentResult = await this.databaseService.query<{ id: string }>(
+      `SELECT "Id" as id FROM public."Incident" WHERE "Id" = $1 LIMIT 1`,
+      [interventionId],
+    );
+
+    if (incidentResult.rows.length > 0) {
+      const actualId = incidentResult.rows[0].id;
+      this.logger.log(`Found Incident code ${actualId}`);
+      return actualId;
+    }
+
+    // Pas trouvé du tout
+    this.logger.warn(`No intervention found with identifier: ${interventionId}`);
+    throw new BadRequestException(`Intervention introuvable: ${interventionId}`);
+  }
+
+  /**
    * Valide un fichier
    */
   private validateFile(file: UploadedFile, fileType: 'photo' | 'signature' | 'document') {
@@ -107,6 +152,7 @@ export class FileService {
 
   /**
    * Upload une photo d'intervention
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async uploadInterventionPhoto(
     file: UploadedFile,
@@ -118,6 +164,9 @@ export class FileService {
     this.logger.log(`Uploading photo for intervention ${interventionId}`);
 
     this.validateFile(file, 'photo');
+
+    // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+    const actualInterventionId = await this.resolveInterventionId(interventionId);
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'photos', filename);
@@ -165,7 +214,7 @@ export class FileService {
           uploaded_at as "uploadedAt"
         `,
         [
-          interventionId,
+          actualInterventionId,
           filename,
           file.originalname,
           file.mimetype,
@@ -194,6 +243,7 @@ export class FileService {
 
   /**
    * Upload une signature
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async uploadSignature(
     file: UploadedFile,
@@ -204,6 +254,9 @@ export class FileService {
     this.logger.log(`Uploading signature for intervention ${interventionId}`);
 
     this.validateFile(file, 'signature');
+
+    // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+    const actualInterventionId = await this.resolveInterventionId(interventionId);
 
     const filename = this.generateUniqueFilename(file.originalname);
     const filePath = path.join(this.uploadDir, 'signatures', filename);
@@ -246,7 +299,7 @@ export class FileService {
           signed_at as "uploadedAt"
         `,
         [
-          interventionId,
+          actualInterventionId,
           filename,
           file.originalname,
           file.mimetype,
@@ -259,14 +312,21 @@ export class FileService {
       );
 
       // Mettre à jour l'intervention pour indiquer qu'elle a une signature
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET "HasAssociatedFiles" = TRUE
-        WHERE "Id" = $1
-        `,
-        [interventionId],
-      );
+      // Déterminer s'il s'agit d'un UUID (ScheduleEvent) ou d'un code (Incident)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isScheduleEvent = uuidRegex.test(actualInterventionId);
+
+      if (isScheduleEvent) {
+        await this.databaseService.query(
+          `UPDATE public."ScheduleEvent" SET "HasAssociatedFiles" = TRUE WHERE "Id" = $1`,
+          [actualInterventionId],
+        );
+      } else {
+        await this.databaseService.query(
+          `UPDATE public."Incident" SET "HasAssociatedFiles" = TRUE WHERE "Id" = $1`,
+          [actualInterventionId],
+        );
+      }
 
       this.logger.log(`Signature uploaded successfully: ${filename}`);
       return result.rows[0];
@@ -283,9 +343,20 @@ export class FileService {
 
   /**
    * Récupère la liste des photos d'une intervention
+   * Supporte à la fois UUID et ScheduleEventNumber
    */
   async getInterventionPhotos(interventionId: string): Promise<FileMetadata[]> {
     try {
+      // Résoudre l'ID réel de l'intervention (UUID ou code Incident)
+      let actualInterventionId: string;
+      try {
+        actualInterventionId = await this.resolveInterventionId(interventionId);
+      } catch (error) {
+        // Si l'intervention n'est pas trouvée, retourner un tableau vide au lieu d'erreur
+        this.logger.warn(`Intervention ${interventionId} not found, returning empty array`);
+        return [];
+      }
+
       const result = await this.databaseService.query<FileMetadata>(
         `
         SELECT
@@ -301,16 +372,17 @@ export class FileService {
           uploaded_by as "uploadedBy",
           uploaded_at as "uploadedAt"
         FROM mobile.intervention_photos
-        WHERE intervention_id = $1
+        WHERE intervention_id = $1::uuid
         ORDER BY uploaded_at DESC
         `,
-        [interventionId],
+        [actualInterventionId],
       );
 
-      return result.rows;
+      return result.rows || [];
     } catch (error) {
       this.logger.error(`Error fetching photos for intervention ${interventionId}:`, error);
-      throw new BadRequestException('Erreur lors de la récupération des photos');
+      // Retourner un tableau vide au lieu de throw si c'est juste une intervention sans photos
+      return [];
     }
   }
 

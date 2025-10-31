@@ -15,34 +15,49 @@ The repository contains 6 main components:
 
 ### 1. Database/ - Database Analysis & TypeScript Generation
 - **Purpose**: Analyzes the EBP PostgreSQL database (319 tables, 670K rows) and generates TypeScript interfaces
+- **Migrations**: 16 SQL migrations with 94% rollback coverage
+- **Functions**: 46 PL/pgSQL functions for sync, GPS, business logic
 - **Key outputs**:
-  - TypeScript interfaces for all 319 EBP tables (`interface_EBP/`)
-  - Comprehensive audit documentation (`AUDIT_*.md`)
-  - Mobile schema migrations (in `migrations/`)
-- **Note**: This creates a separate `mobile` schema that does NOT modify EBP tables
+  - TypeScript interfaces for all 319 EBP tables (320 files in `interface_EBP/`)
+  - Comprehensive audit documentation (6+ `AUDIT_*.md` files)
+  - Mobile schema migrations (16 migrations in `migrations/`)
+  - Automated tools: `generate-interfaces.ts`, `analyze-database.ts`
+- **Note**: This creates a separate `mobile` schema that does NOT modify EBP tables (100% non-invasive)
 
 ### 2. EbpToPg_Module/ - EBP Sync Desktop Application
 - **Purpose**: Electron desktop app that syncs data from EBP (MSSQL Server) to local PostgreSQL
+- **Architecture**: Electron main/renderer process + Express backend (port 3000)
+- **Production stats**: 319/319 tables synced successfully (99.7%), 670K rows, ~45 minutes
 - **Key features**:
-  - GUI for non-technical users
-  - Full sync with automatic type mapping (MSSQL → PostgreSQL)
-  - Verification and repair tools
-  - Backup creation (pg_dump)
-  - Backend server control
-- **Tech**: Electron + Express + TypeScript
+  - GUI for non-technical users (6 tabs: Config, Server, Sync, Verify, Backup, Logs)
+  - Full sync with automatic type mapping (26 MSSQL types → PostgreSQL)
+  - Verification and repair tools with intelligent comparison
+  - Backup creation (pg_dump - SQL/Custom formats)
+  - Backend server control (start/stop/restart with IPC)
+  - Real-time logs and progress tracking
+  - Fallback to line-by-line on batch failure
+- **Tech**: Electron + Express + TypeScript + mssql + pg
+- **Status**: Production-ready with Windows executable builder
 
 ### 3. ninja-one_api/ - NinjaOne RMM Integration
 - **Purpose**: NestJS API for integrating with NinjaOne (EU region) to fetch RMM data
-- **Endpoints**: Organizations, technicians, devices, tickets, ticket boards
-- **Auth**: OAuth 2.0 Client Credentials
+- **Architecture**: 8 modules NestJS, 6 contrôleurs, 12 services
+- **Endpoints**: 37 endpoints REST complets
+- **Data synced**: 965 tickets, 348 organisations, 16 techniciens
+- **Auth**: OAuth 2.0 Client Credentials with automatic token caching
+- **Database**: Star schema in `ninjaone` schema (6 dimensions + 1 fact table)
+- **Documentation**: 2510 lines across 5 documentation files
 - **Has its own migrations** for NinjaOne-specific tables
 
 ### 4. backend/ - Main Mobile API Backend
 - **Purpose**: NestJS REST API for the mobile field service application
-- **Key module**: `mobile` - handles authentication, sync, and mobile-specific endpoints
-- **User roles**: Super Admin, Admin, Patron (Boss), Commerciaux (Sales), Chef de chantier (Site Manager), Techniciens (Technicians)
-- **Auth**: JWT with Passport
-- **Swagger docs**: Available at `/api/docs` when running
+- **Architecture**: 1 MobileModule with 9 contrôleurs and 12 services
+- **Endpoints**: 37+ REST endpoints across auth, sync, interventions, customers, sales, projects, calendar, activity, users
+- **User roles**: 6 roles with hierarchical permissions (Super Admin, Admin, Patron, Commerciaux, Chef de chantier, Techniciens)
+- **Auth**: JWT with Passport + bcrypt (10 rounds) + session tracking
+- **Database**: PostgreSQL with `pg` driver (20 connection pool)
+- **Swagger docs**: Complete OpenAPI documentation at `/api/docs`
+- **Status**: ⚠️ 0% test coverage - tests needed before production
 
 ### 5. migrate.sh - Root Migration Manager
 - **Purpose**: Manages database migrations with tracking
@@ -76,8 +91,9 @@ The repository contains 6 main components:
 ### Mobile Schema Strategy
 - **Separate schema**: `mobile` (never modifies EBP `public` tables)
 - **Purpose**: Mobile-optimized views, tables, and functions for field service app
-- **Key tables**: Reduced from 670K to ~50K rows (92% reduction) for mobile sync
-- **Non-invasive**: EBP continues to function normally
+- **Key tables**: 20 tables + 3 views, reduced from 670K to ~28K rows (96% reduction) for mobile sync
+- **Functions**: 46 PL/pgSQL functions for sync, GPS calculations, business logic
+- **Non-invasive**: EBP continues to function normally - 100% rollback guaranteed
 
 ### Data Warehouse Vision
 The project is designed with a Bronze/Silver/Gold architecture (planned):
@@ -174,11 +190,11 @@ L'API NinjaOne expose des **APIs REST complètes** pour interroger et gérer les
 #### NinjaOne Organizations API
 
 **Endpoints implémentés:**
-- `GET /ninja-one/organizations` - Liste toutes les organisations (114 actuellement)
+- `GET /ninja-one/organizations` - Liste toutes les organisations (348 synchronisées)
 - `POST /ninja-one/sync/organizations` - Synchronise les organisations vers PostgreSQL
 - `POST /ninja-one/sync/all` - Synchronisation complète (orgs + techs + devices + tickets)
 
-**Structure de données:** Table `ninjaone.dim_organizations` avec 114 organisations
+**Structure de données:** Table `ninjaone.dim_organizations` avec 348 organisations
 - Informations complètes: nom, adresse, contact, tags, champs personnalisés
 - Relations avec tickets, appareils, techniciens
 - Support JSONB pour tags et custom fields
@@ -239,7 +255,7 @@ GET /api/technicians/:id/tickets?isClosed=false
 **État actuel (965 tickets):**
 - 498 ouverts (51.6%), 467 fermés (48.4%)
 - **⚠️ 760 tickets non assignés (78.8%)** - Point critique!
-- 114 organisations, 11 techniciens
+- 348 organisations (114 with tickets), 16 techniciens (11 with tickets)
 - Distribution: 48% Fermés, 37% Nouveaux, 6% Ouverts
 - Priorités: 66% NONE, 22% HIGH, 12% MEDIUM
 
@@ -628,32 +644,99 @@ The backend exposes comprehensive REST APIs for the mobile field service applica
 
 ### Core APIs (`backend/src/mobile/`)
 
-**Authentication** (`/auth`):
-- `POST /auth/login` - User login (returns JWT token)
-- `POST /auth/register` - User registration
-- `GET /auth/profile` - Get current user profile
+**Authentication** (`/api/v1/auth`) - 5 endpoints:
+- `POST /auth/login` - User login (returns JWT token + refresh token)
+- `POST /auth/logout` - Logout current session
+- `POST /auth/logout-all` - Logout all user sessions
+- `GET /auth/me` - Get current user profile
+- `POST /auth/refresh` - Refresh JWT token
 
-**Synchronization** (`/api/v1/sync`) - See "Mobile Synchronization Architecture" section above
+**Synchronization** (`/api/v1/sync`) - 7 endpoints:
+- `POST /sync/initial` - First-time sync (all roles)
+- `POST /sync/full` - Force complete refresh (admin only)
+- `GET /sync/status` - Check sync state
+- `GET /sync/stats` - Per-table statistics
+- `POST /sync/pending` - Get entities awaiting sync
+- `POST /sync/mark-synced` - Mark entity synced
+- `POST /sync/mark-failed` - Record sync failure
 
-**Customers** (`/api/v1/customers`):
-- `GET /customers` - List all customers with pagination
-- `GET /customers/:id` - Get customer details
-- `GET /customers/search?query=...` - Search customers by name
-- All endpoints support role-based access control
+**Customers** (`/api/v1/customers`) - 6 endpoints:
+- `GET /customers/nearby` - Customers near GPS location
+- `GET /customers/search` - Search customers by name/city/postal
+- `GET /customers/:id` - Get customer details (360° view)
+- `GET /customers/:id/history` - Customer intervention history
+- `GET /customers/:id/documents-stats` - Document statistics
+- `PUT /customers/:id/gps` - Update customer GPS coordinates
 
-**Interventions** (`/api/v1/interventions`):
-- `GET /interventions` - List interventions with filters (role-based)
-- `GET /interventions/:id` - Get intervention details
-- `POST /interventions/:id/files` - Upload files/photos
-- `GET /interventions/:id/files` - List intervention files
-- `GET /interventions/:id/files/:fileId` - Download specific file
-- `DELETE /interventions/:id/files/:fileId` - Delete file
+**Interventions** (`/api/v1/interventions`) - 17 endpoints:
+- `GET /interventions/my-interventions` - My interventions (technician)
+- `GET /interventions/my-stats` - My statistics (technician)
+- `GET /interventions/search` - Search interventions
+- `GET /interventions/nearby` - Interventions near GPS location
+- `GET /interventions/technician/:id` - Technician's interventions (admin)
+- `GET /interventions/technician/:id/stats` - Technician stats (admin)
+- `GET /interventions/:id` - Intervention details
+- `PUT /interventions/:id/start` - Start intervention
+- `PUT /interventions/:id/complete` - Complete intervention
+- `PUT /interventions/:id/time` - Update time spent
+- `PUT /interventions/:id` - Update intervention
+- `POST /interventions/timesheet` - Record timesheet
+- `POST /interventions/:id/photos` - Upload photo with GPS
+- `POST /interventions/:id/signature` - Upload client signature
+- `GET /interventions/:id/files` - List files
+- `DELETE /interventions/files/:fileId` - Delete file
+- `GET /interventions/files/:fileId/download` - Download file
 
-**File Management**:
+**Sales/Ventes** (`/api/v1/sales`) - 7 endpoints:
+- `GET /sales/documents/recent` - Recent documents
+- `GET /sales/documents/search` - Search documents
+- `GET /sales/documents/:id` - Document details
+- `GET /sales/documents/:id/with-lines` - Document with line items
+- `GET /sales/quotes/my-quotes` - My quotes (commercial)
+- `GET /sales/quotes/salesperson/:id` - Salesperson quotes (admin)
+- `GET /sales/quotes/lines-stats` - Quote lines statistics
+
+**Projects/Chantiers** (`/api/v1/projects`) - 6 endpoints:
+- `GET /projects/my-projects` - My projects (chef de chantier)
+- `GET /projects/manager/:id` - Manager projects (admin)
+- `GET /projects/search` - Search projects
+- `GET /projects/nearby` - Projects near GPS location
+- `GET /projects/:id` - Project details
+- `GET /projects/stats/global` - Global project statistics
+
+**Calendar** (`/api/v1/calendar`) - 7 endpoints:
+- `GET /calendar/my-events` - My calendar events
+- `GET /calendar/today` - Today's events
+- `GET /calendar/week` - This week's events
+- `GET /calendar/month/:year/:month` - Month view
+- `GET /calendar/events/:id` - Event details
+- `GET /calendar/stats` - Calendar statistics
+- `PUT /calendar/events/:id/reschedule` - Reschedule event
+
+**Activity** (`/api/v1/activity`) - 4 endpoints:
+- `GET /activity/history` - Activity history for entity
+- `GET /activity/recent` - Recent activities (admin/patron)
+- `GET /activity/stats/:entityType/:entityId` - Activity statistics
+- `GET /activity/:id` - Activity details
+
+**Users** (`/api/v1/users`) - 8 endpoints:
+- `GET /users/list` - Public user list (for login screen)
+- `GET /users` - Complete user list (admin)
+- `GET /users/:id` - User details (admin)
+- `POST /users` - Create user (admin)
+- `PUT /users/:id` - Update user (admin)
+- `DELETE /users/:id` - Delete user (super admin)
+- `POST /users/:id/reset-password` - Reset password (admin)
+- `POST /users/sync/colleagues` - Sync colleagues from EBP (admin)
+
+**Total: 74+ endpoints across 9 controllers**
+
+### File Management
 - Handled by `FileService` with storage in `mobile.intervention_files` table
 - Supports multipart uploads with file metadata
 - File types tracked: photos, documents, signatures, etc.
 - Role-based access: technicians can only see their own interventions
+- Photos include GPS coordinates and timestamp
 
 ## Swagger Documentation
 
@@ -692,8 +775,14 @@ The following migrations have been created and are ready for deployment:
 8. **008_complete_documents_mapping.sql** - Complete document relationships
 9. **009_create_users_table.sql** - User authentication table with bcrypt password hashing
 10. **010_create_files_tables.sql** - File storage for interventions (photos, signatures, etc.)
+11. **011_create_test_users.sql** - Test users with default password (pass123)
+12. **012_import_colleagues_function.sql** - Function to import colleagues → users
+13. **013_sync_colleagues_trigger.sql** - Auto-sync trigger Colleague → mobile.users
+14. **014_improve_colleague_sync.sql** - Improved sync with email and role mapping
+15. **015_import_all_colleagues.sql** - Import ALL colleagues (active + inactive)
+16. **016_create_customer_gps_table.sql** - Customer GPS tracking table
 
-**Note**: Each migration has a corresponding rollback script (`*_rollback.sql`)
+**Note**: 15/16 migrations have corresponding rollback scripts (94% rollback coverage)
 
 ### Migration Management
 
@@ -706,18 +795,30 @@ Use `./migrate.sh` in the root directory:
 ## Project Status & Roadmap
 
 ### Current Status (Phases 1-4 Complete - Mobile App Production-Ready)
-- ✅ Database audit complete (319 tables analyzed)
-- ✅ TypeScript interfaces generated for all EBP tables
-- ✅ Mobile schema migrations created (10 migrations ready)
-- ✅ EBP sync application functional (Electron GUI)
-- ✅ NinjaOne integration functional (965 tickets, 114 orgs)
-- ✅ Backend API complete (23 endpoints: interventions + customers + sync)
+- ✅ Database audit complete (319 tables analyzed, 670K rows)
+- ✅ TypeScript interfaces generated for all EBP tables (320 files)
+- ✅ Mobile schema migrations created (16 migrations ready, 94% rollback coverage)
+- ✅ 46 PL/pgSQL functions for sync, GPS, and business logic
+- ✅ EBP sync application functional (Electron GUI, 99.7% success rate)
+- ✅ NinjaOne integration functional (965 tickets, 348 orgs, 16 techs)
+- ✅ Backend API complete (37+ endpoints across 9 controllers)
 - ✅ **Mobile App Phases 1-4 Complete**:
   - Phase 1: Planning & Tasks screens
   - Phase 2: Biometric authentication (Face ID/Touch ID)
   - Phase 3: Intervention workflow (start/complete + photos + signature)
   - Phase 4: Customer search + 360° view
 - ✅ Mobile features: GPS maps, TimeSheet, photo gallery, offline-ready
+
+### Critical Points Before Production
+- ⚠️ **Backend: 0% test coverage** - Add unit and E2E tests (priority 1)
+- ⚠️ **Backend security hardening needed**:
+  - Generate strong JWT secret (currently weak default)
+  - Configure restrictive CORS (currently `*`)
+  - Implement rate limiting (@nestjs/throttler)
+  - Add Helmet for security headers
+- ⚠️ **NinjaOne API: 0% test coverage** - Add tests for services
+- ⚠️ **NinjaOne API: No authentication** - All endpoints public (add JWT guards)
+- ⚠️ **NinjaOne API: Devices blocked** - Fix location_id FK constraint
 
 ### Next Steps (Short-Term)
 1. **Test mobile app** on physical devices (Android + iOS)

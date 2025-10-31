@@ -20,7 +20,10 @@ import PlanningScreen from '../screens/Planning/PlanningScreen';
 import CalendarScreen from '../screens/Calendar/CalendarScreen';
 import TasksScreen from '../screens/Tasks/TasksScreen';
 import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
-import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
+import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v3'; // Version moderne Material Design 3
+import TicketsScreen from '../screens/Tickets/TicketsScreen';
+import TicketDetailsScreen from '../screens/Tickets/TicketDetailsScreen';
+import ConvertTicketScreen from '../screens/Tickets/ConvertTicketScreen';
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';
@@ -39,6 +42,8 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   InterventionDetails: { interventionId: string };
+  TicketDetails: { ticketId: number };
+  ConvertTicket: { ticketId: number; targetType: 'schedule_event' | 'incident' };
   CustomerDetails: { customerId: string };
   ProjectDetails: { projectId: number };
   UserForm: { userId?: string };
@@ -49,6 +54,7 @@ export type BottomTabParamList = {
   Calendar: undefined;
   Tasks: undefined;
   Interventions: undefined;
+  Tickets: undefined;
   Customers: undefined;
   Projects: undefined;
   Admin: undefined;
@@ -97,6 +103,9 @@ const BottomTabsNavigator = () => {
             case 'Interventions':
               iconName = focused ? 'construct' : 'construct-outline';
               break;
+            case 'Tickets':
+              iconName = focused ? 'ticket' : 'ticket-outline';
+              break;
             case 'Customers':
               iconName = focused ? 'people' : 'people-outline';
               break;
@@ -126,44 +135,49 @@ const BottomTabsNavigator = () => {
       <Tab.Screen
         name="Planning"
         component={PlanningScreen}
-        options={{ title: 'Planning' }}
+        options={{ title: 'Planning', headerShown: false  }}
       />
       <Tab.Screen
         name="Calendar"
         component={CalendarScreen}
-        options={{ title: 'Calendrier' }}
+        options={{ title: 'Calendrier', headerShown: false  }}
       />
       <Tab.Screen
         name="Tasks"
         component={TasksScreen}
-        options={{ title: 'Tâches du jour' }}
+        options={{ title: 'Tâches du jour', headerShown: false  }}
       />
       <Tab.Screen
         name="Interventions"
         component={InterventionsScreen}
-        options={{ title: 'Interventions' }}
+        options={{ title: 'Interventions', headerShown: false }}
+      />
+      <Tab.Screen
+        name="Tickets"
+        component={TicketsScreen}
+        options={{ title: 'Tickets RMM', headerShown: false  }}
       />
       <Tab.Screen
         name="Customers"
         component={CustomersScreen}
-        options={{ title: 'Clients' }}
+        options={{ title: 'Clients', headerShown: false  }}
       />
       <Tab.Screen
         name="Projects"
         component={ProjectsScreen}
-        options={{ title: 'Projets' }}
+        options={{ title: 'Projets', headerShown: false  }}
       />
       {isAdmin && (
         <Tab.Screen
           name="Admin"
           component={AdminUsersScreen}
-          options={{ title: 'Administration' }}
+          options={{ title: 'Administration', headerShown: false  }}
         />
       )}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Profil' }}
+        options={{ title: 'Profil', headerShown: false  }}
       />
       {__DEV__ && (
         <Tab.Screen
@@ -218,22 +232,32 @@ const AppNavigator = () => {
             <Stack.Screen
               name="InterventionDetails"
               component={InterventionDetailsScreen}
-              options={{ title: 'Détail intervention', headerShown: true }}
+              options={{ title: 'Détail intervention', headerShown: false }}
+            />
+            <Stack.Screen
+              name="TicketDetails"
+              component={TicketDetailsScreen}
+              options={{ title: 'Détail ticket', headerShown: false }}
+            />
+            <Stack.Screen
+              name="ConvertTicket"
+              component={ConvertTicketScreen}
+              options={{ title: 'Convertir ticket', headerShown: false }}
             />
             <Stack.Screen
               name="CustomerDetails"
               component={CustomerDetailsScreen}
-              options={{ title: 'Détail client', headerShown: true }}
+              options={{ title: 'Détail client', headerShown: false }}
             />
             <Stack.Screen
               name="ProjectDetails"
               component={ProjectDetailsScreen}
-              options={{ title: 'Détail projet', headerShown: true }}
+              options={{ title: 'Détail projet', headerShown: false }}
             />
             <Stack.Screen
               name="UserForm"
               component={UserFormScreen}
-              options={{ title: 'Utilisateur', headerShown: true }}
+              options={{ title: 'Utilisateur', headerShown: false }}
             />
           </>
         )}

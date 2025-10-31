@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Query,
   Param,
   ParseIntPipe,
@@ -8,11 +9,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { TicketQueryService } from '../services/ticket-query.service';
+import { TicketsSyncService } from '../services/tickets-sync.service';
 import { TicketQueryDto } from '../dto/ticket-query.dto';
 
 @Controller('api/tickets')
 export class TicketsController {
-  constructor(private readonly ticketQueryService: TicketQueryService) {}
+  constructor(
+    private readonly ticketQueryService: TicketQueryService,
+    private readonly ticketsSyncService: TicketsSyncService,
+  ) {}
 
   /**
    * GET /api/tickets
@@ -95,6 +100,18 @@ export class TicketsController {
       );
     }
     return this.ticketQueryService.getStatsByPeriod(groupBy, queryDto);
+  }
+
+  /**
+   * POST /api/tickets/sync
+   * Synchronise tous les tickets depuis l'API NinjaOne vers la base de données locale
+   *
+   * Exemples:
+   * - POST /api/tickets/sync
+   */
+  @Post('sync')
+  async syncTickets() {
+    return this.ticketsSyncService.syncTickets();
   }
 
   /**

@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { InterventionService } from '../services/intervention.service';
 import { showToast } from '../utils/toast';
 import { hapticService } from '../services/haptic.service';
+import { base64ToFile, deleteTempFile } from '../utils/file.utils';
 
 interface SignaturePadProps {
   interventionId: string;
@@ -98,28 +99,25 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
       return;
     }
 
+    let tempFileUri: string | null = null;
+
     try {
       // Haptic feedback lourd pour action critique (enregistrement signature)
       await hapticService.heavy();
 
       setUploading(true);
 
-      // Convertir base64 en blob
-      const base64Data = signatureData.replace(/^data:image\/png;base64,/, '');
-      const blob = await fetch(`data:image/png;base64,${base64Data}`).then((res) =>
-        res.blob()
-      );
-
-      // Créer un fichier temporaire
-      const fileName = `signature_${Date.now()}.png`;
+      // Convertir la data URI base64 en fichier temporaire
+      const tempFile = await base64ToFile(signatureData, 'signature.png');
+      tempFileUri = tempFile.uri;
 
       // Upload vers le backend
       const result = await InterventionService.uploadSignature(
         interventionId,
         {
-          uri: signatureData,
-          name: fileName,
-          type: 'image/png',
+          uri: tempFile.uri,
+          name: tempFile.name,
+          type: tempFile.type,
         },
         signerName.trim()
       );
@@ -138,6 +136,11 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
       showToast('Erreur lors de l\'enregistrement de la signature', 'error');
     } finally {
       setUploading(false);
+
+      // Nettoyer le fichier temporaire
+      if (tempFileUri) {
+        await deleteTempFile(tempFileUri);
+      }
     }
   };
 
@@ -167,88 +170,93 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
         <Modal
           visible={visible}
           onDismiss={handleCloseModal}
-          contentContainerStyle={styles.modal}
         >
-          <Card>
-            <Card.Title title="Signature client" />
-            <Card.Content>
-              {/* Nom du signataire */}
-              <TextInput
-                label="Nom du signataire *"
-                value={signerName}
-                onChangeText={setSignerName}
-                mode="outlined"
-                style={styles.nameInput}
-                disabled={uploading}
-              />
-
-              {/* Canvas de signature */}
-              <View style={styles.canvasContainer}>
-                <Text variant="bodySmall" style={styles.instruction}>
-                  Signez dans le cadre ci-dessous
-                </Text>
-                <SignatureCanvas
-                  ref={signatureRef}
-                  onEnd={handleEnd}
-                  onOK={handleOK}
-                  descriptionText=""
-                  clearText="Effacer"
-                  confirmText="Valider"
-                  webStyle={webStyle}
-                  style={styles.canvas}
+          <View style={styles.modal}>
+            <Card>
+              <Card.Title title="Signature client" />
+              <Card.Content>
+                {/* Nom du signataire */}
+                <TextInput
+                  label="Nom du signataire *"
+                  value={signerName}
+                  onChangeText={setSignerName}
+                  mode="outlined"
+                  style={styles.nameInput}
+                  disabled={uploading}
                 />
-              </View>
 
-              {/* Preview signature */}
-              {signatureData && (
-                <View style={styles.previewContainer}>
-                  <Text variant="labelMedium" style={styles.previewLabel}>
-                    Aperçu de la signature :
+                {/* Canvas de signature */}
+                <View style={styles.canvasContainer}>
+                  <Text variant="bodySmall" style={styles.instruction}>
+                    Signez dans le cadre ci-dessous
                   </Text>
-                  <Image
-                    source={{ uri: signatureData }}
-                    style={styles.previewImage}
-                    resizeMode="contain"
+                  <SignatureCanvas
+                    ref={signatureRef}
+                    onEnd={handleEnd}
+                    onOK={handleOK}
+                    descriptionText=""
+                    clearText="Effacer"
+                    confirmText="Valider"
+                    webStyle={webStyle}
+                    style={styles.canvas}
+                    autoClear={true}
+                    imageType="image/png"
+                    penColor="#000000"
+                    backgroundColor="#ffffff"
                   />
-                  <View style={styles.previewInfo}>
-                    <Ionicons name="checkmark-circle" size={16} color="#4caf50" />
-                    <Text variant="bodySmall" style={styles.previewText}>
-                      Signature capturée - Vous pouvez valider
-                    </Text>
-                  </View>
                 </View>
-              )}
 
-              {/* Actions */}
-              <View style={styles.actions}>
-                <Button
-                  mode="outlined"
-                  onPress={handleClear}
-                  disabled={uploading}
-                  style={styles.actionButton}
-                >
-                  Effacer
-                </Button>
-                <Button
-                  mode="outlined"
-                  onPress={handleCloseModal}
-                  disabled={uploading}
-                  style={styles.actionButton}
-                >
-                  Annuler
-                </Button>
-                <Button
-                  mode="contained"
-                  onPress={handleUpload}
-                  loading={uploading}
-                  disabled={uploading || !signatureData}
-                  style={styles.actionButton}
-                >
-                  Valider
-                </Button>
-              </View>
-            </Card.Content>
-          </Card>
+                {/* Preview signature */}
+                {signatureData && (
+                  <View style={styles.previewContainer}>
+                    <Text variant="labelMedium" style={styles.previewLabel}>
+                      Aperçu de la signature :
+                    </Text>
+                    <Image
+                      source={{ uri: signatureData }}
+                      style={styles.previewImage}
+                      resizeMode="contain"
+                    />
+                    <View style={styles.previewInfo}>
+                      <Ionicons name="checkmark-circle" size={16} color="#4caf50" />
+                      <Text variant="bodySmall" style={styles.previewText}>
+                        Signature capturée - Vous pouvez valider
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Actions */}
+                <View style={styles.actions}>
+                  <Button
+                    mode="outlined"
+                    onPress={handleClear}
+                    disabled={uploading}
+                    style={styles.actionButton}
+                  >
+                    Effacer
+                  </Button>
+                  <Button
+                    mode="outlined"
+                    onPress={handleCloseModal}
+                    disabled={uploading}
+                    style={styles.actionButton}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={handleUpload}
+                    loading={uploading}
+                    disabled={uploading || !signatureData}
+                    style={styles.actionButton}
+                  >
+                    Valider
+                  </Button>
+                </View>
+              </Card.Content>
+            </Card>
+          </View>
         </Modal>
       </Portal>
     </>
@@ -288,12 +296,16 @@ const styles = StyleSheet.create({
   },
   modal: {
     padding: 20,
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   nameInput: {
     marginBottom: 16,
   },
   canvasContainer: {
     marginBottom: 16,
+    height: 400,
   },
   instruction: {
     textAlign: 'center',
@@ -301,9 +313,10 @@ const styles = StyleSheet.create({
     color: '#757575',
   },
   canvas: {
-    height: 300,
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 8,
+    minHeight: 350,
   },
   actions: {
     flexDirection: 'row',

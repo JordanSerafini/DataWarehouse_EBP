@@ -193,6 +193,15 @@ export class ActivityDto {
   creatorColleagueId?: string;
 
   @ApiProperty({
+    description: 'Nom complet du créateur',
+    example: 'Jean Dupont',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  creatorName?: string;
+
+  @ApiProperty({
     description: 'ID du document lié',
     example: '550e8400-e29b-41d4-a716-446655440000',
     required: false,
@@ -334,4 +343,88 @@ export class ActivityStatsDto {
     example: 'Appel téléphonique',
   })
   mostFrequentType: string;
+}
+
+/**
+ * DTO pour créer une note/activité
+ */
+export class CreateActivityDto {
+  @ApiProperty({
+    description: 'Titre/Caption de l\'activité',
+    example: 'Note intervention du 31/10/2025',
+  })
+  @IsString()
+  caption: string;
+
+  @ApiProperty({
+    description: 'Catégorie d\'activité',
+    example: 5,
+    enum: ActivityCategory,
+    default: ActivityCategory.NOTE,
+  })
+  @IsEnum(ActivityCategory)
+  activityCategory: ActivityCategory;
+
+  @ApiProperty({
+    description: 'Notes (texte clair)',
+    example: 'Client satisfait de l\'intervention. RAS.',
+  })
+  @IsString()
+  notesClear: string;
+
+  @ApiProperty({
+    description: 'ID de l\'intervention liée (ScheduleEventId)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  scheduleEventId?: string;
+
+  @ApiProperty({
+    description: 'ID du client',
+    example: 'C001234',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  customerId?: string;
+
+  @ApiProperty({
+    description: 'ID du collaborateur assigné',
+    example: 'TECH001',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  colleagueId?: string;
+
+  @ApiProperty({
+    description: 'ID de l\'affaire liée',
+    example: 'DEAL001',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  dealId?: string;
+
+  @ApiProperty({
+    description: 'Date de début (défaut: maintenant)',
+    example: '2025-10-31T14:30:00Z',
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  startDateTime?: Date;
+
+  @ApiProperty({
+    description: 'Date de fin',
+    example: '2025-10-31T15:00:00Z',
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  endDateTime?: Date;
 }

@@ -13,7 +13,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, AuthTokens } from '../types/user.types';
+import { User, AuthTokens, mapBackendRole } from '../types/user.types';
 import { apiService } from '../services/api.service';
 import { BiometricService, BiometricCapabilities } from '../services/biometric.service';
 import { SecureStorageService } from '../services/secureStorage.service';
@@ -109,8 +109,9 @@ export const useAuthStore = create<AuthState>()(
             id: response.user.id,
             email: response.user.email,
             fullName: response.user.fullName,
-            role: response.user.role,
+            role: mapBackendRole(response.user.role), // Mapper snake_case → SCREAMING_SNAKE_CASE
             colleagueId: response.user.colleagueId,
+            ninjaOneTechnicianId: response.user.ninjaOneTechnicianId,
             permissions: response.user.permissions,
             isActive: true,
           };

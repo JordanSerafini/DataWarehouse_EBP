@@ -48,6 +48,62 @@ interface InterventionRow {
   longitude: string | null;
   createdAt: Date;
   updatedAt: Date;
+  // Coûts & Facturation
+  salePriceVatExcluded: number | null;
+  netAmountVatExcluded: number | null;
+  hourlyCostPrice: number | null;
+  costAmount: number | null;
+  predictedCostAmount: number | null;
+  toInvoice: boolean | null;
+  invoiceCustomerId: string | null;
+  invoiceColleagueId: string | null;
+  invoiceId: string | null;
+  // Maintenance
+  maintenanceReference: string | null;
+  maintenanceContractId: string | null;
+  maintenanceIncidentId: string | null;
+  maintenanceCustomerProductId: string | null;
+  maintenanceTravelDuration: number | null;
+  maintenanceContractHoursDecremented: number | null;
+  maintenanceNextEventDate: Date | null;
+  // Projet/Chantier/Affaire
+  constructionSiteId: string | null;
+  constructionSiteName: string | null;
+  dealId: string | null;
+  dealName: string | null;
+  isProject: boolean | null;
+  globalPercentComplete: number | null;
+  // Équipements & Articles
+  equipmentId: string | null;
+  equipmentName: string | null;
+  itemId: string | null;
+  itemName: string | null;
+  quantity: number | null;
+  // Documents
+  saleDocumentId: string | null;
+  saleDocumentLineId: string | null;
+  purchaseDocumentId: string | null;
+  stockDocumentId: string | null;
+  hasAssociatedFiles: boolean | null;
+  // Champs personnalisés métier
+  customTaskType: string | null;
+  customTheme: string | null;
+  customServices: string | null;
+  customActivity: string | null;
+  customSoftware: string | null;
+  customSupplier: string | null;
+  customCommercialTheme: string | null;
+  isUrgent: boolean | null;
+  customPlannedDuration: number | null;
+  customTimeClient: number | null;
+  customTimeInternal: number | null;
+  customTimeTravel: number | null;
+  customTimeRelational: number | null;
+  // Sous-traitant et créateur
+  subContractorId: string | null;
+  subContractorName: string | null;
+  creatorColleagueId: string | null;
+  creatorName: string | null;
   source_type: 'schedule_event' | 'incident';
 }
 
@@ -99,11 +155,73 @@ export class InterventionsService {
       se."Address_Longitude" as longitude,
       se."sysCreatedDate" as "createdAt",
       se."sysModifiedDate" as "updatedAt",
+      -- Coûts & Facturation
+      se."SalePriceVatExcluded" as "salePriceVatExcluded",
+      se."NetAmountVatExcluded" as "netAmountVatExcluded",
+      se."HourlyCostPrice" as "hourlyCostPrice",
+      se."CostAmount" as "costAmount",
+      se."PredictedCostAmount" as "predictedCostAmount",
+      se."ToInvoice" as "toInvoice",
+      se."InvoiceCustomerId" as "invoiceCustomerId",
+      se."InvoiceColleagueId" as "invoiceColleagueId",
+      se."InvoiceId"::text as "invoiceId",
+      -- Maintenance
+      se."Maintenance_Reference" as "maintenanceReference",
+      se."Maintenance_ContractId" as "maintenanceContractId",
+      se."Maintenance_IncidentId" as "maintenanceIncidentId",
+      se."Maintenance_CustomerProductId" as "maintenanceCustomerProductId",
+      se."Maintenance_TravelDuration" as "maintenanceTravelDuration",
+      se."Maintenance_ContractHoursNumberDecremented" as "maintenanceContractHoursDecremented",
+      se."Maintenance_NextEventDate" as "maintenanceNextEventDate",
+      -- Projet/Chantier/Affaire
+      se."ConstructionSiteId" as "constructionSiteId",
+      cs."Caption" as "constructionSiteName",
+      se."DealId" as "dealId",
+      d."Caption" as "dealName",
+      se."xx_Projet" as "isProject",
+      se."GlobalPercentComplete" as "globalPercentComplete",
+      -- Équipements & Articles
+      se."EquipmentId" as "equipmentId",
+      eq."Caption" as "equipmentName",
+      se."ItemId" as "itemId",
+      itm."Caption" as "itemName",
+      se."Quantity" as "quantity",
+      -- Documents
+      se."SaleDocumentId"::text as "saleDocumentId",
+      se."SaleDocumentLineid"::text as "saleDocumentLineId",
+      se."PurchaseDocumentId"::text as "purchaseDocumentId",
+      se."StockDocumentId"::text as "stockDocumentId",
+      se."HasAssociatedFiles" as "hasAssociatedFiles",
+      -- Champs personnalisés métier
+      se."xx_Type_Tache" as "customTaskType",
+      se."xx_Theme" as "customTheme",
+      se."xx_Services" as "customServices",
+      se."xx_Activite" as "customActivity",
+      se."xx_Logiciel" as "customSoftware",
+      se."xx_Fournisseur" as "customSupplier",
+      se."xx_Theme_Commercial" as "customCommercialTheme",
+      se."xx_URGENT" as "isUrgent",
+      se."xx_Duree_Pevue" as "customPlannedDuration",
+      se."xx_Total_Temps_Realise_Client" as "customTimeClient",
+      se."xx_Total_Temps_Realise_Interne" as "customTimeInternal",
+      se."xx_Total_Temps_Realise_Trajet" as "customTimeTravel",
+      se."xx_Total_Temps_Realise_Relationnel" as "customTimeRelational",
+      -- Sous-traitant et créateur
+      se."SubContractorId" as "subContractorId",
+      supp."Name" as "subContractorName",
+      se."CreatorColleagueId" as "creatorColleagueId",
+      creator."Contact_Name" as "creatorName",
       'schedule_event' as source_type
     FROM public."ScheduleEvent" se
     LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
     LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
     LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+    LEFT JOIN public."ConstructionSite" cs ON cs."Id" = se."ConstructionSiteId"
+    LEFT JOIN public."Deal" d ON d."Id" = se."DealId"
+    LEFT JOIN public."Equipment" eq ON eq."Id" = se."EquipmentId"
+    LEFT JOIN public."Item" itm ON itm."Id" = se."ItemId"
+    LEFT JOIN public."Supplier" supp ON supp."Id" = se."SubContractorId"
+    LEFT JOIN public."Colleague" creator ON creator."Id" = se."CreatorColleagueId"
 
     UNION ALL
 
@@ -135,6 +253,62 @@ export class InterventionsService {
       NULL as longitude,
       i."sysCreatedDate" as "createdAt",
       i."sysModifiedDate" as "updatedAt",
+      -- Coûts & Facturation (NULL pour Incident)
+      NULL as "salePriceVatExcluded",
+      NULL as "netAmountVatExcluded",
+      NULL as "hourlyCostPrice",
+      NULL as "costAmount",
+      NULL as "predictedCostAmount",
+      NULL as "toInvoice",
+      NULL as "invoiceCustomerId",
+      NULL as "invoiceColleagueId",
+      NULL as "invoiceId",
+      -- Maintenance (NULL pour Incident)
+      NULL as "maintenanceReference",
+      NULL as "maintenanceContractId",
+      NULL as "maintenanceIncidentId",
+      NULL as "maintenanceCustomerProductId",
+      NULL as "maintenanceTravelDuration",
+      NULL as "maintenanceContractHoursDecremented",
+      NULL as "maintenanceNextEventDate",
+      -- Projet/Chantier/Affaire (NULL pour Incident)
+      NULL as "constructionSiteId",
+      NULL as "constructionSiteName",
+      NULL as "dealId",
+      NULL as "dealName",
+      NULL as "isProject",
+      NULL as "globalPercentComplete",
+      -- Équipements & Articles (NULL pour Incident)
+      NULL as "equipmentId",
+      NULL as "equipmentName",
+      NULL as "itemId",
+      NULL as "itemName",
+      NULL as "quantity",
+      -- Documents (NULL pour Incident)
+      NULL as "saleDocumentId",
+      NULL as "saleDocumentLineId",
+      NULL as "purchaseDocumentId",
+      NULL as "stockDocumentId",
+      NULL as "hasAssociatedFiles",
+      -- Champs personnalisés métier (NULL pour Incident)
+      NULL as "customTaskType",
+      NULL as "customTheme",
+      NULL as "customServices",
+      NULL as "customActivity",
+      NULL as "customSoftware",
+      NULL as "customSupplier",
+      NULL as "customCommercialTheme",
+      NULL as "isUrgent",
+      NULL as "customPlannedDuration",
+      NULL as "customTimeClient",
+      NULL as "customTimeInternal",
+      NULL as "customTimeTravel",
+      NULL as "customTimeRelational",
+      -- Sous-traitant et créateur (NULL pour Incident)
+      NULL as "subContractorId",
+      NULL as "subContractorName",
+      i."CreatorColleagueId" as "creatorColleagueId",
+      col2."Contact_Name" as "creatorName",
       'incident' as source_type
     FROM public."Incident" i
     LEFT JOIN public."Colleague" col2 ON col2."Id" = i."CreatorColleagueId"
@@ -201,11 +375,12 @@ export class InterventionsService {
     this.logger.log(`Fetching intervention: ${interventionId}`);
 
     try {
+      // Chercher par UUID (id) OU par ScheduleEventNumber (reference)
       const sql = `
         SELECT * FROM (
           ${InterventionsService.INTERVENTION_BASE_QUERY}
         ) AS interventions
-        WHERE id = $1
+        WHERE id = $1 OR reference = $1
         LIMIT 1
       `;
 
@@ -303,8 +478,10 @@ export class InterventionsService {
     this.logger.log(`Starting intervention ${interventionId} by technician ${technicianId}`);
 
     try {
-      // Vérifier que l'intervention existe et appartient au technicien
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
       // Vérifier qu'aucune intervention n'est déjà en cours pour ce technicien
       // EventState = 1 dans EBP signifie IN_PROGRESS
@@ -317,7 +494,7 @@ export class InterventionsService {
           AND "Id" != $2
         LIMIT 1
         `,
-        [technicianId, interventionId],
+        [technicianId, actualInterventionId],
       );
 
       if (inProgressCheck.rows.length > 0) {
@@ -328,34 +505,62 @@ export class InterventionsService {
         );
       }
 
-      // Mettre à jour le statut et la date de début
-      // EventState = 1 dans EBP signifie IN_PROGRESS
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET
-          "EventState" = 1,
-          "ActualStartDate" = $2,
-          "sysModifiedDate" = NOW()
-        WHERE "Id" = $3
-        `,
-        [new Date(), interventionId],
-      );
+      if (sourceType === 'incident') {
+        // Démarrer un Incident
+        // Status = 1 pour IN_PROGRESS (à vérifier selon la convention EBP)
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET
+            "Status" = 1,
+            "StartDate" = $1,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [new Date(), actualInterventionId],
+        );
 
-      // Ajouter notes de démarrage si fournies
-      if (dto.notes) {
+        // Ajouter notes de démarrage si fournies
+        if (dto.notes) {
+          await this.databaseService.query(
+            `
+            UPDATE public."Incident"
+            SET "DescriptionClear" = COALESCE("DescriptionClear", '') || $1
+            WHERE "Id" = $2
+            `,
+            [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
+          );
+        }
+      } else {
+        // Démarrer un ScheduleEvent
+        // EventState = 1 dans EBP signifie IN_PROGRESS
         await this.databaseService.query(
           `
           UPDATE public."ScheduleEvent"
-          SET "NotesClear" = COALESCE("NotesClear", '') || $1
+          SET
+            "EventState" = 1,
+            "ActualStartDate" = $1,
+            "sysModifiedDate" = NOW()
           WHERE "Id" = $2
           `,
-          [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, interventionId],
+          [new Date(), actualInterventionId],
         );
+
+        // Ajouter notes de démarrage si fournies
+        if (dto.notes) {
+          await this.databaseService.query(
+            `
+            UPDATE public."ScheduleEvent"
+            SET "NotesClear" = COALESCE("NotesClear", '') || $1
+            WHERE "Id" = $2
+            `,
+            [`\n[${new Date().toISOString()}] Démarrage: ${dto.notes}`, actualInterventionId],
+          );
+        }
       }
 
-      this.logger.log(`Intervention ${interventionId} started successfully`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Intervention ${actualInterventionId} started successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error starting intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors du démarrage de l\'intervention');
@@ -373,34 +578,59 @@ export class InterventionsService {
     this.logger.log(`Completing intervention ${interventionId} by technician ${technicianId}`);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
-      // Mettre à jour l'intervention
-      // EventState = 2 dans EBP signifie COMPLETED
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET
-          "EventState" = 2,
-          "EndDate" = $1,
-          "AchievedDuration_DurationInHours" = $2,
-          "Maintenance_TravelDuration" = $3,
-          "Maintenance_InterventionReport" = $4,
-          "sysModifiedDate" = NOW()
-        WHERE "Id" = $5
-        `,
-        [
-          new Date(),
-          dto.timeSpentHours,
-          dto.travelDuration || 0,
-          dto.report,
-          interventionId,
-        ],
-      );
+      if (sourceType === 'incident') {
+        // Clôturer un Incident
+        // Status = 2 pour COMPLETED (à vérifier selon la convention EBP)
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET
+            "Status" = 2,
+            "EndDate" = $1,
+            "AccomplishedDuration" = $2,
+            "DescriptionClear" = COALESCE("DescriptionClear", '') || $3,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $4
+          `,
+          [
+            new Date(),
+            dto.timeSpentHours,
+            `\n[${new Date().toISOString()}] Rapport: ${dto.report}`,
+            actualInterventionId,
+          ],
+        );
+      } else {
+        // Clôturer un ScheduleEvent
+        // EventState = 2 dans EBP signifie COMPLETED
+        await this.databaseService.query(
+          `
+          UPDATE public."ScheduleEvent"
+          SET
+            "EventState" = 2,
+            "EndDate" = $1,
+            "AchievedDuration_DurationInHours" = $2,
+            "Maintenance_TravelDuration" = $3,
+            "Maintenance_InterventionReport" = $4,
+            "sysModifiedDate" = NOW()
+          WHERE "Id" = $5
+          `,
+          [
+            new Date(),
+            dto.timeSpentHours,
+            dto.travelDuration || 0,
+            dto.report,
+            actualInterventionId,
+          ],
+        );
+      }
 
-      this.logger.log(`Intervention ${interventionId} completed successfully`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Intervention ${actualInterventionId} completed successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error completing intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la clôture de l\'intervention');
@@ -414,56 +644,107 @@ export class InterventionsService {
     interventionId: string,
     dto: UpdateInterventionDto,
   ): Promise<InterventionDto> {
-    this.logger.log(`Updating intervention ${interventionId}`);
+    this.logger.log(`Updating intervention ${interventionId}`, dto);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
-      // Construire la requête UPDATE dynamiquement
+      // Construire la requête UPDATE dynamiquement selon le type d'intervention
       const updates: string[] = [];
       const values: (number | string | Date)[] = [];
       let paramIndex = 1;
+      let tableName: string;
 
-      if (dto.status !== undefined) {
-        updates.push(`"EventState" = $${paramIndex++}`);
-        values.push(dto.status);
-      }
+      if (sourceType === 'incident') {
+        // Mise à jour d'un Incident
+        tableName = 'public."Incident"';
 
-      if (dto.notes !== undefined) {
-        updates.push(`"NotesClear" = $${paramIndex++}`);
-        values.push(dto.notes);
-      }
+        if (dto.status !== undefined) {
+          updates.push(`"Status" = $${paramIndex++}`);
+          values.push(dto.status);
+        }
 
-      if (dto.achievedDuration !== undefined) {
-        updates.push(`"AchievedDuration_DurationInHours" = $${paramIndex++}`);
-        values.push(dto.achievedDuration);
-      }
+        if (dto.notes !== undefined) {
+          updates.push(`"DescriptionClear" = $${paramIndex++}`);
+          values.push(dto.notes);
+        }
 
-      if (dto.actualStartDate !== undefined) {
-        updates.push(`"ActualStartDate" = $${paramIndex++}`);
-        values.push(dto.actualStartDate);
-      }
+        if (dto.achievedDuration !== undefined) {
+          updates.push(`"AccomplishedDuration" = $${paramIndex++}`);
+          values.push(dto.achievedDuration);
+        }
 
-      if (dto.actualEndDate !== undefined) {
-        updates.push(`"EndDate" = $${paramIndex++}`);
-        values.push(dto.actualEndDate);
+        if (dto.scheduledDate !== undefined) {
+          updates.push(`"StartDate" = $${paramIndex++}`);
+          values.push(dto.scheduledDate);
+        }
+
+        if (dto.actualEndDate !== undefined) {
+          updates.push(`"EndDate" = $${paramIndex++}`);
+          values.push(dto.actualEndDate);
+        }
+
+        // Les Incidents n'ont pas de technicianId assignable directement
+        // Ils ont CreatorColleagueId, mais on ne le modifie pas
+
+      } else {
+        // Mise à jour d'un ScheduleEvent
+        tableName = 'public."ScheduleEvent"';
+
+        if (dto.status !== undefined) {
+          updates.push(`"EventState" = $${paramIndex++}`);
+          values.push(dto.status);
+        }
+
+        if (dto.notes !== undefined) {
+          updates.push(`"NotesClear" = $${paramIndex++}`);
+          values.push(dto.notes);
+        }
+
+        if (dto.achievedDuration !== undefined) {
+          updates.push(`"AchievedDuration_DurationInHours" = $${paramIndex++}`);
+          values.push(dto.achievedDuration);
+        }
+
+        if (dto.actualStartDate !== undefined) {
+          updates.push(`"ActualStartDate" = $${paramIndex++}`);
+          values.push(dto.actualStartDate);
+        }
+
+        if (dto.actualEndDate !== undefined) {
+          updates.push(`"EndDate" = $${paramIndex++}`);
+          values.push(dto.actualEndDate);
+        }
+
+        if (dto.scheduledDate !== undefined) {
+          updates.push(`"StartDateTime" = $${paramIndex++}`);
+          values.push(dto.scheduledDate);
+        }
+
+        if (dto.technicianId !== undefined) {
+          updates.push(`"ColleagueId" = $${paramIndex++}`);
+          values.push(dto.technicianId);
+        }
       }
 
       if (updates.length === 0) {
-        return this.getInterventionById(interventionId);
+        this.logger.log(`No updates to perform for intervention ${interventionId}`);
+        return intervention;
       }
 
       updates.push(`"sysModifiedDate" = NOW()`);
-      values.push(interventionId);
+      values.push(actualInterventionId); // Utiliser l'ID réel (UUID ou code)
 
-      await this.databaseService.query(
-        `UPDATE public."ScheduleEvent" SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`,
-        values,
-      );
+      const updateQuery = `UPDATE ${tableName} SET ${updates.join(', ')} WHERE "Id" = $${paramIndex}`;
+      this.logger.log(`Executing update query: ${updateQuery}`, values);
 
-      this.logger.log(`Intervention ${interventionId} updated successfully`);
-      return this.getInterventionById(interventionId);
+      await this.databaseService.query(updateQuery, values);
+
+      this.logger.log(`Intervention ${actualInterventionId} updated successfully`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error updating intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la mise à jour de l\'intervention');
@@ -480,25 +761,40 @@ export class InterventionsService {
     this.logger.log(`Updating time spent for intervention ${interventionId}: ${timeSpentSeconds}s`);
 
     try {
-      // Vérifier que l'intervention existe
-      await this.getInterventionById(interventionId);
+      // Vérifier que l'intervention existe et récupérer son UUID réel
+      const intervention = await this.getInterventionById(interventionId);
+      const actualInterventionId = intervention.id; // UUID réel ou code pour Incident
+      const sourceType = intervention.sourceType;
 
       // Convertir les secondes en heures (format EBP)
       const timeSpentHours = timeSpentSeconds / 3600;
 
-      // Mettre à jour le champ AchievedDuration_DurationInHours
-      await this.databaseService.query(
-        `
-        UPDATE public."ScheduleEvent"
-        SET "AchievedDuration_DurationInHours" = $1,
-            "sysModifiedDate" = NOW()
-        WHERE "Id" = $2
-        `,
-        [timeSpentHours, interventionId],
-      );
+      if (sourceType === 'incident') {
+        // Mettre à jour le champ AccomplishedDuration pour Incident
+        await this.databaseService.query(
+          `
+          UPDATE public."Incident"
+          SET "AccomplishedDuration" = $1,
+              "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [timeSpentHours, actualInterventionId],
+        );
+      } else {
+        // Mettre à jour le champ AchievedDuration_DurationInHours pour ScheduleEvent
+        await this.databaseService.query(
+          `
+          UPDATE public."ScheduleEvent"
+          SET "AchievedDuration_DurationInHours" = $1,
+              "sysModifiedDate" = NOW()
+          WHERE "Id" = $2
+          `,
+          [timeSpentHours, actualInterventionId],
+        );
+      }
 
-      this.logger.log(`Time spent updated successfully for intervention ${interventionId}`);
-      return this.getInterventionById(interventionId);
+      this.logger.log(`Time spent updated successfully for intervention ${actualInterventionId}`);
+      return this.getInterventionById(actualInterventionId);
     } catch (error) {
       this.logger.error(`Error updating time spent for intervention ${interventionId}:`, error);
       throw new BadRequestException('Erreur lors de la mise à jour du temps passé');
@@ -617,6 +913,65 @@ export class InterventionsService {
       notes: row.notes || undefined,
       createdAt: row.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: row.updatedAt?.toISOString() || undefined,
+      // Coûts & Facturation (traiter 0 comme undefined pour ne pas afficher des valeurs vides)
+      salePriceVatExcluded: (row.salePriceVatExcluded !== null && Number(row.salePriceVatExcluded) !== 0) ? Number(row.salePriceVatExcluded) : undefined,
+      netAmountVatExcluded: (row.netAmountVatExcluded !== null && Number(row.netAmountVatExcluded) !== 0) ? Number(row.netAmountVatExcluded) : undefined,
+      hourlyCostPrice: (row.hourlyCostPrice !== null && Number(row.hourlyCostPrice) !== 0) ? Number(row.hourlyCostPrice) : undefined,
+      costAmount: (row.costAmount !== null && Number(row.costAmount) !== 0) ? Number(row.costAmount) : undefined,
+      predictedCostAmount: (row.predictedCostAmount !== null && Number(row.predictedCostAmount) !== 0) ? Number(row.predictedCostAmount) : undefined,
+      toInvoice: row.toInvoice || undefined,
+      invoiceCustomerId: row.invoiceCustomerId || undefined,
+      invoiceColleagueId: row.invoiceColleagueId || undefined,
+      invoiceId: row.invoiceId || undefined,
+      // Maintenance
+      maintenanceReference: row.maintenanceReference?.trim() || undefined,
+      maintenanceContractId: row.maintenanceContractId?.trim() || undefined,
+      maintenanceIncidentId: row.maintenanceIncidentId?.trim() || undefined,
+      maintenanceCustomerProductId: row.maintenanceCustomerProductId?.trim() || undefined,
+      maintenanceInterventionReport: row.report?.trim() || undefined,
+      maintenanceTravelDuration: (row.maintenanceTravelDuration !== null && Number(row.maintenanceTravelDuration) !== 0) ? Number(row.maintenanceTravelDuration) : undefined,
+      maintenanceContractHoursDecremented: (row.maintenanceContractHoursDecremented !== null && Number(row.maintenanceContractHoursDecremented) !== 0) ? Number(row.maintenanceContractHoursDecremented) : undefined,
+      maintenanceNextEventDate: row.maintenanceNextEventDate?.toISOString() || undefined,
+      // Projet/Chantier/Affaire
+      constructionSiteId: row.constructionSiteId?.trim() || undefined,
+      constructionSiteName: row.constructionSiteName?.trim() || undefined,
+      dealId: row.dealId?.trim() || undefined,
+      dealName: row.dealName?.trim() || undefined,
+      isProject: row.isProject || undefined,
+      globalPercentComplete: (row.globalPercentComplete !== null && Number(row.globalPercentComplete) !== 0) ? Number(row.globalPercentComplete) : undefined,
+      // Équipements & Articles
+      equipmentId: row.equipmentId?.trim() || undefined,
+      equipmentName: row.equipmentName?.trim() || undefined,
+      itemId: row.itemId?.trim() || undefined,
+      itemName: row.itemName?.trim() || undefined,
+      quantity: (row.quantity !== null && Number(row.quantity) !== 0) ? Number(row.quantity) : undefined,
+      // Documents
+      saleDocumentId: row.saleDocumentId?.trim() || undefined,
+      saleDocumentLineId: row.saleDocumentLineId?.trim() || undefined,
+      purchaseDocumentId: row.purchaseDocumentId?.trim() || undefined,
+      stockDocumentId: row.stockDocumentId?.trim() || undefined,
+      hasAssociatedFiles: row.hasAssociatedFiles || undefined,
+      // Champs personnalisés métier
+      customTaskType: row.customTaskType?.trim() || undefined,
+      customTheme: row.customTheme?.trim() || undefined,
+      customServices: row.customServices?.trim() || undefined,
+      customActivity: row.customActivity?.trim() || undefined,
+      customSoftware: row.customSoftware?.trim() || undefined,
+      customSupplier: row.customSupplier?.trim() || undefined,
+      customCommercialTheme: row.customCommercialTheme?.trim() || undefined,
+      isUrgent: row.isUrgent || undefined,
+      customPlannedDuration: (row.customPlannedDuration !== null && Number(row.customPlannedDuration) !== 0) ? Number(row.customPlannedDuration) : undefined,
+      customTimeClient: (row.customTimeClient !== null && Number(row.customTimeClient) !== 0) ? Number(row.customTimeClient) : undefined,
+      customTimeInternal: (row.customTimeInternal !== null && Number(row.customTimeInternal) !== 0) ? Number(row.customTimeInternal) : undefined,
+      customTimeTravel: (row.customTimeTravel !== null && Number(row.customTimeTravel) !== 0) ? Number(row.customTimeTravel) : undefined,
+      customTimeRelational: (row.customTimeRelational !== null && Number(row.customTimeRelational) !== 0) ? Number(row.customTimeRelational) : undefined,
+      // Sous-traitant et créateur
+      subContractorId: row.subContractorId?.trim() || undefined,
+      subContractorName: row.subContractorName?.trim() || undefined,
+      creatorColleagueId: row.creatorColleagueId?.trim() || undefined,
+      creatorName: row.creatorName?.trim() || undefined,
+      // Type de source
+      sourceType: row.source_type,
     };
   }
 

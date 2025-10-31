@@ -72,6 +72,50 @@ export class CustomerDto {
   @IsDate()
   @IsOptional()
   modifiedAt?: Date;
+
+  // ============================================================================
+  // DONNÉES FINANCIÈRES (visibles uniquement pour bureau/commerciaux/admin)
+  // ============================================================================
+
+  @ApiProperty({
+    description: 'Encours autorisé (limite crédit)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  allowedAmount?: number;
+
+  @ApiProperty({
+    description: 'Encours actuel (montant dû)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  currentAmount?: number;
+
+  @ApiProperty({
+    description: 'Montant de dépassement',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  exceedAmount?: number;
+
+  @ApiProperty({
+    description: 'Statut actif (0=actif, 1=inactif)',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  activeState?: number;
+
+  @ApiProperty({
+    description: 'ID du commercial assigné',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  colleagueId?: string;
 }
 
 /**
@@ -167,4 +211,33 @@ export class CustomerSummaryDto {
   @ApiProperty({ description: 'Montant total facturé' })
   @IsNumber()
   totalRevenue: number;
+
+  // ============================================================================
+  // DONNÉES D'ACTIVITÉ & INSIGHTS
+  // ============================================================================
+
+  @ApiProperty({
+    description: 'Date de la dernière intervention',
+    required: false,
+  })
+  @IsDate()
+  @IsOptional()
+  lastInterventionDate?: Date;
+
+  @ApiProperty({
+    description: 'Nombre de jours depuis la dernière intervention',
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  daysSinceLastIntervention?: number;
+
+  @ApiProperty({
+    description: 'Score de santé client (0-100)',
+    example: 85,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  customerHealthScore?: number;
 }

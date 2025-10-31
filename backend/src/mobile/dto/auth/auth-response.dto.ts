@@ -35,6 +35,13 @@ export class UserInfoDto {
   colleagueId?: string;
 
   @ApiProperty({
+    description: 'ID du technicien dans NinjaOne RMM (si applicable)',
+    example: 14,
+    required: false,
+  })
+  ninjaOneTechnicianId?: number;
+
+  @ApiProperty({
     description: 'Permissions',
     example: ['users.read', 'users.create'],
   })

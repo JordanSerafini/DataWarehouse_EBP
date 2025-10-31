@@ -34,7 +34,7 @@ import { apiService } from '../../services/api.service';
 import { uploadService } from '../../services/upload.service';
 import toast from '../../utils/toast';
 import { logger } from '../../utils/logger';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import PhotoCapture, { CapturedPhoto } from '../../components/PhotoCapture';
 import SignatureCanvas, { SignatureData } from '../../components/SignatureCanvas';
 
@@ -44,7 +44,7 @@ const InterventionDetailsScreen = () => {
   const route = useRoute<InterventionDetailsRouteProp>();
   const navigation = useNavigation();
   const { interventionId } = route.params;
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
 
   const [intervention, setIntervention] = useState<Intervention | null>(null);
   const [loading, setLoading] = useState(true);

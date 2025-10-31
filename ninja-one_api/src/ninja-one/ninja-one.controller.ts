@@ -136,4 +136,14 @@ export class NinjaOneController {
   async syncAll() {
     return this.databaseSyncService.syncAll();
   }
+
+  // Test endpoint pour voir la structure des tickets bruts
+  @Get('tickets/raw')
+  async getTicketsRaw() {
+    const tickets = await this.ninjaOneService.getTickets();
+    return {
+      count: tickets.length,
+      sample: tickets.slice(0, 2), // Retourne 2 premiers tickets pour test
+    };
+  }
 }

@@ -41,6 +41,10 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { hapticService } from '../../services/haptic.service';
 import { SkeletonCustomerDetails } from '../../components/ui/SkeletonLoaders';
+import CustomerHealthScore from '../../components/customer/CustomerHealthScore';
+import FinancialHealthCard from '../../components/customer/FinancialHealthCard';
+import AIInsightsCard from '../../components/customer/AIInsightsCard';
+import { FAB } from 'react-native-paper';
 
 type CustomerDetailsScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -60,6 +64,11 @@ const CustomerDetailsScreen = () => {
   const [summary, setSummary] = useState<CustomerSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // État pour la section dépliable des interventions
+  const [isInterventionsExpanded, setIsInterventionsExpanded] = useState(false);
+  const [allInterventions, setAllInterventions] = useState<CustomerHistoryItem[]>([]);
+  const [loadingAllInterventions, setLoadingAllInterventions] = useState(false);
 
   /**
    * Charger le résumé client
@@ -89,7 +98,13 @@ const CustomerDetailsScreen = () => {
     setRefreshing(true);
     // Haptic feedback moyen pour refresh
     await hapticService.medium();
+    // Réinitialiser les interventions chargées pour forcer un rechargement
+    setAllInterventions([]);
     await loadCustomerSummary();
+    // Si la section est dépliée, recharger les interventions
+    if (isInterventionsExpanded) {
+      await loadAllInterventions();
+    }
     // Haptic feedback léger à la fin du refresh
     await hapticService.light();
   };
@@ -153,6 +168,43 @@ const CustomerDetailsScreen = () => {
   };
 
   /**
+   * Charger toutes les interventions (au dépliage de la section)
+   */
+  const loadAllInterventions = async () => {
+    if (allInterventions.length > 0) {
+      // Déjà chargées, pas besoin de refetch
+      return;
+    }
+
+    try {
+      setLoadingAllInterventions(true);
+      const interventions = await CustomerService.getCustomerHistory(customerId, {
+        limit: 200, // Limite maximale autorisée par le backend
+      });
+      setAllInterventions(interventions);
+    } catch (error: any) {
+      console.error('Error loading all interventions:', error);
+      showToast('Erreur lors du chargement des interventions', 'error');
+    } finally {
+      setLoadingAllInterventions(false);
+    }
+  };
+
+  /**
+   * Toggle section interventions
+   */
+  const handleToggleInterventions = async () => {
+    await hapticService.light();
+
+    if (!isInterventionsExpanded) {
+      // On déplie: charger les interventions
+      await loadAllInterventions();
+    }
+
+    setIsInterventionsExpanded(!isInterventionsExpanded);
+  };
+
+  /**
    * Formater montant en euros
    */
   const formatCurrency = (amount: number): string => {
@@ -182,33 +234,77 @@ const CustomerDetailsScreen = () => {
     );
   }
 
-  const { customer, recentInterventions, documentStats, totalInterventions, totalRevenue } = summary;
+  const {
+    customer,
+    recentInterventions,
+    documentStats,
+    totalInterventions,
+    totalRevenue,
+    customerHealthScore,
+    lastInterventionDate,
+    daysSinceLastIntervention,
+  } = summary;
+
+  /**
+   * Naviguer vers nouvelle intervention
+   */
+  const handleNewIntervention = async () => {
+    await hapticService.medium();
+    // TODO: Navigation vers création intervention
+    showToast('Fonctionnalité à venir', 'info');
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
-    >
-      {/* En-tête client */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <View style={styles.customerHeader}>
-            <View style={styles.customerIcon}>
-              <Ionicons name="person" size={40} color="#6200ee" />
-            </View>
-            <View style={styles.customerInfo}>
-              <Text variant="headlineSmall" style={styles.customerName}>
-                {customer.name}
-              </Text>
-              {customer.contactName && (
-                <Text variant="bodyMedium" style={styles.contactName}>
-                  <Ionicons name="person-outline" size={14} /> {customer.contactName}
-                </Text>
+    <>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        {/* ========================================= */}
+        {/* HERO SECTION - Header enrichi            */}
+        {/* ========================================= */}
+        <Card style={styles.heroCard}>
+          <Card.Content>
+            <View style={styles.heroHeader}>
+              {/* Avatar + Info */}
+              <View style={styles.heroLeft}>
+                <View style={styles.customerIcon}>
+                  <Ionicons name="person" size={40} color="#6200ee" />
+                </View>
+                <View style={styles.customerInfo}>
+                  <Text variant="headlineSmall" style={styles.customerName}>
+                    {customer.name}
+                  </Text>
+                  {customer.contactName && (
+                    <Text variant="bodyMedium" style={styles.contactName}>
+                      <Ionicons name="person-outline" size={14} />{' '}
+                      {customer.contactName}
+                    </Text>
+                  )}
+                  {/* Badge statut */}
+                  {customer.activeState !== 0 && (
+                    <Chip
+                      icon="alert-circle"
+                      mode="flat"
+                      compact
+                      style={styles.inactiveChip}
+                      textStyle={styles.inactiveChipText}
+                    >
+                      Inactif
+                    </Chip>
+                  )}
+                </View>
+              </View>
+
+              {/* Score de santé */}
+              {customerHealthScore !== undefined && (
+                <View style={styles.heroRight}>
+                  <CustomerHealthScore score={customerHealthScore} size={100} />
+                </View>
               )}
             </View>
-          </View>
 
           <Divider style={styles.divider} />
 
@@ -308,6 +404,21 @@ const CustomerDetailsScreen = () => {
         </Card>
       </View>
 
+      {/* ========================================= */}
+      {/* FINANCIAL HEALTH CARD (Admin/Bureau)     */}
+      {/* ========================================= */}
+      <FinancialHealthCard customer={customer} totalRevenue={totalRevenue} />
+
+      {/* ========================================= */}
+      {/* AI INSIGHTS CARD                          */}
+      {/* ========================================= */}
+      <AIInsightsCard
+        lastInterventionDate={lastInterventionDate}
+        daysSinceLastIntervention={daysSinceLastIntervention}
+        totalInterventions={totalInterventions}
+        customerHealthScore={customerHealthScore}
+      />
+
       {/* Statistiques documents */}
       {documentStats.length > 0 && (
         <Card style={styles.card}>
@@ -398,11 +509,113 @@ const CustomerDetailsScreen = () => {
               </TouchableOpacity>
             ))
           )}
+
+          {/* Bouton pour voir toutes les interventions */}
+          {totalInterventions > recentInterventions.length && (
+            <Button
+              mode="outlined"
+              onPress={handleToggleInterventions}
+              style={styles.viewAllButton}
+              icon={isInterventionsExpanded ? "chevron-up" : "chevron-down"}
+            >
+              {isInterventionsExpanded
+                ? "Masquer l'historique complet"
+                : `Voir toutes les interventions (${totalInterventions})`}
+            </Button>
+          )}
         </Card.Content>
       </Card>
 
-      <View style={styles.footer} />
-    </ScrollView>
+      {/* Section dépliable - Historique complet des interventions */}
+      {isInterventionsExpanded && (
+        <Card style={styles.card}>
+          <Card.Title
+            title={`Historique complet (${totalInterventions} interventions)`}
+            left={(props) => <Ionicons name="list" size={24} color="#6200ee" />}
+          />
+          <Card.Content>
+            {loadingAllInterventions ? (
+              <View style={styles.loadingInterventions}>
+                <ActivityIndicator size="large" color="#6200ee" />
+                <Text variant="bodyMedium" style={styles.loadingText}>
+                  Chargement de l'historique...
+                </Text>
+              </View>
+            ) : allInterventions.length === 0 ? (
+              <View style={styles.emptyHistory}>
+                <Text variant="bodyMedium" style={styles.emptyText}>
+                  Aucune intervention enregistrée
+                </Text>
+              </View>
+            ) : (
+              allInterventions.map((intervention, index) => (
+                <TouchableOpacity
+                  key={intervention.interventionId}
+                  onPress={() =>
+                    handleNavigateToIntervention(intervention.interventionId)
+                  }
+                  style={styles.interventionItem}
+                >
+                  <View style={styles.interventionHeader}>
+                    <Text variant="labelLarge" style={styles.interventionTitle}>
+                      {intervention.title}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color="#9e9e9e" />
+                  </View>
+
+                  {intervention.description && (
+                    <Text
+                      variant="bodySmall"
+                      style={styles.interventionDescription}
+                      numberOfLines={2}
+                    >
+                      {intervention.description}
+                    </Text>
+                  )}
+
+                  <View style={styles.interventionMeta}>
+                    <View style={styles.interventionMetaItem}>
+                      <Ionicons name="calendar-outline" size={14} color="#757575" />
+                      <Text variant="bodySmall" style={styles.interventionMetaText}>
+                        {format(new Date(intervention.startDate), 'dd MMM yyyy', {
+                          locale: fr,
+                        })}
+                      </Text>
+                    </View>
+
+                    {intervention.technicianName && (
+                      <View style={styles.interventionMetaItem}>
+                        <Ionicons name="person-outline" size={14} color="#757575" />
+                        <Text variant="bodySmall" style={styles.interventionMetaText}>
+                          {intervention.technicianName}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {index !== allInterventions.length - 1 && (
+                    <Divider style={styles.interventionDivider} />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </Card.Content>
+        </Card>
+      )}
+
+        <View style={styles.footer} />
+      </ScrollView>
+
+      {/* ========================================= */}
+      {/* FLOATING ACTION BUTTON                    */}
+      {/* ========================================= */}
+      <FAB
+        icon="plus"
+        label="Nouvelle intervention"
+        style={styles.fab}
+        onPress={handleNewIntervention}
+      />
+    </>
   );
 };
 
@@ -410,6 +623,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  // ========================================
+  // HERO SECTION
+  // ========================================
+  heroCard: {
+    margin: 12,
+    marginBottom: 8,
+    elevation: 3,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  heroLeft: {
+    flexDirection: 'row',
+    flex: 1,
+    marginRight: 12,
+  },
+  heroRight: {
+    alignItems: 'center',
+  },
+  inactiveChip: {
+    backgroundColor: '#ffebee',
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  inactiveChipText: {
+    color: '#f44336',
+    fontSize: 11,
+  },
+  // ========================================
+  // FAB
+  // ========================================
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    backgroundColor: '#6200ee',
   },
   loadingContainer: {
     flex: 1,
@@ -573,6 +826,13 @@ const styles = StyleSheet.create({
   },
   interventionDivider: {
     marginTop: 12,
+  },
+  viewAllButton: {
+    marginTop: 16,
+  },
+  loadingInterventions: {
+    paddingVertical: 32,
+    alignItems: 'center',
   },
   footer: {
     height: 24,

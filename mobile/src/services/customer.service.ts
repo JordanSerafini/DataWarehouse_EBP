@@ -29,6 +29,12 @@ export interface Customer {
   gpsQuality?: number;
   createdAt?: string;
   modifiedAt?: string;
+  // Données financières (visibles uniquement pour bureau/commerciaux/admin)
+  allowedAmount?: number;
+  currentAmount?: number;
+  exceedAmount?: number;
+  activeState?: number;
+  colleagueId?: string;
 }
 
 /**
@@ -70,6 +76,10 @@ export interface CustomerSummary {
   documentStats: CustomerDocumentStats[];
   totalInterventions: number;
   totalRevenue: number;
+  // Données d'activité & insights
+  lastInterventionDate?: string;
+  daysSinceLastIntervention?: number;
+  customerHealthScore?: number;
 }
 
 /**

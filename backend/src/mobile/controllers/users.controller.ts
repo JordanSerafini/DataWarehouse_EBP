@@ -77,7 +77,29 @@ export class UsersController {
   }
 
   /**
+   * Liste des techniciens (pour assignation)
+   * IMPORTANT: Cette route doit être AVANT @Get(':id') pour éviter que "technicians" soit interprété comme un ID
+   */
+  @Get('technicians')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.PATRON)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Liste des techniciens',
+    description: 'Retourne la liste des utilisateurs avec le rôle TECHNICIEN (pour assignation)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des techniciens',
+  })
+  async getTechnicians() {
+    return this.usersService.getTechnicians();
+  }
+
+  /**
    * Détails d'un utilisateur
+   * IMPORTANT: Cette route doit être APRÈS les routes spécifiques (list, technicians, sync, etc.)
+   * car :id matche tout segment d'URL
    */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)

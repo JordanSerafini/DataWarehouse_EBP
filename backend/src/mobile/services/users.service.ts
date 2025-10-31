@@ -283,6 +283,29 @@ export class UsersService {
   }
 
   /**
+   * Liste des techniciens (pour assignation d'interventions)
+   */
+  async getTechnicians() {
+    const result = await this.db.query(
+      `
+      SELECT
+        id,
+        email,
+        full_name,
+        role,
+        colleague_id,
+        is_active
+      FROM mobile.users
+      WHERE role = $1 AND is_active = true
+      ORDER BY full_name
+      `,
+      [UserRole.TECHNICIEN],
+    );
+
+    return result.rows;
+  }
+
+  /**
    * Synchroniser les collègues EBP
    */
   async syncColleagues() {

@@ -25,12 +25,19 @@ const USE_PUBLIC_URL = true; // Mettre à false si vous êtes sur le même rése
 const USE_HTTP = true;
 
 export const API_CONFIG = {
-  // URL du backend NestJS
+  // URL du backend NestJS principal
   BASE_URL: USE_PUBLIC_URL
     ? (USE_HTTP ? 'http://sli.mobile.back.jordan-s.org' : 'https://sli.mobile.back.jordan-s.org')
     : __DEV__
     ? `http://${BACKEND_IP}:${BACKEND_PORT}` // IP locale (uniquement même réseau WiFi)
     : 'https://sli.mobile.back.jordan-s.org', // Production
+
+  // URL de l'API NinjaOne
+  NINJAONE_BASE_URL: USE_PUBLIC_URL
+    ? (USE_HTTP ? 'http://ninjaone.jordan-s.org' : 'https://ninjaone.jordan-s.org')
+    : __DEV__
+    ? `http://${BACKEND_IP}:3001` // IP locale port 3001
+    : 'https://ninjaone.jordan-s.org', // Production
 
   // Version de l'API
   API_VERSION: 'v1',
