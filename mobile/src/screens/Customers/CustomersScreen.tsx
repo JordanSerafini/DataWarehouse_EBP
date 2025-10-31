@@ -36,6 +36,7 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { CustomerService, Customer } from '../../services/customer.service';
 import { showToast } from '../../utils/toast';
 import { SkeletonCustomerList } from '../../components/ui/SkeletonLoaders';
+import { AnimatedCard, AnimatedFadeIn } from '../../components/ui/AnimatedComponents';
 
 type CustomersScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -211,11 +212,11 @@ const CustomersScreen = () => {
    * Item de liste client
    */
   const renderCustomerItem = ({ item }: { item: Customer }) => (
-    <TouchableOpacity
-      onPress={() => handleNavigateToDetails(item.customerId)}
-      style={styles.customerCard}
-    >
-      <Card>
+    <View style={styles.customerCard}>
+      <AnimatedCard
+        onPress={() => handleNavigateToDetails(item.customerId)}
+        style={styles.card}
+      >
         <Card.Content style={styles.cardContent}>
           <View style={styles.customerHeader}>
             <View style={styles.customerIcon}>
@@ -280,8 +281,8 @@ const CustomersScreen = () => {
             </View>
           )}
         </Card.Content>
-      </Card>
-    </TouchableOpacity>
+      </AnimatedCard>
+    </View>
   );
 
   // Compteur de filtres actifs

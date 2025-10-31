@@ -169,6 +169,10 @@ const InterventionDetailsScreenV2 = () => {
 
               // Haptic feedback succès renforcé (triple tap) pour grande réussite
               await hapticService.successEnhanced();
+
+              // Afficher l'animation de succès
+              setShowSuccessCheckmark(true);
+
               showToast('Intervention clôturée !', 'success');
               await loadIntervention();
             } catch (error: any) {
@@ -462,42 +466,57 @@ const InterventionDetailsScreenV2 = () => {
       )}
 
       {/* Actions */}
-      <Card style={styles.card}>
-        <Card.Content>
-          {canStart && (
-            <Button
-              mode="contained"
-              icon="play"
-              onPress={handleStartIntervention}
-              loading={actionLoading}
-              disabled={actionLoading}
-              style={styles.actionButton}
-            >
-              Démarrer l'intervention
-            </Button>
-          )}
-          {canComplete && (
-            <Button
-              mode="contained"
-              icon="check-circle"
-              onPress={handleCompleteIntervention}
-              loading={actionLoading}
-              disabled={actionLoading}
-              style={[styles.actionButton, styles.completeButton]}
-            >
-              Clôturer l'intervention
-            </Button>
-          )}
-          {intervention.status === InterventionStatus.COMPLETED && (
-            <View style={styles.completedBadge}>
-              <Ionicons name="checkmark-circle" size={48} color="#4caf50" />
-              <Text variant="titleMedium" style={styles.completedText}>
-                Intervention terminée
-              </Text>
-            </View>
-          )}
-        </Card.Content>
-      </Card>
+      <AnimatedFadeIn delay={300}>
+        <Card style={styles.card}>
+          <Card.Content>
+            {canStart && (
+              <AnimatedButton
+                mode="contained"
+                icon="play"
+                onPress={handleStartIntervention}
+                loading={actionLoading}
+                disabled={actionLoading}
+                style={styles.actionButton}
+              >
+                Démarrer l'intervention
+              </AnimatedButton>
+            )}
+            {canComplete && (
+              <AnimatedButton
+                mode="contained"
+                icon="check-circle"
+                onPress={handleCompleteIntervention}
+                loading={actionLoading}
+                disabled={actionLoading}
+                style={[styles.actionButton, styles.completeButton]}
+              >
+                Clôturer l'intervention
+              </AnimatedButton>
+            )}
+            {intervention.status === InterventionStatus.COMPLETED && (
+              <AnimatedFadeIn delay={0}>
+                <View style={styles.completedBadge}>
+                  <Ionicons name="checkmark-circle" size={48} color="#4caf50" />
+                  <Text variant="titleMedium" style={styles.completedText}>
+                    Intervention terminée
+                  </Text>
+                </View>
+              </AnimatedFadeIn>
+            )}
+          </Card.Content>
+        </Card>
+      </AnimatedFadeIn>
+
+      {/* Success Checkmark Animation */}
+      {showSuccessCheckmark && (
+        <View style={styles.checkmarkOverlay}>
+          <AnimatedCheckmark
+            visible={showSuccessCheckmark}
+            size={80}
+            onAnimationEnd={() => setShowSuccessCheckmark(false)}
+          />
+        </View>
+      )}
 
       {/* Espacement bas */}
       <View style={{ height: 32 }} />
@@ -605,6 +624,17 @@ const styles = StyleSheet.create({
   },
   photoDivider: {
     marginVertical: 16,
+  },
+  checkmarkOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
   },
 });
 

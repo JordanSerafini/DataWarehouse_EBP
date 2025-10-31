@@ -7,7 +7,15 @@
       "Bash(findstr:*)",
       "Bash(psql:*)",
       "Bash(dir /b \"c:\\Users\\Administrateur\\Desktop\\Code\\DataWarehouse_EBP\\backend\\src\\mobile\")",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(where:*)",
+      "Bash(powershell:*)",
+      "Bash(nul)",
+      "Bash(nginx.exe -t:*)",
+      "Bash(curl http://localhost:3000/api/docs)",
+      "Bash(curl:*)",
+      "Bash(nslookup:*)",
+      "Bash(nginx.exe:*)"
     ],
     "deny": [],
     "ask": []
