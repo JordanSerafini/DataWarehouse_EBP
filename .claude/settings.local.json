@@ -18,7 +18,8 @@
       "Bash(C:/nginx/nginx.exe -t)",
       "Bash(C:/nginx/nginx.exe -t -c C:/nginx/conf/nginx.conf)",
       "Bash(./nginx.exe -s reload)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

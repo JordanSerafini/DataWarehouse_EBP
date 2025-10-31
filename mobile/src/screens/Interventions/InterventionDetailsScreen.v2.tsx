@@ -15,6 +15,8 @@ import {
   Platform,
   RefreshControl,
   TextInput,
+  TouchableOpacity,
+  Modal,
 } from 'react-native';
 import {
   Text,
@@ -23,14 +25,18 @@ import {
   Chip,
   ActivityIndicator,
   Divider,
+  List,
+  Portal,
 } from 'react-native-paper';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { InterventionService, Intervention, InterventionStatus } from '../../services/intervention.service';
 import { ActivityService, Activity, ActivityCategory } from '../../services/activity.service';
+import { apiService } from '../../services/api.service';
 import { showToast } from '../../utils/toast';
 import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
@@ -39,6 +45,9 @@ import { TimeSheet } from '../../components/TimeSheet';
 import { hapticService } from '../../services/haptic.service';
 import { SkeletonInterventionDetails } from '../../components/ui/SkeletonLoaders';
 import { AnimatedButton, AnimatedFadeIn, AnimatedCheckmark } from '../../components/ui/AnimatedComponents';
+import { CollapsibleInfoSection, InfoField } from '../../components/CollapsibleInfoSection';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
+import { UserRole } from '../../types/user.types';
 
 type InterventionDetailsRouteProp = RouteProp<RootStackParamList, 'InterventionDetails'>;
 
@@ -46,6 +55,9 @@ const InterventionDetailsScreenV2 = () => {
   const route = useRoute<InterventionDetailsRouteProp>();
   const navigation = useNavigation();
   const { interventionId } = route.params;
+
+  // Récupérer l'utilisateur connecté pour vérifier les permissions
+  const user = useAuthStore(authSelectors.user);
 
   const [intervention, setIntervention] = useState<Intervention | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +71,37 @@ const InterventionDetailsScreenV2 = () => {
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [newNoteText, setNewNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+
+  // États pour les sections dépliables
+  const [isCostsExpanded, setIsCostsExpanded] = useState(false);
+  const [isMaintenanceExpanded, setIsMaintenanceExpanded] = useState(false);
+  const [isProjectExpanded, setIsProjectExpanded] = useState(false);
+  const [isEquipmentExpanded, setIsEquipmentExpanded] = useState(false);
+  const [isDocumentsExpanded, setIsDocumentsExpanded] = useState(false);
+  const [isCustomFieldsExpanded, setIsCustomFieldsExpanded] = useState(false);
+
+  // États pour l'édition (Admin/Patron/Super Admin)
+  const [technicians, setTechnicians] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
+  const [showTechnicianPicker, setShowTechnicianPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [loadingTechnicians, setLoadingTechnicians] = useState(false);
+
+  // Vérifier si l'utilisateur peut éditer l'intervention
+  const canEdit = user?.role === UserRole.SUPER_ADMIN ||
+                  user?.role === UserRole.ADMIN ||
+                  user?.role === UserRole.PATRON;
+
+  // Permissions pour voir les sections sensibles
+  const canViewFinancialInfo = user?.role === UserRole.SUPER_ADMIN ||
+                                user?.role === UserRole.ADMIN ||
+                                user?.role === UserRole.PATRON;
+
+  const canViewProjectInfo = user?.role === UserRole.SUPER_ADMIN ||
+                              user?.role === UserRole.ADMIN ||
+                              user?.role === UserRole.PATRON ||
+                              user?.role === UserRole.CHEF_CHANTIER ||
+                              user?.role === UserRole.COMMERCIAL;
 
   /**
    * Charger l'intervention depuis l'API
@@ -323,6 +366,104 @@ const InterventionDetailsScreenV2 = () => {
   };
 
   /**
+   * Charger la liste des techniciens (pour sélection)
+   */
+  const loadTechnicians = async () => {
+    try {
+      setLoadingTechnicians(true);
+      const response = await apiService.getUsers({ role: 'technicien' });
+      setTechnicians(response.data);
+    } catch (error: any) {
+      console.error('Error loading technicians:', error);
+      showToast('Erreur lors du chargement des techniciens', 'error');
+    } finally {
+      setLoadingTechnicians(false);
+    }
+  };
+
+  /**
+   * Ouvrir le sélecteur de technicien
+   */
+  const handleOpenTechnicianPicker = async () => {
+    if (!canEdit) return;
+    await hapticService.light();
+    if (technicians.length === 0) {
+      await loadTechnicians();
+    }
+    setShowTechnicianPicker(true);
+  };
+
+  /**
+   * Changer le technicien assigné
+   */
+  const handleChangeTechnician = async (technicianId: string, technicianName: string) => {
+    try {
+      await hapticService.medium();
+      setShowTechnicianPicker(false);
+      setActionLoading(true);
+
+      await InterventionService.updateIntervention(interventionId, {
+        technicianId,
+        technicianName,
+      });
+
+      await hapticService.success();
+      showToast('Technicien modifié !', 'success');
+      await loadIntervention();
+    } catch (error: any) {
+      console.error('Error changing technician:', error);
+      await hapticService.error();
+      showToast('Erreur lors du changement de technicien', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /**
+   * Ouvrir le sélecteur de date
+   */
+  const handleOpenDatePicker = () => {
+    if (!canEdit) return;
+    hapticService.light();
+    setSelectedDate(intervention?.scheduledDate ? new Date(intervention.scheduledDate) : new Date());
+    setShowDatePicker(true);
+  };
+
+  /**
+   * Changer la date planifiée
+   */
+  const handleChangeDate = async (event: any, date?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+
+    if (date && event.type === 'set') {
+      try {
+        await hapticService.medium();
+        setActionLoading(true);
+
+        await InterventionService.updateIntervention(interventionId, {
+          scheduledDate: date.toISOString(),
+        });
+
+        await hapticService.success();
+        showToast('Date modifiée !', 'success');
+        await loadIntervention();
+
+        if (Platform.OS === 'ios') {
+          setShowDatePicker(false);
+        }
+      } catch (error: any) {
+        console.error('Error changing date:', error);
+        await hapticService.error();
+        showToast('Erreur lors du changement de date', 'error');
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
+  /**
    * Obtenir la couleur du statut
    */
   const getStatusColor = (status?: InterventionStatus) => {
@@ -450,25 +591,46 @@ const InterventionDetailsScreenV2 = () => {
           left={(props) => <Ionicons name="information-circle" size={24} color="#6200ee" />}
         />
         <Card.Content>
-          <View style={styles.infoRow}>
+          {/* Technicien (éditable si Admin/Patron/Super Admin) */}
+          <TouchableOpacity
+            style={[styles.infoRow, canEdit && styles.editableRow]}
+            onPress={canEdit ? handleOpenTechnicianPicker : undefined}
+            disabled={!canEdit}
+          >
             <Text variant="labelMedium" style={styles.infoLabel}>
               Technicien:
             </Text>
-            <Text variant="bodyMedium">
-              {intervention.technicianName || 'Non assigné'}
-            </Text>
-          </View>
+            <View style={styles.editableField}>
+              <Text variant="bodyMedium" style={canEdit && styles.editableText}>
+                {intervention.technicianName || 'Non assigné'}
+              </Text>
+              {canEdit && (
+                <Ionicons name="pencil" size={16} color="#6200ee" style={styles.editIcon} />
+              )}
+            </View>
+          </TouchableOpacity>
           <Divider style={styles.divider} />
-          <View style={styles.infoRow}>
+
+          {/* Date planifiée (éditable si Admin/Patron/Super Admin) */}
+          <TouchableOpacity
+            style={[styles.infoRow, canEdit && styles.editableRow]}
+            onPress={canEdit ? handleOpenDatePicker : undefined}
+            disabled={!canEdit}
+          >
             <Text variant="labelMedium" style={styles.infoLabel}>
               Planifiée:
             </Text>
-            <Text variant="bodyMedium">
-              {format(new Date(intervention.scheduledDate), "d MMMM yyyy 'à' HH:mm", {
-                locale: fr,
-              })}
-            </Text>
-          </View>
+            <View style={styles.editableField}>
+              <Text variant="bodyMedium" style={canEdit && styles.editableText}>
+                {format(new Date(intervention.scheduledDate), "d MMMM yyyy 'à' HH:mm", {
+                  locale: fr,
+                })}
+              </Text>
+              {canEdit && (
+                <Ionicons name="pencil" size={16} color="#6200ee" style={styles.editIcon} />
+              )}
+            </View>
+          </TouchableOpacity>
           {intervention.startedAt && (
             <>
               <Divider style={styles.divider} />
@@ -522,6 +684,115 @@ const InterventionDetailsScreenV2 = () => {
           loadIntervention(); // Recharger pour rafraîchir
         }}
         disabled={intervention.status !== InterventionStatus.IN_PROGRESS}
+      />
+
+      {/* Section Coûts & Facturation (ADMIN/PATRON/SUPER_ADMIN uniquement) */}
+      {canViewFinancialInfo && (
+        <CollapsibleInfoSection
+          title="Coûts & Facturation"
+          icon="cash-outline"
+          iconColor="#4caf50"
+          isExpanded={isCostsExpanded}
+          onToggle={() => setIsCostsExpanded(!isCostsExpanded)}
+          fields={[
+            { label: 'Prix de vente HT', value: intervention.salePriceVatExcluded, format: 'currency', icon: 'pricetag-outline' },
+            { label: 'Montant net HT', value: intervention.netAmountVatExcluded, format: 'currency', icon: 'calculator-outline' },
+            { label: 'Coût horaire', value: intervention.hourlyCostPrice, format: 'currency', icon: 'time-outline' },
+            { label: 'Montant du coût', value: intervention.costAmount, format: 'currency', icon: 'trending-down-outline' },
+            { label: 'Coût prévu', value: intervention.predictedCostAmount, format: 'currency', icon: 'analytics-outline' },
+            { label: 'À facturer', value: intervention.toInvoice, format: 'boolean', icon: 'checkbox-outline' },
+            { label: 'ID Facture', value: intervention.invoiceId, format: 'text', icon: 'receipt-outline' },
+          ]}
+        />
+      )}
+
+      {/* Section Maintenance */}
+      <CollapsibleInfoSection
+        title="Maintenance"
+        icon="construct-outline"
+        iconColor="#ff9800"
+        isExpanded={isMaintenanceExpanded}
+        onToggle={() => setIsMaintenanceExpanded(!isMaintenanceExpanded)}
+        fields={[
+          { label: 'Référence', value: intervention.maintenanceReference, format: 'text', icon: 'bookmark-outline' },
+          { label: 'Contrat', value: intervention.maintenanceContractId, format: 'text', icon: 'document-text-outline' },
+          { label: 'Incident', value: intervention.maintenanceIncidentId, format: 'text', icon: 'warning-outline' },
+          { label: 'Produit client', value: intervention.maintenanceCustomerProductId, format: 'text', icon: 'cube-outline' },
+          { label: 'Durée trajet (min)', value: intervention.maintenanceTravelDuration, format: 'text', icon: 'car-outline' },
+          { label: 'Heures décrémentées', value: intervention.maintenanceContractHoursDecremented, format: 'text', icon: 'timer-outline' },
+          { label: 'Prochaine intervention', value: intervention.maintenanceNextEventDate, format: 'date', icon: 'calendar-outline' },
+        ]}
+      />
+
+      {/* Section Projet/Chantier/Affaire */}
+      <CollapsibleInfoSection
+        title="Projet & Chantier"
+        icon="hammer-outline"
+        iconColor="#2196f3"
+        isExpanded={isProjectExpanded}
+        onToggle={() => setIsProjectExpanded(!isProjectExpanded)}
+        fields={[
+          { label: 'Chantier', value: intervention.constructionSiteName, format: 'text', icon: 'business-outline' },
+          { label: 'Affaire', value: intervention.dealName, format: 'text', icon: 'briefcase-outline' },
+          { label: 'Est un projet', value: intervention.isProject, format: 'boolean', icon: 'checkbox-outline' },
+          { label: 'Avancement', value: intervention.globalPercentComplete, format: 'percent', icon: 'stats-chart-outline' },
+        ]}
+      />
+
+      {/* Section Équipements & Articles */}
+      <CollapsibleInfoSection
+        title="Équipements & Articles"
+        icon="hardware-chip-outline"
+        iconColor="#9c27b0"
+        isExpanded={isEquipmentExpanded}
+        onToggle={() => setIsEquipmentExpanded(!isEquipmentExpanded)}
+        fields={[
+          { label: 'Équipement', value: intervention.equipmentName, format: 'text', icon: 'cog-outline' },
+          { label: 'Article', value: intervention.itemName, format: 'text', icon: 'pricetag-outline' },
+          { label: 'Quantité', value: intervention.quantity, format: 'text', icon: 'list-outline' },
+        ]}
+      />
+
+      {/* Section Documents liés */}
+      <CollapsibleInfoSection
+        title="Documents liés"
+        icon="folder-outline"
+        iconColor="#795548"
+        isExpanded={isDocumentsExpanded}
+        onToggle={() => setIsDocumentsExpanded(!isDocumentsExpanded)}
+        fields={[
+          { label: 'Document de vente', value: intervention.saleDocumentId, format: 'text', icon: 'document-outline' },
+          { label: 'Ligne document vente', value: intervention.saleDocumentLineId, format: 'text', icon: 'list-outline' },
+          { label: 'Document d\'achat', value: intervention.purchaseDocumentId, format: 'text', icon: 'cart-outline' },
+          { label: 'Document de stock', value: intervention.stockDocumentId, format: 'text', icon: 'cube-outline' },
+          { label: 'Fichiers associés', value: intervention.hasAssociatedFiles, format: 'boolean', icon: 'attach-outline' },
+        ]}
+      />
+
+      {/* Section Champs personnalisés métier */}
+      <CollapsibleInfoSection
+        title="Informations métier"
+        icon="business-outline"
+        iconColor="#00bcd4"
+        isExpanded={isCustomFieldsExpanded}
+        onToggle={() => setIsCustomFieldsExpanded(!isCustomFieldsExpanded)}
+        fields={[
+          { label: 'Type de tâche', value: intervention.customTaskType, format: 'text', icon: 'list-circle-outline' },
+          { label: 'Thème', value: intervention.customTheme, format: 'text', icon: 'color-palette-outline' },
+          { label: 'Services', value: intervention.customServices, format: 'text', icon: 'settings-outline' },
+          { label: 'Activité', value: intervention.customActivity, format: 'text', icon: 'pulse-outline' },
+          { label: 'Logiciel', value: intervention.customSoftware, format: 'text', icon: 'code-slash-outline' },
+          { label: 'Fournisseur', value: intervention.customSupplier, format: 'text', icon: 'people-outline' },
+          { label: 'Thème commercial', value: intervention.customCommercialTheme, format: 'text', icon: 'megaphone-outline' },
+          { label: 'URGENT', value: intervention.isUrgent, format: 'boolean', icon: 'alert-circle-outline' },
+          { label: 'Durée prévue (h)', value: intervention.customPlannedDuration, format: 'text', icon: 'hourglass-outline' },
+          { label: 'Temps client (h)', value: intervention.customTimeClient, format: 'text', icon: 'person-outline' },
+          { label: 'Temps interne (h)', value: intervention.customTimeInternal, format: 'text', icon: 'home-outline' },
+          { label: 'Temps trajet (h)', value: intervention.customTimeTravel, format: 'text', icon: 'car-outline' },
+          { label: 'Temps relationnel (h)', value: intervention.customTimeRelational, format: 'text', icon: 'chatbubbles-outline' },
+          { label: 'Sous-traitant', value: intervention.subContractorName, format: 'text', icon: 'business-outline' },
+          { label: 'Créé par', value: intervention.creatorName, format: 'text', icon: 'person-add-outline' },
+        ]}
       />
 
       {/* Notes d'intervention */}
@@ -723,6 +994,52 @@ const InterventionDetailsScreenV2 = () => {
         </View>
       )}
 
+      {/* Modal Sélection Technicien */}
+      <Portal>
+        <Modal
+          visible={showTechnicianPicker}
+          onDismiss={() => setShowTechnicianPicker(false)}
+        >
+          <View style={styles.modalContainer}>
+            <Card>
+              <Card.Title title="Sélectionner un technicien" />
+              <Card.Content>
+                {loadingTechnicians ? (
+                  <ActivityIndicator size="large" color="#6200ee" style={{ marginVertical: 20 }} />
+                ) : (
+                  <ScrollView style={styles.technicianList}>
+                    {technicians.map((tech) => (
+                      <List.Item
+                        key={tech.id}
+                        title={tech.full_name}
+                        description={tech.email}
+                        left={(props) => <List.Icon {...props} icon="account" />}
+                        onPress={() => handleChangeTechnician(tech.id, tech.full_name)}
+                        style={styles.technicianItem}
+                      />
+                    ))}
+                  </ScrollView>
+                )}
+              </Card.Content>
+              <Card.Actions>
+                <Button onPress={() => setShowTechnicianPicker(false)}>Annuler</Button>
+              </Card.Actions>
+            </Card>
+          </View>
+        </Modal>
+      </Portal>
+
+      {/* Modal DateTimePicker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="datetime"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleChangeDate}
+          locale="fr-FR"
+        />
+      )}
+
       {/* Espacement bas */}
       <View style={{ height: 32 }} />
     </ScrollView>
@@ -910,6 +1227,41 @@ const styles = StyleSheet.create({
   },
   noteDivider: {
     marginTop: 12,
+  },
+  // Styles pour l'édition (Admin/Patron/Super Admin)
+  editableRow: {
+    backgroundColor: '#f0f4ff',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginVertical: 4,
+  },
+  editableField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  editableText: {
+    color: '#6200ee',
+    fontWeight: '600',
+  },
+  editIcon: {
+    marginLeft: 8,
+  },
+  // Styles pour les modals
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+    maxHeight: '80%',
+  },
+  technicianList: {
+    maxHeight: 400,
+  },
+  technicianItem: {
+    paddingVertical: 8,
   },
 });
 

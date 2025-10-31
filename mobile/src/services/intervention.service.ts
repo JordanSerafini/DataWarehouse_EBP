@@ -38,6 +38,84 @@ export interface Intervention {
   longitude?: number;
   distance?: number; // Pour les interventions nearby
   timeSpentSeconds?: number; // Temps passé en secondes
+
+  // ============================================
+  // SECTION COÛTS & FACTURATION
+  // ============================================
+  salePriceVatExcluded?: number;
+  netAmountVatExcluded?: number;
+  hourlyCostPrice?: number;
+  costAmount?: number;
+  predictedCostAmount?: number;
+  toInvoice?: boolean;
+  invoiceCustomerId?: string;
+  invoiceColleagueId?: string;
+  invoiceId?: string;
+
+  // ============================================
+  // SECTION MAINTENANCE
+  // ============================================
+  maintenanceReference?: string;
+  maintenanceContractId?: string;
+  maintenanceIncidentId?: string;
+  maintenanceCustomerProductId?: string;
+  maintenanceInterventionReport?: string;
+  maintenanceTravelDuration?: number;
+  maintenanceContractHoursDecremented?: number;
+  maintenanceNextEventDate?: string;
+
+  // ============================================
+  // SECTION PROJET/CHANTIER/AFFAIRE
+  // ============================================
+  constructionSiteId?: string;
+  constructionSiteName?: string;
+  dealId?: string;
+  dealName?: string;
+  isProject?: boolean;
+  globalPercentComplete?: number;
+
+  // ============================================
+  // SECTION ÉQUIPEMENTS & ARTICLES
+  // ============================================
+  equipmentId?: string;
+  equipmentName?: string;
+  itemId?: string;
+  itemName?: string;
+  quantity?: number;
+
+  // ============================================
+  // SECTION DOCUMENTS
+  // ============================================
+  saleDocumentId?: string;
+  saleDocumentLineId?: string;
+  purchaseDocumentId?: string;
+  stockDocumentId?: string;
+  hasAssociatedFiles?: boolean;
+
+  // ============================================
+  // SECTION CHAMPS PERSONNALISÉS MÉTIER
+  // ============================================
+  customTaskType?: string;
+  customTheme?: string;
+  customServices?: string;
+  customActivity?: string;
+  customSoftware?: string;
+  customSupplier?: string;
+  customCommercialTheme?: string;
+  isUrgent?: boolean;
+  customPlannedDuration?: number;
+  customTimeClient?: number;
+  customTimeInternal?: number;
+  customTimeTravel?: number;
+  customTimeRelational?: number;
+
+  // ============================================
+  // SECTION INFORMATIONS COMPLÉMENTAIRES
+  // ============================================
+  subContractorId?: string;
+  subContractorName?: string;
+  creatorColleagueId?: string;
+  creatorName?: string;
 }
 
 export interface TechnicianStats {

@@ -48,6 +48,62 @@ interface InterventionRow {
   longitude: string | null;
   createdAt: Date;
   updatedAt: Date;
+  // Coûts & Facturation
+  salePriceVatExcluded: number | null;
+  netAmountVatExcluded: number | null;
+  hourlyCostPrice: number | null;
+  costAmount: number | null;
+  predictedCostAmount: number | null;
+  toInvoice: boolean | null;
+  invoiceCustomerId: string | null;
+  invoiceColleagueId: string | null;
+  invoiceId: string | null;
+  // Maintenance
+  maintenanceReference: string | null;
+  maintenanceContractId: string | null;
+  maintenanceIncidentId: string | null;
+  maintenanceCustomerProductId: string | null;
+  maintenanceTravelDuration: number | null;
+  maintenanceContractHoursDecremented: number | null;
+  maintenanceNextEventDate: Date | null;
+  // Projet/Chantier/Affaire
+  constructionSiteId: string | null;
+  constructionSiteName: string | null;
+  dealId: string | null;
+  dealName: string | null;
+  isProject: boolean | null;
+  globalPercentComplete: number | null;
+  // Équipements & Articles
+  equipmentId: string | null;
+  equipmentName: string | null;
+  itemId: string | null;
+  itemName: string | null;
+  quantity: number | null;
+  // Documents
+  saleDocumentId: string | null;
+  saleDocumentLineId: string | null;
+  purchaseDocumentId: string | null;
+  stockDocumentId: string | null;
+  hasAssociatedFiles: boolean | null;
+  // Champs personnalisés métier
+  customTaskType: string | null;
+  customTheme: string | null;
+  customServices: string | null;
+  customActivity: string | null;
+  customSoftware: string | null;
+  customSupplier: string | null;
+  customCommercialTheme: string | null;
+  isUrgent: boolean | null;
+  customPlannedDuration: number | null;
+  customTimeClient: number | null;
+  customTimeInternal: number | null;
+  customTimeTravel: number | null;
+  customTimeRelational: number | null;
+  // Sous-traitant et créateur
+  subContractorId: string | null;
+  subContractorName: string | null;
+  creatorColleagueId: string | null;
+  creatorName: string | null;
   source_type: 'schedule_event' | 'incident';
 }
 
@@ -99,11 +155,73 @@ export class InterventionsService {
       se."Address_Longitude" as longitude,
       se."sysCreatedDate" as "createdAt",
       se."sysModifiedDate" as "updatedAt",
+      -- Coûts & Facturation
+      se."SalePriceVatExcluded" as "salePriceVatExcluded",
+      se."NetAmountVatExcluded" as "netAmountVatExcluded",
+      se."HourlyCostPrice" as "hourlyCostPrice",
+      se."CostAmount" as "costAmount",
+      se."PredictedCostAmount" as "predictedCostAmount",
+      se."ToInvoice" as "toInvoice",
+      se."InvoiceCustomerId" as "invoiceCustomerId",
+      se."InvoiceColleagueId" as "invoiceColleagueId",
+      se."InvoiceId"::text as "invoiceId",
+      -- Maintenance
+      se."Maintenance_Reference" as "maintenanceReference",
+      se."Maintenance_ContractId" as "maintenanceContractId",
+      se."Maintenance_IncidentId" as "maintenanceIncidentId",
+      se."Maintenance_CustomerProductId" as "maintenanceCustomerProductId",
+      se."Maintenance_TravelDuration" as "maintenanceTravelDuration",
+      se."Maintenance_ContractHoursNumberDecremented" as "maintenanceContractHoursDecremented",
+      se."Maintenance_NextEventDate" as "maintenanceNextEventDate",
+      -- Projet/Chantier/Affaire
+      se."ConstructionSiteId" as "constructionSiteId",
+      cs."Caption" as "constructionSiteName",
+      se."DealId" as "dealId",
+      d."Caption" as "dealName",
+      se."xx_Projet" as "isProject",
+      se."GlobalPercentComplete" as "globalPercentComplete",
+      -- Équipements & Articles
+      se."EquipmentId" as "equipmentId",
+      eq."Caption" as "equipmentName",
+      se."ItemId" as "itemId",
+      itm."Caption" as "itemName",
+      se."Quantity" as "quantity",
+      -- Documents
+      se."SaleDocumentId"::text as "saleDocumentId",
+      se."SaleDocumentLineid"::text as "saleDocumentLineId",
+      se."PurchaseDocumentId"::text as "purchaseDocumentId",
+      se."StockDocumentId"::text as "stockDocumentId",
+      se."HasAssociatedFiles" as "hasAssociatedFiles",
+      -- Champs personnalisés métier
+      se."xx_Type_Tache" as "customTaskType",
+      se."xx_Theme" as "customTheme",
+      se."xx_Services" as "customServices",
+      se."xx_Activite" as "customActivity",
+      se."xx_Logiciel" as "customSoftware",
+      se."xx_Fournisseur" as "customSupplier",
+      se."xx_Theme_Commercial" as "customCommercialTheme",
+      se."xx_URGENT" as "isUrgent",
+      se."xx_Duree_Pevue" as "customPlannedDuration",
+      se."xx_Total_Temps_Realise_Client" as "customTimeClient",
+      se."xx_Total_Temps_Realise_Interne" as "customTimeInternal",
+      se."xx_Total_Temps_Realise_Trajet" as "customTimeTravel",
+      se."xx_Total_Temps_Realise_Relationnel" as "customTimeRelational",
+      -- Sous-traitant et créateur
+      se."SubContractorId" as "subContractorId",
+      supp."Name" as "subContractorName",
+      se."CreatorColleagueId" as "creatorColleagueId",
+      creator."Contact_Name" as "creatorName",
       'schedule_event' as source_type
     FROM public."ScheduleEvent" se
     LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
     LEFT JOIN public."Contact" cnt ON cnt."Id" = se."ContactId"
     LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+    LEFT JOIN public."ConstructionSite" cs ON cs."Id" = se."ConstructionSiteId"
+    LEFT JOIN public."Deal" d ON d."Id" = se."DealId"
+    LEFT JOIN public."Equipment" eq ON eq."Id" = se."EquipmentId"
+    LEFT JOIN public."Item" itm ON itm."Id" = se."ItemId"
+    LEFT JOIN public."Supplier" supp ON supp."Id" = se."SubContractorId"
+    LEFT JOIN public."Colleague" creator ON creator."Id" = se."CreatorColleagueId"
 
     UNION ALL
 
@@ -135,6 +253,62 @@ export class InterventionsService {
       NULL as longitude,
       i."sysCreatedDate" as "createdAt",
       i."sysModifiedDate" as "updatedAt",
+      -- Coûts & Facturation (NULL pour Incident)
+      NULL as "salePriceVatExcluded",
+      NULL as "netAmountVatExcluded",
+      NULL as "hourlyCostPrice",
+      NULL as "costAmount",
+      NULL as "predictedCostAmount",
+      NULL as "toInvoice",
+      NULL as "invoiceCustomerId",
+      NULL as "invoiceColleagueId",
+      NULL as "invoiceId",
+      -- Maintenance (NULL pour Incident)
+      NULL as "maintenanceReference",
+      NULL as "maintenanceContractId",
+      NULL as "maintenanceIncidentId",
+      NULL as "maintenanceCustomerProductId",
+      NULL as "maintenanceTravelDuration",
+      NULL as "maintenanceContractHoursDecremented",
+      NULL as "maintenanceNextEventDate",
+      -- Projet/Chantier/Affaire (NULL pour Incident)
+      NULL as "constructionSiteId",
+      NULL as "constructionSiteName",
+      NULL as "dealId",
+      NULL as "dealName",
+      NULL as "isProject",
+      NULL as "globalPercentComplete",
+      -- Équipements & Articles (NULL pour Incident)
+      NULL as "equipmentId",
+      NULL as "equipmentName",
+      NULL as "itemId",
+      NULL as "itemName",
+      NULL as "quantity",
+      -- Documents (NULL pour Incident)
+      NULL as "saleDocumentId",
+      NULL as "saleDocumentLineId",
+      NULL as "purchaseDocumentId",
+      NULL as "stockDocumentId",
+      NULL as "hasAssociatedFiles",
+      -- Champs personnalisés métier (NULL pour Incident)
+      NULL as "customTaskType",
+      NULL as "customTheme",
+      NULL as "customServices",
+      NULL as "customActivity",
+      NULL as "customSoftware",
+      NULL as "customSupplier",
+      NULL as "customCommercialTheme",
+      NULL as "isUrgent",
+      NULL as "customPlannedDuration",
+      NULL as "customTimeClient",
+      NULL as "customTimeInternal",
+      NULL as "customTimeTravel",
+      NULL as "customTimeRelational",
+      -- Sous-traitant et créateur (NULL pour Incident)
+      NULL as "subContractorId",
+      NULL as "subContractorName",
+      i."CreatorColleagueId" as "creatorColleagueId",
+      col2."Contact_Name" as "creatorName",
       'incident' as source_type
     FROM public."Incident" i
     LEFT JOIN public."Colleague" col2 ON col2."Id" = i."CreatorColleagueId"
@@ -617,6 +791,63 @@ export class InterventionsService {
       notes: row.notes || undefined,
       createdAt: row.createdAt?.toISOString() || new Date().toISOString(),
       updatedAt: row.updatedAt?.toISOString() || undefined,
+      // Coûts & Facturation
+      salePriceVatExcluded: row.salePriceVatExcluded !== null ? Number(row.salePriceVatExcluded) : undefined,
+      netAmountVatExcluded: row.netAmountVatExcluded !== null ? Number(row.netAmountVatExcluded) : undefined,
+      hourlyCostPrice: row.hourlyCostPrice !== null ? Number(row.hourlyCostPrice) : undefined,
+      costAmount: row.costAmount !== null ? Number(row.costAmount) : undefined,
+      predictedCostAmount: row.predictedCostAmount !== null ? Number(row.predictedCostAmount) : undefined,
+      toInvoice: row.toInvoice || undefined,
+      invoiceCustomerId: row.invoiceCustomerId || undefined,
+      invoiceColleagueId: row.invoiceColleagueId || undefined,
+      invoiceId: row.invoiceId || undefined,
+      // Maintenance
+      maintenanceReference: row.maintenanceReference || undefined,
+      maintenanceContractId: row.maintenanceContractId || undefined,
+      maintenanceIncidentId: row.maintenanceIncidentId || undefined,
+      maintenanceCustomerProductId: row.maintenanceCustomerProductId || undefined,
+      maintenanceInterventionReport: row.report || undefined,
+      maintenanceTravelDuration: row.maintenanceTravelDuration !== null ? Number(row.maintenanceTravelDuration) : undefined,
+      maintenanceContractHoursDecremented: row.maintenanceContractHoursDecremented !== null ? Number(row.maintenanceContractHoursDecremented) : undefined,
+      maintenanceNextEventDate: row.maintenanceNextEventDate?.toISOString() || undefined,
+      // Projet/Chantier/Affaire
+      constructionSiteId: row.constructionSiteId || undefined,
+      constructionSiteName: row.constructionSiteName || undefined,
+      dealId: row.dealId || undefined,
+      dealName: row.dealName || undefined,
+      isProject: row.isProject || undefined,
+      globalPercentComplete: row.globalPercentComplete !== null ? Number(row.globalPercentComplete) : undefined,
+      // Équipements & Articles
+      equipmentId: row.equipmentId || undefined,
+      equipmentName: row.equipmentName || undefined,
+      itemId: row.itemId || undefined,
+      itemName: row.itemName || undefined,
+      quantity: row.quantity !== null ? Number(row.quantity) : undefined,
+      // Documents
+      saleDocumentId: row.saleDocumentId || undefined,
+      saleDocumentLineId: row.saleDocumentLineId || undefined,
+      purchaseDocumentId: row.purchaseDocumentId || undefined,
+      stockDocumentId: row.stockDocumentId || undefined,
+      hasAssociatedFiles: row.hasAssociatedFiles || undefined,
+      // Champs personnalisés métier
+      customTaskType: row.customTaskType || undefined,
+      customTheme: row.customTheme || undefined,
+      customServices: row.customServices || undefined,
+      customActivity: row.customActivity || undefined,
+      customSoftware: row.customSoftware || undefined,
+      customSupplier: row.customSupplier || undefined,
+      customCommercialTheme: row.customCommercialTheme || undefined,
+      isUrgent: row.isUrgent || undefined,
+      customPlannedDuration: row.customPlannedDuration !== null ? Number(row.customPlannedDuration) : undefined,
+      customTimeClient: row.customTimeClient !== null ? Number(row.customTimeClient) : undefined,
+      customTimeInternal: row.customTimeInternal !== null ? Number(row.customTimeInternal) : undefined,
+      customTimeTravel: row.customTimeTravel !== null ? Number(row.customTimeTravel) : undefined,
+      customTimeRelational: row.customTimeRelational !== null ? Number(row.customTimeRelational) : undefined,
+      // Sous-traitant et créateur
+      subContractorId: row.subContractorId || undefined,
+      subContractorName: row.subContractorName || undefined,
+      creatorColleagueId: row.creatorColleagueId || undefined,
+      creatorName: row.creatorName || undefined,
     };
   }
 

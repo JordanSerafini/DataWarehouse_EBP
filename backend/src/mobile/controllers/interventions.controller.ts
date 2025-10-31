@@ -229,6 +229,51 @@ export class InterventionsController {
   }
 
   /**
+   * Récupère tous les fichiers d'une intervention
+   * IMPORTANT: Cette route doit être AVANT @Get(':id') pour éviter que "files" soit interprété comme un ID
+   */
+  @Get(':id/files')
+  @Roles(
+    UserRole.TECHNICIEN,
+    UserRole.CHEF_CHANTIER,
+    UserRole.COMMERCIAL,
+    UserRole.PATRON,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
+  @ApiOperation({
+    summary: 'Fichiers intervention',
+    description: 'Récupère toutes les photos et la signature d\'une intervention',
+  })
+  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des fichiers',
+    type: InterventionFilesDto,
+  })
+  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
+  async getInterventionFiles(@Param('id') interventionId: string): Promise<InterventionFilesDto> {
+    const photos = await this.fileService.getInterventionPhotos(interventionId);
+
+    // TODO: Récupérer la signature si elle existe
+    // const signature = await this.fileService.getInterventionSignature(interventionId);
+
+    return {
+      photos: photos.map((p) => ({
+        id: p.id,
+        filename: p.filename,
+        url: p.url,
+        mimeType: p.mimeType,
+        size: p.size,
+        uploadedAt: p.uploadedAt,
+      })),
+      signature: undefined, // TODO
+      totalFiles: photos.length,
+      totalSize: photos.reduce((sum, p) => sum + p.size, 0),
+    };
+  }
+
+  /**
    * Récupère une intervention par ID
    * IMPORTANT: Cette route doit être APRÈS les routes spécifiques (search, nearby, technician, etc.)
    * car :id matche tout segment d'URL
@@ -492,50 +537,6 @@ export class InterventionsController {
       mimeType: result.mimeType,
       size: result.size,
       uploadedAt: result.uploadedAt,
-    };
-  }
-
-  /**
-   * Récupère tous les fichiers d'une intervention
-   */
-  @Get(':id/files')
-  @Roles(
-    UserRole.TECHNICIEN,
-    UserRole.CHEF_CHANTIER,
-    UserRole.COMMERCIAL,
-    UserRole.PATRON,
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-  )
-  @ApiOperation({
-    summary: 'Fichiers intervention',
-    description: 'Récupère toutes les photos et la signature d\'une intervention',
-  })
-  @ApiParam({ name: 'id', description: 'ID de l\'intervention' })
-  @ApiResponse({
-    status: 200,
-    description: 'Liste des fichiers',
-    type: InterventionFilesDto,
-  })
-  @ApiResponse({ status: 404, description: 'Intervention non trouvée' })
-  async getInterventionFiles(@Param('id') interventionId: string): Promise<InterventionFilesDto> {
-    const photos = await this.fileService.getInterventionPhotos(interventionId);
-
-    // TODO: Récupérer la signature si elle existe
-    // const signature = await this.fileService.getInterventionSignature(interventionId);
-
-    return {
-      photos: photos.map((p) => ({
-        id: p.id,
-        filename: p.filename,
-        url: p.url,
-        mimeType: p.mimeType,
-        size: p.size,
-        uploadedAt: p.uploadedAt,
-      })),
-      signature: undefined, // TODO
-      totalFiles: photos.length,
-      totalSize: photos.reduce((sum, p) => sum + p.size, 0),
     };
   }
 
