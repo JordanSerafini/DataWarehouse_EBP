@@ -5,7 +5,11 @@
       "Bash(done)",
       "Bash(tree:*)",
       "Bash(psql:*)",
-      "Bash(./migrate.sh:*)"
+      "Bash(./migrate.sh:*)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

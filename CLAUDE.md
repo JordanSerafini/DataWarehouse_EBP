@@ -644,32 +644,99 @@ The backend exposes comprehensive REST APIs for the mobile field service applica
 
 ### Core APIs (`backend/src/mobile/`)
 
-**Authentication** (`/auth`):
-- `POST /auth/login` - User login (returns JWT token)
-- `POST /auth/register` - User registration
-- `GET /auth/profile` - Get current user profile
+**Authentication** (`/api/v1/auth`) - 5 endpoints:
+- `POST /auth/login` - User login (returns JWT token + refresh token)
+- `POST /auth/logout` - Logout current session
+- `POST /auth/logout-all` - Logout all user sessions
+- `GET /auth/me` - Get current user profile
+- `POST /auth/refresh` - Refresh JWT token
 
-**Synchronization** (`/api/v1/sync`) - See "Mobile Synchronization Architecture" section above
+**Synchronization** (`/api/v1/sync`) - 7 endpoints:
+- `POST /sync/initial` - First-time sync (all roles)
+- `POST /sync/full` - Force complete refresh (admin only)
+- `GET /sync/status` - Check sync state
+- `GET /sync/stats` - Per-table statistics
+- `POST /sync/pending` - Get entities awaiting sync
+- `POST /sync/mark-synced` - Mark entity synced
+- `POST /sync/mark-failed` - Record sync failure
 
-**Customers** (`/api/v1/customers`):
-- `GET /customers` - List all customers with pagination
-- `GET /customers/:id` - Get customer details
-- `GET /customers/search?query=...` - Search customers by name
-- All endpoints support role-based access control
+**Customers** (`/api/v1/customers`) - 6 endpoints:
+- `GET /customers/nearby` - Customers near GPS location
+- `GET /customers/search` - Search customers by name/city/postal
+- `GET /customers/:id` - Get customer details (360° view)
+- `GET /customers/:id/history` - Customer intervention history
+- `GET /customers/:id/documents-stats` - Document statistics
+- `PUT /customers/:id/gps` - Update customer GPS coordinates
 
-**Interventions** (`/api/v1/interventions`):
-- `GET /interventions` - List interventions with filters (role-based)
-- `GET /interventions/:id` - Get intervention details
-- `POST /interventions/:id/files` - Upload files/photos
-- `GET /interventions/:id/files` - List intervention files
-- `GET /interventions/:id/files/:fileId` - Download specific file
-- `DELETE /interventions/:id/files/:fileId` - Delete file
+**Interventions** (`/api/v1/interventions`) - 17 endpoints:
+- `GET /interventions/my-interventions` - My interventions (technician)
+- `GET /interventions/my-stats` - My statistics (technician)
+- `GET /interventions/search` - Search interventions
+- `GET /interventions/nearby` - Interventions near GPS location
+- `GET /interventions/technician/:id` - Technician's interventions (admin)
+- `GET /interventions/technician/:id/stats` - Technician stats (admin)
+- `GET /interventions/:id` - Intervention details
+- `PUT /interventions/:id/start` - Start intervention
+- `PUT /interventions/:id/complete` - Complete intervention
+- `PUT /interventions/:id/time` - Update time spent
+- `PUT /interventions/:id` - Update intervention
+- `POST /interventions/timesheet` - Record timesheet
+- `POST /interventions/:id/photos` - Upload photo with GPS
+- `POST /interventions/:id/signature` - Upload client signature
+- `GET /interventions/:id/files` - List files
+- `DELETE /interventions/files/:fileId` - Delete file
+- `GET /interventions/files/:fileId/download` - Download file
 
-**File Management**:
+**Sales/Ventes** (`/api/v1/sales`) - 7 endpoints:
+- `GET /sales/documents/recent` - Recent documents
+- `GET /sales/documents/search` - Search documents
+- `GET /sales/documents/:id` - Document details
+- `GET /sales/documents/:id/with-lines` - Document with line items
+- `GET /sales/quotes/my-quotes` - My quotes (commercial)
+- `GET /sales/quotes/salesperson/:id` - Salesperson quotes (admin)
+- `GET /sales/quotes/lines-stats` - Quote lines statistics
+
+**Projects/Chantiers** (`/api/v1/projects`) - 6 endpoints:
+- `GET /projects/my-projects` - My projects (chef de chantier)
+- `GET /projects/manager/:id` - Manager projects (admin)
+- `GET /projects/search` - Search projects
+- `GET /projects/nearby` - Projects near GPS location
+- `GET /projects/:id` - Project details
+- `GET /projects/stats/global` - Global project statistics
+
+**Calendar** (`/api/v1/calendar`) - 7 endpoints:
+- `GET /calendar/my-events` - My calendar events
+- `GET /calendar/today` - Today's events
+- `GET /calendar/week` - This week's events
+- `GET /calendar/month/:year/:month` - Month view
+- `GET /calendar/events/:id` - Event details
+- `GET /calendar/stats` - Calendar statistics
+- `PUT /calendar/events/:id/reschedule` - Reschedule event
+
+**Activity** (`/api/v1/activity`) - 4 endpoints:
+- `GET /activity/history` - Activity history for entity
+- `GET /activity/recent` - Recent activities (admin/patron)
+- `GET /activity/stats/:entityType/:entityId` - Activity statistics
+- `GET /activity/:id` - Activity details
+
+**Users** (`/api/v1/users`) - 8 endpoints:
+- `GET /users/list` - Public user list (for login screen)
+- `GET /users` - Complete user list (admin)
+- `GET /users/:id` - User details (admin)
+- `POST /users` - Create user (admin)
+- `PUT /users/:id` - Update user (admin)
+- `DELETE /users/:id` - Delete user (super admin)
+- `POST /users/:id/reset-password` - Reset password (admin)
+- `POST /users/sync/colleagues` - Sync colleagues from EBP (admin)
+
+**Total: 74+ endpoints across 9 controllers**
+
+### File Management
 - Handled by `FileService` with storage in `mobile.intervention_files` table
 - Supports multipart uploads with file metadata
 - File types tracked: photos, documents, signatures, etc.
 - Role-based access: technicians can only see their own interventions
+- Photos include GPS coordinates and timestamp
 
 ## Swagger Documentation
 
