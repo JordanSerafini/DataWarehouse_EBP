@@ -29,7 +29,7 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { Intervention, InterventionStatus, InterventionType } from '../../types/intervention.types';
 import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { showToast } from '../../utils/toast';
 import { InterventionsMap, MapIntervention } from '../../components/InterventionsMap';
 import { Ionicons } from '@expo/vector-icons';
@@ -38,7 +38,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
 
 const InterventionsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
   const { isSyncing } = useSyncStore();
 
   const [interventions, setInterventions] = useState<Intervention[]>([]);

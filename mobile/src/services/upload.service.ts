@@ -5,7 +5,7 @@
 
 import * as FileSystem from 'expo-file-system';
 import { API_CONFIG } from '../config/api.config';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore.v2';
 import { logger } from '../utils/logger';
 import { CapturedPhoto } from '../components/PhotoCapture';
 import { SignatureData } from '../components/SignatureCanvas';

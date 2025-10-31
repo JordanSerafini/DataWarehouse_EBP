@@ -17,7 +17,8 @@
       "Bash(del \"c:\\Users\\Administrateur\\Desktop\\Code\\DataWarehouse_EBP\\backend\\fix_password.sql\" 2)",
       "Bash(C:/nginx/nginx.exe -t)",
       "Bash(C:/nginx/nginx.exe -t -c C:/nginx/conf/nginx.conf)",
-      "Bash(./nginx.exe -s reload)"
+      "Bash(./nginx.exe -s reload)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

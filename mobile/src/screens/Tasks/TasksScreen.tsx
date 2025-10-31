@@ -14,7 +14,7 @@ import {
 import { Text, Card, Chip, ProgressBar } from 'react-native-paper';
 import { format, isToday } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { Intervention, InterventionStatus } from '../../types/intervention.types';
 import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
@@ -30,7 +30,7 @@ interface TaskGroup {
 const TasksScreen = () => {
   const [tasks, setTasks] = useState<Intervention[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
   const { isSyncing } = useSyncStore();
 
   /**

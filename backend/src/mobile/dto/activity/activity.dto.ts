@@ -193,6 +193,15 @@ export class ActivityDto {
   creatorColleagueId?: string;
 
   @ApiProperty({
+    description: 'Nom complet du créateur',
+    example: 'Jean Dupont',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  creatorName?: string;
+
+  @ApiProperty({
     description: 'ID du document lié',
     example: '550e8400-e29b-41d4-a716-446655440000',
     required: false,

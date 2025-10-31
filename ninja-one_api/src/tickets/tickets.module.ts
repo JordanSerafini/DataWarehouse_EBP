@@ -5,7 +5,11 @@ import { Ticket } from './entities/ticket.entity';
 import { Organization } from '../organizations/entities/organization.entity';
 import { Technician } from '../technicians/entities/technician.entity';
 import { Device } from '../devices/entities/device.entity';
-import { TicketsController } from './controllers/tickets.controller';
+import {
+  TicketsController,
+  OrganizationTicketsController,
+  TechnicianTicketsController
+} from './controllers/tickets.controller';
 import { TicketsService } from './services/tickets.service';
 import { TicketsSyncService } from './services/tickets-sync.service';
 import { TicketQueryService } from './services/ticket-query.service';
@@ -16,7 +20,11 @@ import { TicketTransformService } from './services/ticket-transform.service';
     TypeOrmModule.forFeature([Ticket, Organization, Technician, Device]),
     HttpModule,
   ],
-  controllers: [TicketsController],
+  controllers: [
+    TicketsController,
+    OrganizationTicketsController,
+    TechnicianTicketsController,
+  ],
   providers: [
     TicketsService,
     TicketsSyncService,

@@ -14,7 +14,7 @@ import {
 import { Text, Card, SegmentedButtons, FAB } from 'react-native-paper';
 import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 import { Intervention, InterventionStatus } from '../../types/intervention.types';
 import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
@@ -27,7 +27,7 @@ const PlanningScreen = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
   const { isSyncing } = useSyncStore();
 
   /**

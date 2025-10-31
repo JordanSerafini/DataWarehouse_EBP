@@ -27,10 +27,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { apiService } from '../../services/api.service';
 import { showToast } from '../../utils/toast';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
 
 const AdminUsersScreen = ({ navigation }: any) => {
-  const { user } = useAuthStore();
+  const user = useAuthStore(authSelectors.user);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

@@ -14,6 +14,7 @@ import {
   Linking,
   Platform,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import {
   Text,
@@ -29,6 +30,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { InterventionService, Intervention, InterventionStatus } from '../../services/intervention.service';
+import { ActivityService, Activity, ActivityCategory } from '../../services/activity.service';
 import { showToast } from '../../utils/toast';
 import { PhotoPicker } from '../../components/PhotoPicker';
 import { PhotoGallery } from '../../components/PhotoGallery';
@@ -50,6 +52,13 @@ const InterventionDetailsScreenV2 = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [showSuccessCheckmark, setShowSuccessCheckmark] = useState(false);
+
+  // États pour la section Notes
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [notes, setNotes] = useState<Activity[]>([]);
+  const [loadingNotes, setLoadingNotes] = useState(false);
+  const [newNoteText, setNewNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   /**
    * Charger l'intervention depuis l'API
@@ -74,7 +83,13 @@ const InterventionDetailsScreenV2 = () => {
     setRefreshing(true);
     // Haptic feedback moyen pour refresh
     await hapticService.medium();
+    // Réinitialiser les notes pour forcer un rechargement
+    setNotes([]);
     await loadIntervention();
+    // Si la section notes est dépliée, recharger les notes
+    if (isNotesExpanded) {
+      await loadNotes();
+    }
     setRefreshing(false);
     // Haptic feedback léger à la fin du refresh
     await hapticService.light();
@@ -214,6 +229,96 @@ const InterventionDetailsScreenV2 = () => {
         await hapticService.error();
         showToast('Impossible d\'ouvrir Maps', 'error');
       });
+    }
+  };
+
+  /**
+   * Charger les notes de l'intervention
+   */
+  const loadNotes = async () => {
+    if (notes.length > 0) {
+      // Déjà chargées
+      return;
+    }
+
+    try {
+      setLoadingNotes(true);
+
+      // Si on a un customerId, on peut filtrer par client
+      if (intervention?.customerId) {
+        const activities = await ActivityService.getActivityHistory({
+          entityId: intervention.customerId,
+          entityType: 'customer',
+          limit: 100, // Augmenter la limite pour être sûr d'avoir toutes les notes du client
+        });
+
+        // Filtrer uniquement les notes liées à cette intervention
+        const interventionNotes = activities.filter(
+          (activity) => activity.scheduleEventId === interventionId
+        );
+
+        setNotes(interventionNotes);
+      } else {
+        // Pas de customer ID, on ne peut pas charger les notes
+        setNotes([]);
+      }
+    } catch (error: any) {
+      console.error('Error loading notes:', error);
+      showToast('Erreur lors du chargement des notes', 'error');
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  /**
+   * Toggle section notes
+   */
+  const handleToggleNotes = async () => {
+    await hapticService.light();
+
+    if (!isNotesExpanded) {
+      // On déplie: charger les notes
+      await loadNotes();
+    }
+
+    setIsNotesExpanded(!isNotesExpanded);
+  };
+
+  /**
+   * Ajouter une nouvelle note
+   */
+  const handleAddNote = async () => {
+    if (!newNoteText.trim()) {
+      await hapticService.warning();
+      showToast('Veuillez saisir une note', 'error');
+      return;
+    }
+
+    try {
+      setSavingNote(true);
+      await hapticService.medium();
+
+      await ActivityService.createInterventionNote(
+        interventionId,
+        newNoteText.trim(),
+        intervention?.customerId
+      );
+
+      await hapticService.success();
+      showToast('Note ajoutée !', 'success');
+
+      // Réinitialiser le champ texte
+      setNewNoteText('');
+
+      // Recharger les notes
+      setNotes([]); // Forcer le rechargement
+      await loadNotes();
+    } catch (error: any) {
+      console.error('Error adding note:', error);
+      await hapticService.error();
+      showToast('Erreur lors de l\'ajout de la note', 'error');
+    } finally {
+      setSavingNote(false);
     }
   };
 
@@ -418,6 +523,106 @@ const InterventionDetailsScreenV2 = () => {
         }}
         disabled={intervention.status !== InterventionStatus.IN_PROGRESS}
       />
+
+      {/* Notes d'intervention */}
+      <Card style={styles.card}>
+        <Card.Title
+          title="Notes"
+          left={(props) => <Ionicons name="document-text" size={24} color="#6200ee" />}
+          right={(props) => (
+            <Button
+              mode="text"
+              onPress={handleToggleNotes}
+              icon={isNotesExpanded ? "chevron-up" : "chevron-down"}
+            >
+              {isNotesExpanded ? 'Masquer' : `Voir (${notes.length})`}
+            </Button>
+          )}
+        />
+        <Card.Content>
+          {/* Formulaire d'ajout de note */}
+          <View style={styles.noteInputContainer}>
+            <TextInput
+              style={styles.noteInput}
+              placeholder="Ajouter une note..."
+              placeholderTextColor="#9e9e9e"
+              value={newNoteText}
+              onChangeText={setNewNoteText}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+            <Button
+              mode="contained"
+              onPress={handleAddNote}
+              loading={savingNote}
+              disabled={savingNote || !newNoteText.trim()}
+              style={styles.addNoteButton}
+              icon="send"
+              compact
+            >
+              Ajouter
+            </Button>
+          </View>
+
+          {/* Liste des notes (dépliable) */}
+          {isNotesExpanded && (
+            <>
+              <Divider style={styles.notesDivider} />
+
+              {loadingNotes ? (
+                <View style={styles.notesLoading}>
+                  <ActivityIndicator size="large" color="#6200ee" />
+                  <Text variant="bodyMedium" style={styles.loadingText}>
+                    Chargement des notes...
+                  </Text>
+                </View>
+              ) : notes.length === 0 ? (
+                <View style={styles.emptyNotes}>
+                  <Ionicons name="document-text-outline" size={48} color="#bdbdbd" />
+                  <Text variant="bodyMedium" style={styles.emptyNotesText}>
+                    Aucune note pour cette intervention
+                  </Text>
+                </View>
+              ) : (
+                notes.map((note, index) => (
+                  <View key={note.id} style={styles.noteItem}>
+                    <View style={styles.noteHeader}>
+                      <View style={styles.noteInfo}>
+                        <Ionicons name="person-circle" size={20} color="#6200ee" />
+                        <Text variant="labelMedium" style={styles.noteAuthor}>
+                          {note.creatorColleagueId || 'Mobile'}
+                        </Text>
+                      </View>
+                      <Text variant="bodySmall" style={styles.noteDate}>
+                        {format(new Date(note.createdAt), 'dd MMM yyyy HH:mm', {
+                          locale: fr,
+                        })}
+                      </Text>
+                    </View>
+                    <Text variant="bodyMedium" style={styles.noteContent}>
+                      {note.notesClear}
+                    </Text>
+                    <View style={styles.noteMeta}>
+                      <Chip
+                        icon="label"
+                        mode="outlined"
+                        compact
+                        style={styles.noteCategory}
+                      >
+                        {note.categoryLabel}
+                      </Chip>
+                    </View>
+                    {index !== notes.length - 1 && (
+                      <Divider style={styles.noteDivider} />
+                    )}
+                  </View>
+                ))
+              )}
+            </>
+          )}
+        </Card.Content>
+      </Card>
 
       {/* Photos (si intervention en cours ou terminée) */}
       {canAddMedia && (
@@ -635,6 +840,76 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     zIndex: 9999,
+  },
+  // ========================================
+  // NOTES SECTION
+  // ========================================
+  noteInputContainer: {
+    marginBottom: 16,
+  },
+  noteInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    backgroundColor: '#fafafa',
+    minHeight: 80,
+    marginBottom: 12,
+  },
+  addNoteButton: {
+    alignSelf: 'flex-end',
+  },
+  notesDivider: {
+    marginVertical: 16,
+  },
+  notesLoading: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  emptyNotes: {
+    paddingVertical: 32,
+    alignItems: 'center',
+  },
+  emptyNotesText: {
+    color: '#9e9e9e',
+    marginTop: 12,
+  },
+  noteItem: {
+    paddingVertical: 12,
+  },
+  noteHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  noteInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  noteAuthor: {
+    fontWeight: 'bold',
+    color: '#6200ee',
+  },
+  noteDate: {
+    color: '#757575',
+  },
+  noteContent: {
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  noteMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  noteCategory: {
+    backgroundColor: '#f3e5f5',
+    borderColor: '#9c27b0',
+  },
+  noteDivider: {
+    marginTop: 12,
   },
 });
 

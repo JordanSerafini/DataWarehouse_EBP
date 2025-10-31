@@ -436,6 +436,28 @@ export class ActivityService {
         }
       }
 
+      // Récupérer le nom complet du créateur
+      let creatorName = null;
+      if (creatorUserId) {
+        // Essayer d'abord depuis la table mobile.users
+        const userResult = await this.databaseService.query(
+          `SELECT name FROM mobile.users WHERE colleague_id = $1`,
+          [creatorUserId]
+        );
+        if (userResult.rows.length > 0) {
+          creatorName = userResult.rows[0].name;
+        } else {
+          // Sinon essayer depuis la table Colleague
+          const colleagueResult = await this.databaseService.query(
+            `SELECT "Name" FROM public."Colleague" WHERE "Id" = $1`,
+            [creatorUserId]
+          );
+          if (colleagueResult.rows.length > 0) {
+            creatorName = colleagueResult.rows[0].Name;
+          }
+        }
+      }
+
       const activity: ActivityDto = {
         id: row.id,
         caption: row.caption,
@@ -450,6 +472,7 @@ export class ActivityService {
         scheduleEventId: row.scheduleEventId,
         colleagueId: row.colleagueId,
         creatorColleagueId: row.creatorColleagueId,
+        creatorName,
         dealId: row.dealId,
         notesClear: row.notesClear,
         createdAt: row.createdAt,
