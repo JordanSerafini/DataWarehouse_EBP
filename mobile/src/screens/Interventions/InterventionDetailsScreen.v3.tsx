@@ -199,22 +199,23 @@ const InterventionDetailsScreenV3 = () => {
    */
   const getStatusColor = (status: InterventionStatus): string => {
     switch (status) {
-      case 'IN_PROGRESS': return '#ff9800'; // Orange
-      case 'COMPLETED': return '#4caf50'; // Vert
-      case 'INVOICED': return '#2196f3'; // Bleu
-      case 'PENDING': return '#f44336'; // Rouge
+      case InterventionStatus.IN_PROGRESS: return '#ff9800'; // Orange
+      case InterventionStatus.COMPLETED: return '#4caf50'; // Vert
+      case InterventionStatus.CANCELLED: return '#f44336'; // Rouge
+      case InterventionStatus.PENDING: return '#9c27b0'; // Violet
+      case InterventionStatus.SCHEDULED: return '#2196f3'; // Bleu
       default: return '#9e9e9e'; // Gris
     }
   };
 
   const getStatusLabel = (status: InterventionStatus): string => {
     switch (status) {
-      case 'SCHEDULED': return 'Planifiée';
-      case 'IN_PROGRESS': return 'En cours';
-      case 'COMPLETED': return 'Terminée';
-      case 'INVOICED': return 'Facturée';
-      case 'PENDING': return 'En attente';
-      default: return status;
+      case InterventionStatus.SCHEDULED: return 'Planifiée';
+      case InterventionStatus.IN_PROGRESS: return 'En cours';
+      case InterventionStatus.COMPLETED: return 'Terminée';
+      case InterventionStatus.CANCELLED: return 'Annulée';
+      case InterventionStatus.PENDING: return 'En attente';
+      default: return 'Inconnu';
     }
   };
 
@@ -393,7 +394,9 @@ const InterventionDetailsScreenV3 = () => {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Temps passé</Text>
               <Text style={[styles.infoValue, styles.timeValue]}>
-                {formatDuration(intervention.achievedDurationHours)}
+                {formatDuration(
+                  intervention.timeSpentSeconds ? intervention.timeSpentSeconds / 3600 : undefined,
+                )}
               </Text>
             </View>
 
@@ -637,7 +640,7 @@ const InterventionDetailsScreenV3 = () => {
               📷 Photos et Signature
             </Text>
 
-            {intervention.status === 'IN_PROGRESS' && (
+            {intervention.status === InterventionStatus.IN_PROGRESS && (
               <>
                 <PhotoPicker interventionId={interventionId} />
                 <Divider style={styles.divider} />
@@ -648,7 +651,7 @@ const InterventionDetailsScreenV3 = () => {
               </>
             )}
 
-            {intervention.status !== 'IN_PROGRESS' && (
+            {intervention.status !== InterventionStatus.IN_PROGRESS && (
               <Text style={styles.infoText}>
                 {intervention.hasAssociatedFiles
                   ? 'Photos et signature enregistrées'
@@ -659,7 +662,7 @@ const InterventionDetailsScreenV3 = () => {
         </Card>
 
         {/* ========== SECTION 13: TimeSheet (si en cours) ========== */}
-        {intervention.status === 'IN_PROGRESS' && (
+        {intervention.status === InterventionStatus.IN_PROGRESS && (
           <Card style={styles.card}>
             <Card.Content>
               <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -679,7 +682,7 @@ const InterventionDetailsScreenV3 = () => {
 
             <View style={styles.actionsContainer}>
               {/* Bouton Démarrer (si SCHEDULED ou PENDING) */}
-              {(intervention.status === 'SCHEDULED' || intervention.status === 'PENDING') && (
+              {(intervention.status === InterventionStatus.SCHEDULED || intervention.status === InterventionStatus.PENDING) && (
                 <Button
                   mode="contained"
                   icon="play"
@@ -694,7 +697,7 @@ const InterventionDetailsScreenV3 = () => {
               )}
 
               {/* Bouton Terminer (si IN_PROGRESS) */}
-              {intervention.status === 'IN_PROGRESS' && (
+              {intervention.status === InterventionStatus.IN_PROGRESS && (
                 <Button
                   mode="contained"
                   icon="check"
@@ -709,11 +712,11 @@ const InterventionDetailsScreenV3 = () => {
               )}
 
               {/* Info si terminée ou facturée */}
-              {(intervention.status === 'COMPLETED' || intervention.status === 'INVOICED') && (
+              {intervention.status === InterventionStatus.COMPLETED && (
                 <View style={styles.completedBadge}>
                   <Ionicons name="checkmark-circle" size={24} color="#4caf50" />
                   <Text style={styles.completedText}>
-                    {intervention.status === 'INVOICED' ? 'Facturée' : 'Terminée'}
+                    Terminée
                   </Text>
                 </View>
               )}
