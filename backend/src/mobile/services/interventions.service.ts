@@ -531,7 +531,7 @@ export class InterventionsService {
         FROM public."ScheduleEvent"
         WHERE "ColleagueId" = $1
           AND "EventState" = 1
-          AND "Id" != $2
+          AND "Id"::text != $2
         LIMIT 1
         `,
         [technicianId, actualInterventionId],

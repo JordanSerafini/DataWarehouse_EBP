@@ -73,8 +73,8 @@ const InterventionDetailsScreenV3 = () => {
                          user?.role === UserRole.COMMERCIAL;
 
   // Média (photos/signature) autorisés si intervention en cours ou terminée
-  const canAddMedia = intervention?.status === InterventionStatus.IN_PROGRESS ||
-                      intervention?.status === InterventionStatus.COMPLETED;
+  // Autoriser médias (photos/signature) quel que soit le statut
+  const canAddMedia = true;
 
   /**
    * Charger l'intervention
