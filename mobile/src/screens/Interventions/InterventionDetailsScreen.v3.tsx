@@ -71,6 +71,10 @@ const InterventionDetailsScreenV3 = () => {
                          user?.role === UserRole.CHEF_CHANTIER ||
                          user?.role === UserRole.COMMERCIAL;
 
+  // Média (photos/signature) autorisés si intervention en cours ou terminée
+  const canAddMedia = intervention?.status === InterventionStatus.IN_PROGRESS ||
+                      intervention?.status === InterventionStatus.COMPLETED;
+
   /**
    * Charger l'intervention
    */
@@ -633,35 +637,58 @@ const InterventionDetailsScreenV3 = () => {
           </Card>
         )}
 
-        {/* ========== SECTION 12: Photos et Signature ========== */}
+        {/* ========== SECTION 12: Photos ========== */}
         <Card style={styles.card}>
           <Card.Content>
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-              📷 Photos et Signature
-            </Text>
-
-            {intervention.status === InterventionStatus.IN_PROGRESS && (
-              <>
-                <PhotoPicker interventionId={interventionId} />
-                <Divider style={styles.divider} />
-                <SignaturePad
-                  interventionId={interventionId}
-                  onSignatureSaved={() => loadIntervention()}
-                />
-              </>
-            )}
-
-            {intervention.status !== InterventionStatus.IN_PROGRESS && (
-              <Text style={styles.infoText}>
-                {intervention.hasAssociatedFiles
-                  ? 'Photos et signature enregistrées'
-                  : 'Aucune photo ou signature'}
+            <View style={styles.sectionHeaderRow}>
+              <Ionicons name="camera" size={20} color="#6200ee" />
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Photos
               </Text>
+            </View>
+
+            {/* Galerie des photos existantes */}
+            <PhotoGallery
+              interventionId={interventionId}
+              onPhotoDeleted={loadIntervention}
+            />
+
+            <Divider style={styles.divider} />
+
+            {/* Ajouter de nouvelles photos si autorisé */}
+            {canAddMedia ? (
+              <PhotoPicker
+                interventionId={interventionId}
+                onPhotosChanged={() => loadIntervention()}
+              />
+            ) : (
+              <Text style={styles.infoText}>Ajout de photos désactivé pour ce statut</Text>
             )}
           </Card.Content>
         </Card>
 
-        {/* ========== SECTION 13: TimeSheet (si en cours) ========== */}
+        {/* ========== SECTION 13: Signature client ========== */}
+        <Card style={styles.card}>
+          <Card.Content>
+            <View style={styles.sectionHeaderRow}>
+              <Ionicons name="create" size={20} color="#6200ee" />
+              <Text variant="titleMedium" style={styles.sectionTitle}>
+                Signature client
+              </Text>
+            </View>
+
+            {canAddMedia ? (
+              <SignaturePad
+                interventionId={interventionId}
+                onSignatureSaved={() => loadIntervention()}
+              />
+            ) : (
+              <Text style={styles.infoText}>Capture de signature désactivée pour ce statut</Text>
+            )}
+          </Card.Content>
+        </Card>
+
+        {/* ========== SECTION 14: TimeSheet (si en cours) ========== */}
         {intervention.status === InterventionStatus.IN_PROGRESS && (
           <Card style={styles.card}>
             <Card.Content>
@@ -673,7 +700,7 @@ const InterventionDetailsScreenV3 = () => {
           </Card>
         )}
 
-        {/* ========== SECTION 14: Actions ========== */}
+        {/* ========== SECTION 15: Actions ========== */}
         <Card style={styles.card}>
           <Card.Content>
             <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -823,6 +850,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
   },
   description: {
