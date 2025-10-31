@@ -43,6 +43,7 @@ const TicketsScreen = () => {
   console.log('[TicketsScreen] Rendu, user:', user ? `${user.fullName} (ID: ${user.id})` : 'null');
 
   const [tickets, setTickets] = useState<NinjaOneTicket[]>([]);
+  const [ticketsWithRelations, setTicketsWithRelations] = useState<any[]>([]); // Pour stocker les relations
   const [filteredTickets, setFilteredTickets] = useState<NinjaOneTicket[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -54,6 +55,7 @@ const TicketsScreen = () => {
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
   const [selectedTechnicianId, setSelectedTechnicianId] = useState<number | null>(null);
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<number | null>(null);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   /**
    * Vérifier si l'utilisateur peut voir tous les tickets
@@ -112,6 +114,7 @@ const TicketsScreen = () => {
         response = await ticketsService.getTickets(filters);
       }
 
+      setTicketsWithRelations(response.data.data);
       setTickets(response.data.data.map((item) => item.ticket));
       console.log(`[TicketsScreen] ${response.data.data.length} tickets chargés`);
     } catch (error) {
@@ -150,25 +153,27 @@ const TicketsScreen = () => {
    */
   const availableTechnicians = useMemo(() => {
     const map = new Map<number, string>();
-    tickets.forEach((t) => {
-      if (t.assignedTechnicianId) {
-        const techName = `Technicien ${t.assignedTechnicianId}`;
-        map.set(t.assignedTechnicianId, techName);
+    ticketsWithRelations.forEach((item) => {
+      if (item.assignedTechnician) {
+        const tech = item.assignedTechnician;
+        const name = `${tech.firstName} ${tech.lastName}`.trim() || `Tech ${tech.technicianId}`;
+        map.set(tech.technicianId, name);
       }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [tickets]);
+  }, [ticketsWithRelations]);
 
   const availableOrganizations = useMemo(() => {
     const map = new Map<number, string>();
-    tickets.forEach((t) => {
-      if (t.organizationId) {
-        const orgName = `Organisation ${t.organizationId}`;
-        map.set(t.organizationId, orgName);
+    ticketsWithRelations.forEach((item) => {
+      if (item.organization) {
+        const org = item.organization;
+        const name = org.organizationName || `Org ${org.organizationId}`;
+        map.set(org.organizationId, name);
       }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [tickets]);
+  }, [ticketsWithRelations]);
 
   /**
    * Filtrer les tickets
@@ -201,12 +206,13 @@ const TicketsScreen = () => {
         priorityOrder[b.priority as keyof typeof priorityOrder];
       if (priorityDiff !== 0) return priorityDiff;
 
-      // Puis par date (plus récent en premier)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      // Puis par date (respecter sortOrder)
+      const dateDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return sortOrder === 'DESC' ? dateDiff : -dateDiff;
     });
 
     setFilteredTickets(filtered);
-  }, [tickets, searchQuery, selectedPriorities]);
+  }, [tickets, searchQuery, selectedPriorities, sortOrder]);
 
   /**
    * Toggle filtre priorité
@@ -442,7 +448,7 @@ const TicketsScreen = () => {
                     onPress={() => setSelectedTechnicianId(tech.id)}
                     style={styles.filterChip}
                   >
-                    #{tech.id}
+                    {tech.name}
                   </Chip>
                 ))}
               </ScrollView>
@@ -470,7 +476,7 @@ const TicketsScreen = () => {
                     onPress={() => setSelectedOrganizationId(org.id)}
                     style={styles.filterChip}
                   >
-                    Org #{org.id}
+                    {org.name}
                   </Chip>
                 ))}
               </ScrollView>

@@ -115,7 +115,7 @@ export class ActivityService {
           a."Contact_Phone" as "contactPhone",
           a."ColleagueId" as "colleagueId",
           a."CreatorColleagueId" as "creatorColleagueId",
-          COALESCE(u.name, c."Name") as "creatorName",
+          COALESCE(u.full_name, c."Name") as "creatorName",
           a."SaleDocumentId"::text as "saleDocumentId",
           a."ScheduleEventId"::text as "scheduleEventId",
           a."DealId" as "dealId",
@@ -445,11 +445,11 @@ export class ActivityService {
       if (creatorUserId) {
         // Essayer d'abord depuis la table mobile.users
         const userResult = await this.databaseService.query(
-          `SELECT name FROM mobile.users WHERE colleague_id = $1`,
+          `SELECT full_name FROM mobile.users WHERE colleague_id = $1`,
           [creatorUserId]
         );
         if (userResult.rows.length > 0) {
-          creatorName = userResult.rows[0].name;
+          creatorName = userResult.rows[0].full_name;
         } else {
           // Sinon essayer depuis la table Colleague
           const colleagueResult = await this.databaseService.query(
