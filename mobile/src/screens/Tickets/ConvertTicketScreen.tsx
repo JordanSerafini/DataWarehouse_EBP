@@ -35,6 +35,8 @@ import {
   ConvertTicketParams,
 } from '../../services/ninjaone-conversion.service';
 import { showToast } from '../../utils/toast';
+import CustomerSearchModal from '../../components/CustomerSearchModal';
+import ColleagueSearchModal from '../../components/ColleagueSearchModal';
 
 type ConvertTicketScreenRouteProp = RouteProp<RootStackParamList, 'ConvertTicket'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -80,6 +82,10 @@ const ConvertTicketScreen = () => {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+  // Modals de recherche
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false);
+  const [showColleagueSearch, setShowColleagueSearch] = useState(false);
 
   // Dialog d'avertissement
   const [showWarningsDialog, setShowWarningsDialog] = useState(false);
@@ -131,6 +137,28 @@ const ConvertTicketScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * Gérer la sélection d'un client
+   */
+  const handleSelectCustomer = (customerId: string, customerName: string) => {
+    setFormData({
+      ...formData,
+      customerId,
+      customerName,
+    });
+  };
+
+  /**
+   * Gérer la sélection d'un technicien
+   */
+  const handleSelectColleague = (colleagueId: string, colleagueName: string) => {
+    setFormData({
+      ...formData,
+      colleagueId,
+      colleagueName,
+    });
   };
 
   /**
@@ -295,27 +323,39 @@ const ConvertTicketScreen = () => {
 
             {!preview.customerMapped && (
               <HelperText type="error" visible>
-                ⚠️ Client non mappé. Vous devez saisir manuellement l'ID client EBP.
+                ⚠️ Client non mappé automatiquement. Utilisez la recherche ci-dessous.
               </HelperText>
             )}
 
-            <TextInput
-              label="ID Client EBP *"
-              value={formData.customerId}
-              onChangeText={(text) => setFormData({ ...formData, customerId: text })}
+            <Button
               mode="outlined"
-              style={styles.input}
-              placeholder="CUST001"
-            />
+              icon="magnify"
+              onPress={() => setShowCustomerSearch(true)}
+              style={styles.searchButton}
+            >
+              Rechercher un client
+            </Button>
 
             <TextInput
-              label="Nom du client (informatif)"
-              value={formData.customerName}
-              onChangeText={(text) => setFormData({ ...formData, customerName: text })}
+              label="Client sélectionné *"
+              value={formData.customerName || 'Aucun client sélectionné'}
               mode="outlined"
               style={styles.input}
               disabled
+              right={
+                formData.customerId ? (
+                  <TextInput.Icon icon="check-circle" color="#4caf50" />
+                ) : (
+                  <TextInput.Icon icon="alert-circle" color="#ff5722" />
+                )
+              }
             />
+
+            {formData.customerId && (
+              <HelperText type="info" visible>
+                ID: {formData.customerId}
+              </HelperText>
+            )}
           </Card.Content>
         </Card>
 
@@ -327,27 +367,39 @@ const ConvertTicketScreen = () => {
 
               {preview.colleagueId && !preview.technicianMapped && (
                 <HelperText type="warning" visible>
-                  ⚠️ Technicien non mappé. Vous pouvez saisir manuellement l'ID collègue EBP.
+                  ⚠️ Technicien non mappé automatiquement. Utilisez la recherche ci-dessous.
                 </HelperText>
               )}
 
-              <TextInput
-                label="ID Collègue EBP"
-                value={formData.colleagueId}
-                onChangeText={(text) => setFormData({ ...formData, colleagueId: text })}
+              <Button
                 mode="outlined"
-                style={styles.input}
-                placeholder="TECH01"
-              />
+                icon="magnify"
+                onPress={() => setShowColleagueSearch(true)}
+                style={styles.searchButton}
+              >
+                Rechercher un technicien
+              </Button>
 
               <TextInput
-                label="Nom du technicien (informatif)"
-                value={formData.colleagueName}
-                onChangeText={(text) => setFormData({ ...formData, colleagueName: text })}
+                label="Technicien sélectionné"
+                value={formData.colleagueName || 'Aucun technicien sélectionné'}
                 mode="outlined"
                 style={styles.input}
                 disabled
+                right={
+                  formData.colleagueId ? (
+                    <TextInput.Icon icon="check-circle" color="#4caf50" />
+                  ) : (
+                    <TextInput.Icon icon="account-off" color="#999" />
+                  )
+                }
               />
+
+              {formData.colleagueId && (
+                <HelperText type="info" visible>
+                  ID: {formData.colleagueId}
+                </HelperText>
+              )}
             </Card.Content>
           </Card>
         )}
@@ -613,6 +665,22 @@ const ConvertTicketScreen = () => {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      {/* Modal de recherche de clients */}
+      <CustomerSearchModal
+        visible={showCustomerSearch}
+        onDismiss={() => setShowCustomerSearch(false)}
+        onSelectCustomer={handleSelectCustomer}
+        currentCustomerId={formData.customerId}
+      />
+
+      {/* Modal de recherche de techniciens */}
+      <ColleagueSearchModal
+        visible={showColleagueSearch}
+        onDismiss={() => setShowColleagueSearch(false)}
+        onSelectColleague={handleSelectColleague}
+        currentColleagueId={formData.colleagueId}
+      />
     </KeyboardAvoidingView>
   );
 };

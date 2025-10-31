@@ -302,12 +302,40 @@ export class NinjaOneController {
         m.*,
         tech.full_name as technician_name,
         tech.email as technician_email,
-        col."Caption" as colleague_caption,
-        col."Email" as colleague_email
+        col."Contact_Name" as colleague_name,
+        col."Contact_Email" as colleague_email
       FROM mobile.ninjaone_technician_mapping m
       LEFT JOIN ninjaone.dim_technicians tech ON m.ninjaone_technician_id = tech.technician_id
       LEFT JOIN public."Colleague" col ON m.ebp_colleague_id = col."Id"
       ORDER BY m.created_at DESC
+    `;
+
+    const result = await this.ninjaoneService['db'].query(query);
+    return result.rows;
+  }
+
+  /**
+   * Lister tous les collègues EBP (pour sélection dans formulaire)
+   */
+  @Get('colleagues')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PATRON, UserRole.CHEF_CHANTIER)
+  @ApiOperation({
+    summary: 'Lister tous les collègues',
+    description: 'Retourne la liste de tous les collègues EBP pour sélection dans formulaire',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste des collègues',
+  })
+  async listColleagues(): Promise<any[]> {
+    const query = `
+      SELECT
+        "Id",
+        "Contact_Name",
+        "Contact_FirstName",
+        "Contact_Email"
+      FROM public."Colleague"
+      ORDER BY "Contact_Name", "Contact_FirstName"
     `;
 
     const result = await this.ninjaoneService['db'].query(query);
