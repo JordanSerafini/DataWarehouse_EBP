@@ -179,7 +179,7 @@ const CustomerDetailsScreen = () => {
     try {
       setLoadingAllInterventions(true);
       const interventions = await CustomerService.getCustomerHistory(customerId, {
-        limit: 1000, // Récupérer toutes les interventions
+        limit: 200, // Limite maximale autorisée par le backend
       });
       setAllInterventions(interventions);
     } catch (error: any) {
