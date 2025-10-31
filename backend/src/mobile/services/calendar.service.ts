@@ -340,4 +340,105 @@ export class CalendarService {
       throw new BadRequestException('Erreur lors de la reprogrammation de l\'événement');
     }
   }
+
+  /**
+   * Récupère TOUS les événements (ScheduleEvent + Incident) pour le planning
+   * Combine les événements calendrier normaux et les interventions de maintenance
+   */
+  async getAllEventsForPlanning(
+    technicianId: string,
+    query: QueryCalendarEventsDto,
+  ): Promise<CalendarEventDto[]> {
+    this.logger.log(`Fetching all events for planning for technician: ${technicianId}`);
+
+    try {
+      // Construction de la requête SQL qui combine ScheduleEvent et Incident
+      const sqlQuery = `
+        -- Événements ScheduleEvent (tous types: rendez-vous, maintenance, etc.)
+        SELECT
+          se."Id"::text as id,
+          se."Caption" as title,
+          se."StartDateTime" as "startDateTime",
+          se."EndDateTime" as "endDateTime",
+          se."ColleagueId" as "colleagueId",
+          col."Contact_Name" as "colleagueName",
+          se."CustomerId" as "customerId",
+          c."Name" as "customerName",
+          CONCAT_WS(', ',
+            se."Address_Address1",
+            se."Address_ZipCode",
+            se."Address_City"
+          ) as address,
+          se."Address_City" as city,
+          se."Address_ZipCode" as zipcode,
+          se."Address_Latitude" as latitude,
+          se."Address_Longitude" as longitude,
+          se."CreatorColleagueId" as "creatorId",
+          se."sysCreatedDate" as "createdAt",
+          se."sysModifiedDate" as "updatedAt",
+          -- Déterminer le type d'événement
+          CASE
+            WHEN se."Maintenance_InterventionDescription" IS NOT NULL THEN 'maintenance'
+            WHEN se."CustomerId" IS NOT NULL THEN 'intervention'
+            ELSE 'appointment'
+          END as "eventType",
+          -- Déterminer le statut
+          CASE
+            WHEN se."EndDateTime" < NOW() THEN 'completed'
+            WHEN se."StartDateTime" <= NOW() AND se."EndDateTime" >= NOW() THEN 'in_progress'
+            ELSE 'planned'
+          END as status
+        FROM public."ScheduleEvent" se
+        LEFT JOIN public."Colleague" col ON col."Id" = se."ColleagueId"
+        LEFT JOIN public."Customer" c ON c."Id" = se."CustomerId"
+        WHERE se."ColleagueId" = $1
+          AND se."StartDateTime" >= $2
+          AND se."StartDateTime" <= $3
+
+        UNION ALL
+
+        -- Incidents (interventions de maintenance créées dans la table Incident)
+        SELECT
+          i."Id"::text as id,
+          COALESCE(i."Caption", 'Incident sans titre') as title,
+          i."StartDate" as "startDateTime",
+          i."EndDate" as "endDateTime",
+          i."CreatorColleagueId" as "colleagueId",
+          col2."Contact_Name" as "colleagueName",
+          i."CustomerId" as "customerId",
+          i."CustomerName" as "customerName",
+          NULL as address,
+          NULL as city,
+          NULL as zipcode,
+          NULL as latitude,
+          NULL as longitude,
+          i."CreatorColleagueId" as "creatorId",
+          i."sysCreatedDate" as "createdAt",
+          i."sysModifiedDate" as "updatedAt",
+          'maintenance' as "eventType",
+          CASE
+            WHEN i."EndDate" IS NOT NULL AND i."EndDate" < NOW() THEN 'completed'
+            WHEN i."StartDate" <= NOW() AND (i."EndDate" IS NULL OR i."EndDate" >= NOW()) THEN 'in_progress'
+            ELSE 'planned'
+          END as status
+        FROM public."Incident" i
+        LEFT JOIN public."Colleague" col2 ON col2."Id" = i."CreatorColleagueId"
+        WHERE i."CreatorColleagueId" = $1
+          AND i."StartDate" >= $2
+          AND i."StartDate" <= $3
+
+        ORDER BY "startDateTime" ASC
+      `;
+
+      const params: (string | Date)[] = [technicianId, query.startDate, query.endDate];
+
+      const result = await this.databaseService.query<CalendarEventDto>(sqlQuery, params);
+
+      this.logger.log(`Found ${result.rows.length} total events for technician ${technicianId}`);
+      return result.rows;
+    } catch (error) {
+      this.logger.error(`Error fetching all events for technician ${technicianId}:`, error);
+      throw new BadRequestException('Erreur lors de la récupération des événements');
+    }
+  }
 }

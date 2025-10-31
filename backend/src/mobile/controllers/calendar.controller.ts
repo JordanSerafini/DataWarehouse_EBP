@@ -41,6 +41,43 @@ export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
 
   /**
+   * Récupère TOUS les événements pour le planning (ScheduleEvent + Incident)
+   */
+  @Get('all-events')
+  @Roles(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.PATRON,
+    UserRole.COMMERCIAL,
+    UserRole.CHEF_CHANTIER,
+    UserRole.TECHNICIEN,
+  )
+  @ApiOperation({
+    summary: 'Récupérer tous les événements pour le planning',
+    description: 'Retourne TOUS les événements (ScheduleEvent + Incident) pour le planning du technicien connecté',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Liste complète des événements récupérée avec succès',
+    type: [CalendarEventDto],
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Requête invalide',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié',
+  })
+  async getAllEvents(
+    @Request() req,
+    @Query() query: QueryCalendarEventsDto,
+  ): Promise<CalendarEventDto[]> {
+    const technicianId = req.user.colleagueId;
+    return this.calendarService.getAllEventsForPlanning(technicianId, query);
+  }
+
+  /**
    * Récupère les événements calendrier du technicien connecté
    */
   @Get('my-events')

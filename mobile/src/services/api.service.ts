@@ -377,6 +377,21 @@ class ApiService {
     return data;
   }
 
+  // ==================== CALENDAR ====================
+
+  /**
+   * Récupère tous les événements pour le planning (ScheduleEvent + Incident)
+   */
+  async getAllCalendarEvents(startDate: Date, endDate: Date): Promise<any[]> {
+    const { data } = await this.client.get('/api/v1/calendar/all-events', {
+      params: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+      },
+    });
+    return data;
+  }
+
   // ==================== SYNC ====================
 
   async getLastSyncDate(): Promise<{ lastSync: string | null }> {

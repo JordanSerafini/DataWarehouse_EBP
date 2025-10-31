@@ -12,33 +12,85 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Text, Card, SegmentedButtons, FAB } from 'react-native-paper';
-import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths } from 'date-fns';
+import { format, addDays, startOfWeek, addWeeks, startOfMonth, addMonths, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useAuthStore, authSelectors } from '../../stores/authStore.v2';
-import { Intervention, InterventionStatus } from '../../types/intervention.types';
 import { apiService } from '../../services/api.service';
 import { useSyncStore } from '../../stores/syncStore';
 import { showToast } from '../../utils/toast';
 
 type ViewMode = 'day' | 'week' | 'month';
 
+/**
+ * Type pour les événements calendrier (ScheduleEvent + Incident)
+ */
+interface CalendarEvent {
+  id: string;
+  title: string;
+  startDateTime: string;
+  endDateTime?: string;
+  eventType: 'intervention' | 'appointment' | 'maintenance' | 'meeting' | 'other';
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled';
+  colleagueId?: string;
+  colleagueName?: string;
+  customerId?: string;
+  customerName?: string;
+  address?: string;
+  city?: string;
+  zipcode?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
 const PlanningScreen = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('day');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const user = useAuthStore(authSelectors.user);
   const { isSyncing } = useSyncStore();
 
   /**
-   * Charger les interventions depuis l'API
+   * Charger les événements depuis l'API
    */
-  const loadInterventions = async () => {
+  const loadEvents = async () => {
     try {
-      const results = await apiService.getMyInterventions();
-      setInterventions(results);
+      // Calculer la plage de dates pour la vue actuelle
+      let startDate: Date;
+      let endDate: Date;
+
+      switch (viewMode) {
+        case 'day':
+          startDate = new Date(currentDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = endOfDay(currentDate);
+          break;
+
+        case 'week': {
+          const weekStart = startOfWeek(currentDate, { locale: fr });
+          startDate = weekStart;
+          endDate = addDays(weekStart, 7);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        }
+
+        case 'month': {
+          const monthStart = startOfMonth(currentDate);
+          startDate = monthStart;
+          endDate = addMonths(monthStart, 1);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        }
+
+        default:
+          startDate = new Date();
+          endDate = new Date();
+      }
+
+      const results = await apiService.getAllCalendarEvents(startDate, endDate);
+      setEvents(results);
     } catch (error) {
-      console.error('Erreur lors du chargement des interventions:', error);
+      console.error('Erreur lors du chargement des événements:', error);
       showToast('Erreur lors du chargement du planning', 'error');
     }
   };
@@ -49,7 +101,7 @@ const PlanningScreen = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await loadInterventions();
+      await loadEvents();
       showToast('Planning actualisé', 'success');
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
@@ -60,42 +112,11 @@ const PlanningScreen = () => {
   };
 
   /**
-   * Charger les interventions au montage
+   * Charger les événements au montage et quand la vue change
    */
   useEffect(() => {
-    loadInterventions();
-  }, [user]);
-
-  /**
-   * Filtrer les interventions par date selon la vue
-   */
-  const getFilteredInterventions = (): Intervention[] => {
-    const now = currentDate;
-
-    return interventions.filter((intervention) => {
-      const date = new Date(intervention.scheduledDate);
-
-      switch (viewMode) {
-        case 'day':
-          return format(date, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
-
-        case 'week': {
-          const weekStart = startOfWeek(now, { locale: fr });
-          const weekEnd = addDays(weekStart, 6);
-          return date >= weekStart && date <= weekEnd;
-        }
-
-        case 'month': {
-          const monthStart = startOfMonth(now);
-          const monthEnd = addMonths(monthStart, 1);
-          return date >= monthStart && date < monthEnd;
-        }
-
-        default:
-          return false;
-      }
-    });
-  };
+    loadEvents();
+  }, [user, viewMode, currentDate]);
 
   /**
    * Naviguer dans le temps

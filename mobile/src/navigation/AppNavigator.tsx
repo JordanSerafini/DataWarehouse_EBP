@@ -23,6 +23,7 @@ import InterventionsScreen from '../screens/Interventions/InterventionsScreen';
 import InterventionDetailsScreen from '../screens/Interventions/InterventionDetailsScreen.v2'; // Version API-first
 import TicketsScreen from '../screens/Tickets/TicketsScreen';
 import TicketDetailsScreen from '../screens/Tickets/TicketDetailsScreen';
+import ConvertTicketScreen from '../screens/Tickets/ConvertTicketScreen';
 import CustomersScreen from '../screens/Customers/CustomersScreen';
 import CustomerDetailsScreen from '../screens/Customers/CustomerDetailsScreen';
 import ProjectsScreen from '../screens/Projects/ProjectsScreen';

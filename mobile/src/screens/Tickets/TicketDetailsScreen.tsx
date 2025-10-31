@@ -18,6 +18,8 @@ import {
   ActivityIndicator,
   Button,
   IconButton,
+  Dialog,
+  Portal,
 } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -38,6 +40,7 @@ const TicketDetailsScreen = () => {
   const [ticketData, setTicketData] = useState<TicketWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showConversionDialog, setShowConversionDialog] = useState(false);
 
   /**
    * Charger les détails du ticket
@@ -67,6 +70,35 @@ const TicketDetailsScreen = () => {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  /**
+   * Ouvrir la boîte de dialogue de conversion
+   */
+  const handleOpenConversionDialog = () => {
+    setShowConversionDialog(true);
+  };
+
+  /**
+   * Convertir en intervention planifiée (ScheduleEvent)
+   */
+  const handleConvertToScheduleEvent = () => {
+    setShowConversionDialog(false);
+    navigation.navigate('ConvertTicket', {
+      ticketId: ticketId,
+      targetType: 'schedule_event',
+    });
+  };
+
+  /**
+   * Convertir en incident/ticket maintenance
+   */
+  const handleConvertToIncident = () => {
+    setShowConversionDialog(false);
+    navigation.navigate('ConvertTicket', {
+      ticketId: ticketId,
+      targetType: 'incident',
+    });
   };
 
   useEffect(() => {
@@ -419,6 +451,57 @@ const TicketDetailsScreen = () => {
         </Card.Content>
       </Card>
 
+      {/* Actions de conversion */}
+      <Card style={styles.card}>
+        <Card.Title title="Convertir en EBP" />
+        <Card.Content>
+          <Text variant="bodyMedium" style={styles.conversionDescription}>
+            Convertissez ce ticket NinjaOne en intervention ou incident dans le système EBP.
+          </Text>
+          <Button
+            mode="contained"
+            icon="swap-horizontal"
+            onPress={handleOpenConversionDialog}
+            style={styles.convertButton}
+          >
+            Convertir vers EBP
+          </Button>
+        </Card.Content>
+      </Card>
+
+      {/* Boîte de dialogue de choix de conversion */}
+      <Portal>
+        <Dialog visible={showConversionDialog} onDismiss={() => setShowConversionDialog(false)}>
+          <Dialog.Title>Choisir le type de conversion</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium" style={styles.dialogText}>
+              Sélectionnez le type de document EBP à créer :
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions style={styles.dialogActions}>
+            <Button onPress={() => setShowConversionDialog(false)} textColor="#666">
+              Annuler
+            </Button>
+            <Button
+              mode="contained"
+              icon="calendar-clock"
+              onPress={handleConvertToScheduleEvent}
+              style={styles.dialogButton}
+            >
+              Intervention planifiée
+            </Button>
+            <Button
+              mode="contained"
+              icon="alert-circle"
+              onPress={handleConvertToIncident}
+              style={[styles.dialogButton, styles.incidentButton]}
+            >
+              Incident/Ticket
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -556,6 +639,29 @@ const styles = StyleSheet.create({
   statValue: {
     fontWeight: 'bold',
     color: '#6200ee',
+  },
+  conversionDescription: {
+    marginBottom: 16,
+    color: '#666',
+  },
+  convertButton: {
+    marginTop: 8,
+  },
+  dialogText: {
+    marginBottom: 16,
+    color: '#666',
+  },
+  dialogActions: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  dialogButton: {
+    marginTop: 8,
+  },
+  incidentButton: {
+    backgroundColor: '#ff9800',
   },
   bottomSpacer: {
     height: 20,
