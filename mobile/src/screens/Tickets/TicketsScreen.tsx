@@ -5,7 +5,7 @@
  * - Admin/Patron: tous les tickets
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -38,6 +38,9 @@ const TicketsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore(authSelectors.user);
 
+  // Debug: log user à chaque rendu
+  console.log('[TicketsScreen] Rendu, user:', user ? `${user.fullName} (ID: ${user.id})` : 'null');
+
   const [tickets, setTickets] = useState<NinjaOneTicket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<NinjaOneTicket[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,9 +52,15 @@ const TicketsScreen = () => {
   /**
    * Vérifier si l'utilisateur peut voir tous les tickets
    */
-  const canViewAllTickets = user?.role
-    ? hasPermission(user.role, Permission.VIEW_ALL_TICKETS)
-    : false;
+  const canViewAllTickets = useMemo(() => {
+    if (!user?.role) {
+      console.log('[TicketsScreen] Pas de rôle utilisateur, canViewAllTickets = false');
+      return false;
+    }
+    const result = hasPermission(user.role, Permission.VIEW_ALL_TICKETS);
+    console.log(`[TicketsScreen] canViewAllTickets pour ${user.role}: ${result}`);
+    return result;
+  }, [user?.role]);
 
   /**
    * Charger les tickets depuis l'API
