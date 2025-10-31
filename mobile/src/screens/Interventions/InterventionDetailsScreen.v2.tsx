@@ -433,33 +433,38 @@ const InterventionDetailsScreenV2 = () => {
    * Changer la date planifiée
    */
   const handleChangeDate = async (event: any, date?: Date) => {
+    // Fermer le picker sur Android
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
 
-    if (date && event.type === 'set') {
-      try {
-        await hapticService.medium();
-        setActionLoading(true);
+    // Vérifier que l'utilisateur a validé (pas annulé)
+    if (!date || event?.type === 'dismissed') {
+      return;
+    }
 
-        await InterventionService.updateIntervention(interventionId, {
-          scheduledDate: date.toISOString(),
-        });
+    try {
+      await hapticService.medium();
+      setActionLoading(true);
 
-        await hapticService.success();
-        showToast('Date modifiée !', 'success');
-        await loadIntervention();
+      await InterventionService.updateIntervention(interventionId, {
+        scheduledDate: date.toISOString(),
+      });
 
-        if (Platform.OS === 'ios') {
-          setShowDatePicker(false);
-        }
-      } catch (error: any) {
-        console.error('Error changing date:', error);
-        await hapticService.error();
-        showToast('Erreur lors du changement de date', 'error');
-      } finally {
-        setActionLoading(false);
+      await hapticService.success();
+      showToast('Date modifiée !', 'success');
+      await loadIntervention();
+
+      // Fermer le picker sur iOS
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
       }
+    } catch (error: any) {
+      console.error('Error changing date:', error);
+      await hapticService.error();
+      showToast('Erreur lors du changement de date', 'error');
+    } finally {
+      setActionLoading(false);
     }
   };
 

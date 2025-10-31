@@ -36,8 +36,9 @@ export async function base64ToFile(
     const fileUri = `${FileSystem.cacheDirectory}${uniqueFilename}`;
 
     // Écrire le fichier base64 dans le cache
+    // Note: Expo FileSystem accepte 'base64' comme string
     await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: 'base64' as any,
     });
 
     return {
