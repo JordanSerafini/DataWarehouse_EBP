@@ -65,6 +65,11 @@ const CustomerDetailsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // État pour la section dépliable des interventions
+  const [isInterventionsExpanded, setIsInterventionsExpanded] = useState(false);
+  const [allInterventions, setAllInterventions] = useState<CustomerHistoryItem[]>([]);
+  const [loadingAllInterventions, setLoadingAllInterventions] = useState(false);
+
   /**
    * Charger le résumé client
    */
